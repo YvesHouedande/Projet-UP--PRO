@@ -5,13 +5,9 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
-
 from core.abstract.models import AbstractModel, AbstractManager
- 
+from core.utils import user_directory_path
 
-def user_directory_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return "user_{0}/{1}".format(instance.public_id, filename)
 
 
 class UserManager(BaseUserManager, AbstractManager):
@@ -53,30 +49,34 @@ class UserManager(BaseUserManager, AbstractManager):
     
 
 class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
-    STATUS_CHOICES = (
-        ('student', 'Student'),
-        ('professor', 'Professor'),
-        ('personnel', 'Personnel'),
-    )
-    username = models.CharField(db_index=True, max_length=255, unique=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    status_choice = models.CharField(choices = STATUS_CHOICES, max_length=10)
+    # STATUS_CHOICES = (
+    #     ('student', 'student'),
+    #     ('professor', 'professor'),
+    #     ('personnel', 'personnel'),
+    # )
+    username = models.CharField(db_index=True, max_length=255, unique=True, verbose_name="Nom Utilisateur")
+    first_name = models.CharField(max_length=255, verbose_name="Nom")
+    last_name = models.CharField(max_length=255, verbose_name="Prenom")
+    # status_choice = models.CharField(choices = STATUS_CHOICES, max_length=10, verbose_name="statut")
 
     email = models.EmailField(db_index=True, unique=True)
-    is_active = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True, verbose_name="est actif")
+    is_superuser = models.BooleanField(default=False, verbose_name="est admin")
+    is_staff = models.BooleanField(default=False, verbose_name="est staff")
 
     bio = models.TextField(null=True, blank=True)
-    avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path)
+    avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path, verbose_name="Image Profile")
+    follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés")
+    
 
     USERNAME_FIELD = "username"
-    EMAIL_FIELD = "email"      
+    EMAIL_FIELD = "email"       
     REQUIRED_FIELDS = ["email"]
 
     objects = UserManager()
 
+    class Meta:
+        verbose_name= "Utilisateur"
     def __str__(self):
         return f"{self.email}"
 
@@ -111,34 +111,75 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
 
 class Student(User):
     LEVEL_CHOICES = (
-        ('ts', "TS"),
-        ("eng", "eng")
-    )
-    study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, related_name="students")
-    school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, related_name="students")
-    level_choices = models.CharField(choices=LEVEL_CHOICES, max_length=5, null=True)
-    peer = models.ForeignKey("Peer", on_delete=models.PROTECT, null=True, related_name="students")
-    entry_year = models.DateField(null=True, blank=True)
+        ('ts1', "TS1"),
+        ('ts2', "TS2"),
+        ('ts3', "TS3"),
 
+        ("eng1", "ING1"),
+        ("eng2", "ING2"),
+        ("eng3", "ING3"),
+
+        ("master1", "Master1"),
+        ("master2", "Master2"),
+    )
+    study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, related_name="students", verbose_name="Filière")
+    school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, related_name="students", verbose_name="Ecole")
+    level_choices = models.CharField(choices=LEVEL_CHOICES, max_length=10, null=True, verbose_name="Niveau")
+    peer = models.ForeignKey("Peer", on_delete=models.PROTECT, null=True, blank=True, related_name="students", verbose_name="Promotion")
+    bac_year = models.DateField(null=True, blank=True, verbose_name="Année du bac")
+    class Meta:
+        verbose_name="Etudiant"
+ 
 
 class Peer(AbstractModel):
     label = models.CharField(max_length=255, verbose_name="Nom de la Promo")
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
     description = models.TextField()
-    manager = models.OneToOneField("Student", on_delete=models.PROTECT, related_name="related_peer", verbose_name='Gestionnaire')
+    manager = models.OneToOneField("Student", on_delete=models.PROTECT, related_name="peer_managed", verbose_name='Gerant')
     year = models.DateField(verbose_name="année")
+    cover = models.ImageField(null=True, blank=True, upload_to="Peer/")
 
     def add_student(self,  student:Student=None):
         student.peer = self
 
     class Meta:
         verbose_name = "Promotion"
-        verbose_name_plural = "Promotions"
+
+    
+    def __str__(self) -> str:
+        return f"{self.label}"
     
     # def post(for_peer=False):
     #     if for_peer:
 
   
 class Professor(User):
-    subject = models.CharField(max_length=255)
-    school = models.ManyToManyField("core_center.School")
+    subject = models.CharField(max_length=255, verbose_name="matière")
+    school = models.ManyToManyField("core_center.School", verbose_name="ecole")
+    class Meta:
+        verbose_name="Professeur"
+
+    def __str__(self) -> str:
+        return f"{self.email}"
+
+class Service(AbstractModel):
+    SERVICE_CHOICES = (
+        ("communnuty", "COMMUNAUTE"),
+        ("administration", "ADMINISTRATION")
+    )
+
+    label = models.CharField(max_length=255, verbose_name="Service") 
+    cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")
+    manager = models.ForeignKey("core_author.User", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Gerant")
+    follows = models.ManyToManyField("core_author.User", blank=True, related_name="services_followed", verbose_name="Abonnes")
+    ttype = models.CharField(max_length=255, choices = SERVICE_CHOICES, verbose_name="type de service", null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.label}"
+
+class Personnel(User):
+    job = models.CharField(max_length=255, null=True, blank=True)
+    administration =  models.CharField(max_length=255, null=True, blank=True)
+    
+
