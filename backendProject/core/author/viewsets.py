@@ -3,7 +3,7 @@ from core.author.serializers import UserSerializer
 from core.author.models import User
 
 class UserViewSet(AbstractViewSet):
-    http_method_names = ("patch", "get")
+    http_method_names = ("post", "get")
     serializer_class = UserSerializer
 
     def get_queryset(self):
@@ -17,3 +17,4 @@ class UserViewSet(AbstractViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+

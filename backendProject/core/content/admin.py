@@ -6,9 +6,13 @@ from .models import (
 
 # Register your models here.
 
-admin.site.register(PostUser)
+class AbstractPostUserAdmin(admin.ModelAdmin):
+    readonly_fields = ('public_id','created', 'updated')
+
+
+admin.site.register(PostUser, AbstractPostUserAdmin)
 admin.site.register(Comment) 
 admin.site.register(PostPeer)
-admin.site.register(PostService)
+admin.site.register(PostService) 
 admin.site.register(Event)
   

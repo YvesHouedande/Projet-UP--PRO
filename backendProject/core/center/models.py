@@ -1,8 +1,6 @@
 from django.db import models
 
 # Create your models here.
-
-
 class School(models.Model):
     label = models.CharField(max_length=255, verbose_name="Nom:")
     class Meta:

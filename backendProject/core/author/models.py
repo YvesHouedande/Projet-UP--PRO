@@ -9,7 +9,6 @@ from core.abstract.models import AbstractModel, AbstractManager
 from core.utils import user_directory_path
 
 
-
 class UserManager(BaseUserManager, AbstractManager):
     def create_user(self, username, email, password=None, model_name=None, **extra_fields):
         if not username:
@@ -144,7 +143,6 @@ class Peer(AbstractModel):
 
     class Meta:
         verbose_name = "Promotion"
-
     
     def __str__(self) -> str:
         return f"{self.label}"
@@ -183,3 +181,15 @@ class Personnel(User):
     administration =  models.CharField(max_length=255, null=True, blank=True)
     
 
+# link data
+class PeerUser(AbstractModel):
+    peer = models.ForeignKey("Peer", on_delete=models.PROTECT)
+    student = models.ForeignKey("Student", on_delete=models.PROTECT)
+    position = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "EtudiantPromo"
+
+    def __str__(self) -> str:
+        return f"{self.student.username}: {self.position}"
+    
