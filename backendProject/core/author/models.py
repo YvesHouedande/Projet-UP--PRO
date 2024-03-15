@@ -66,6 +66,7 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
     bio = models.TextField(null=True, blank=True)
     avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path, verbose_name="Image Profile")
     follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés")
+    #posts_liked = models.ManyToManyField("core_content.PostUser", related_name="liked_by")
     
 
     USERNAME_FIELD = "username"
@@ -85,27 +86,16 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
 
     def like_post(self, post):
         """Like `post` if it hasn't been done yet"""
-        return self.posts_liked.add(post)
+        return post.likes.add(self)
 
-    def remove_like_post(self, post):
+    def unlike_post(self, post):
         """Remove a like from a `post`"""
-        return self.posts_liked.remove(post)
+        return post.likes.remove(self)
 
     def has_liked_post(self, post):
         """Return True if the user has liked a `post`; else False"""
         return self.posts_liked.filter(pk=post.pk).exists()
 
-    def like_comment(self, comment):
-        """Like `comment` if it hasn't been done yet"""
-        return self.comments_liked.add(comment)
-
-    def remove_like_comment(self, comment):
-        """Remove a like from a `comment`"""
-        return self.comments_liked.remove(comment)
-
-    def has_liked_comment(self, comment):
-        """Return True if the user has liked a `comment`; else False"""
-        return self.comments_liked.filter(pk=comment.pk).exists()
     
 
 class Student(User):

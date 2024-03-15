@@ -26,6 +26,8 @@ class Comment(AbstractModel):
 class PostManager(AbstractManager):
     pass
 
+
+
 class PostUser(AbstractModel):
     CONTENT_TYPE_CHOICES = [
         ("RAW_TEXT", 'Raw Text'), 
@@ -43,11 +45,10 @@ class PostUser(AbstractModel):
     objects = PostManager()
     class Meta:
         verbose_name = "PostUtilisateur"
-
  
     def __str__(self):
         return f"{self.title}"
-
+    
 
 class PostPeer(PostUser):
     peer = models.ForeignKey("core_author.Peer", on_delete=models.CASCADE, verbose_name="Promotion", related_name="posts")

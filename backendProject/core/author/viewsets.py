@@ -17,4 +17,7 @@ class UserViewSet(AbstractViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+    
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 

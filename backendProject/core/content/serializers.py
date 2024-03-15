@@ -33,19 +33,23 @@ class PostUserSerializer(AbstractSerializer):
 
         return instance
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        author = User.objects.get_object_by_public_id(rep["author"])
-        rep["author"] = UserSerializer(author, context=self.context).data
+    # def to_representation(self, instance):
+    #     rep = super().to_representation(instance)
+    #     author = User.objects.get_object_by_public_id(rep["author"])
+    #     rep["author"] = UserSerializer(author, context=self.context).data
 
-        return rep
+    #     return rep
 
     class Meta:
         model = PostUser
         # List of all the fields that can be included in a request or a response
         fields = [
-            "id",
+            "title",
+            "public_id",
             "author",
+            "content_type",
+            "description",
+            "file",
             "edited",
             "likes_count",
             "comments_count",

@@ -13,10 +13,10 @@ from core.content.models import PostPeer, PostUser
 
 
 class PostUserViewSet(AbstractViewSet):
-    http_method_names = ("post", "get", "put", "delete")
+    http_method_names = ("post", "get",  "delete")
     permission_classes = (UserPermission,)
     serializer_class = PostUserSerializer
-    filterset_fields = ["author__public_id"]
+    filterset_fields = [ "updated"]
 
     def get_queryset(self):
         return PostUser.objects.all()
@@ -29,32 +29,28 @@ class PostUserViewSet(AbstractViewSet):
         return obj
 
     def list(self, request, *args, **kwargs):
-        # post_objects = cache.get("post_objects")
-        post_objects = None
-        if post_objects is None:
-            post_objects = self.filter_queryset(self.get_queryset())
-            # cache.set("post_objects", post_objects)
+        # Cache to manage
+        #Pagination to manage
 
-        # page = self.paginate_queryset(post_objects)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(post_objects, many=True)
-        return Response(serializer.data)
-
+        post_objects = self.filter_queryset(self.get_queryset())
+            
+        if request.user.is_authenticated:
+            serializer = self.get_serializer(post_objects, many=True)
+            return Response(serializer.data)
+        return Response({"nothing to see":""})
+   
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(methods=["post", "get"], detail=True)
+    @action(methods=["put", "get"], detail=True)
     def like(self, request, *args, **kwargs):
         post = self.get_object()
         user = self.request.user
 
-        # user.like_post(post)
+        user.like_post(post)
 
         serializer = self.serializer_class(post, context={"request": request})
 
@@ -65,8 +61,13 @@ class PostUserViewSet(AbstractViewSet):
         post = self.get_object()
         user = self.request.user
 
-        # user.remove_like_post(post)
+        user.unlike_post(post)
 
         serializer = self.serializer_class(post, context={"request": request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class PostComment:
+    pass
