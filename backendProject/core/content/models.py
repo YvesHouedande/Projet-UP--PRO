@@ -8,7 +8,7 @@ class CommentManager(AbstractManager):
     pass
 
 class Comment(AbstractModel):
-    post = models.ForeignKey("PostUser", on_delete=models.CASCADE, verbose_name="Post")
+    post = models.ForeignKey("GeneralPost", on_delete=models.CASCADE, verbose_name="Post", null=True, blank=True)
     author = models.ForeignKey("core_author.User", on_delete=models.CASCADE, verbose_name="Auteur", related_name="comments")
 
     body = models.TextField()
@@ -27,8 +27,7 @@ class PostManager(AbstractManager):
     pass
 
 
-
-class PostUser(AbstractModel):
+class GeneralPost(AbstractModel):
     CONTENT_TYPE_CHOICES = [
         ("RAW_TEXT", 'Raw Text'), 
         ("VIDEO", 'Video'),
@@ -43,19 +42,22 @@ class PostUser(AbstractModel):
     likes = models.ManyToManyField(to="core_author.User", related_name='posts',blank=True)
 
     objects = PostManager()
-    class Meta:
-        verbose_name = "PostUtilisateur"
- 
+
+
     def __str__(self):
         return f"{self.title}"
     
+class PostUser(GeneralPost):
+    class Meta:
+        verbose_name = "PostUtilisateur"
 
-class PostPeer(PostUser):
-    peer = models.ForeignKey("core_author.Peer", on_delete=models.CASCADE, verbose_name="Promotion", related_name="posts")
+
+class PostPeer(GeneralPost):
+    peer = models.ForeignKey("core_author.Peer", on_delete=models.CASCADE, verbose_name="Promotion", related_name="posts", null=True, blank=True)
     class Meta:
         verbose_name = "PostPromo"
 
-class PostService(PostUser):
+class PostService(GeneralPost):
     service = models.ForeignKey("core_author.Service", on_delete=models.CASCADE, verbose_name="Service", related_name="posts") 
     class Meta:
         verbose_name = "PostService"

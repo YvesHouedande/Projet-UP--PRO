@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     PostUser, Comment, PostPeer,
-    PostService, Event
+    PostService, Event, GeneralPost
     )
 
 # Register your models here.
@@ -15,4 +15,6 @@ admin.site.register(Comment)
 admin.site.register(PostPeer)
 admin.site.register(PostService) 
 admin.site.register(Event)
+admin.site.register(GeneralPost)
+ 
   
