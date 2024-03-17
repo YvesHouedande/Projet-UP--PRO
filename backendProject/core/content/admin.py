@@ -6,15 +6,15 @@ from .models import (
 
 # Register your models here.
 
-class AbstractPostUserAdmin(admin.ModelAdmin):
+class AbstractModelAdmin(admin.ModelAdmin):
     readonly_fields = ('public_id','created', 'updated')
 
 
-admin.site.register(PostUser, AbstractPostUserAdmin)
-admin.site.register(Comment) 
-admin.site.register(PostPeer)
-admin.site.register(PostService) 
-admin.site.register(Event)
-admin.site.register(GeneralPost)
+admin.site.register(PostUser, AbstractModelAdmin)
+admin.site.register(Comment, AbstractModelAdmin) 
+admin.site.register(PostPeer, AbstractModelAdmin)
+admin.site.register(PostService, AbstractModelAdmin) 
+admin.site.register(Event, AbstractModelAdmin)
+admin.site.register(GeneralPost, AbstractModelAdmin)
  
   

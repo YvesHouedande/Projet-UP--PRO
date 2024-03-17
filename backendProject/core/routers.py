@@ -23,4 +23,4 @@ posts_router = routers.NestedSimpleRouter(router, r"general_post", lookup="post"
 posts_router.register(r"comment", CommentViewset, basename="post-comment")
 
 
-urlpatterns = [*router.urls]
+urlpatterns = [*router.urls, *posts_router.urls]

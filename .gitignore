@@ -1,0 +1,6 @@
+*.pyc
+.venv/
+backendProject/uploads/
+backendProject/db.sqlite3
+
+

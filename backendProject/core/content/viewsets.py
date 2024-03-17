@@ -13,13 +13,13 @@ from core.content.serializers import (
 
 from core.content.models import (
     PostPeer, PostUser, GeneralPost,
-    PostService,
+    PostService, Comment
     )
 
 
 
 class GeneralPostViewSet(AbstractViewSet):
-    http_method_names = ("get")
+    http_method_names = ("get", )
     permission_classes = (UserPermission,)
     serializer_class = GeneralPostSerializer
     filterset_fields = [ "updated"]
@@ -130,10 +130,10 @@ class CommentViewset(AbstractViewSet):
     filterset_fields = ["updated"]
 
     def get_queryset(self):
-        return PostUser.objects.all()
+        return Comment.objects.all()
 
     def get_object(self):
-        obj = PostUser.objects.get_object_by_public_id(self.kwargs["pk"])
+        obj = Comment.objects.get_object_by_public_id(self.kwargs["pk"])
 
         self.check_object_permissions(self.request, obj)
 

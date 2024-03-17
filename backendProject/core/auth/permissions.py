@@ -2,11 +2,12 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class UserPermission(BasePermission):
+    #pour les accès
     def has_object_permission(self, request, view, obj):
         if request.user.is_anonymous:
             return request.method in SAFE_METHODS
 
-        if view.basename in ["post_user", "post_peer", "post_service"]:
+        if view.basename in ["post_user", "post_peer", "post_service", "general_post"]:
             return bool(request.user and request.user.is_authenticated)
 
         if view.basename in ["post-comment"]:

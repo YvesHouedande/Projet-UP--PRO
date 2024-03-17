@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.db import models
 import uuid
+from core.utils import get_upload_path
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
@@ -56,5 +57,17 @@ class AbstractModel(models.Model):
     #     return super(AbstractModel, self).delete(using=using, keep_parents=keep_parents)
         
 
+class AbstractPostCommon(models.Model):
+    CONTENT_TYPE_CHOICES = [
+        ("RAW_TEXT", 'Raw Text'), 
+        ("VIDEO", 'Video'),
+        ("AUDIO", 'Audio'),
+    ]
+    content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, verbose_name="Type de fichier", null=True)
+    file = models.FileField(upload_to=get_upload_path, null=True, blank=True, verbose_name="Fichier")
+    description = models.TextField(null=True, blank=True)
+    edited = models.BooleanField(default=False, verbose_name="edité?")
+    # likes = models.ManyToManyField(to="core_author.User", related_name='posts',blank=True)
 
-
+    class Meta:
+        abstract = True
