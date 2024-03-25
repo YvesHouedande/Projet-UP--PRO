@@ -38,16 +38,25 @@ class PostUser(GeneralPost, AbstractPostCommon):
     class Meta:
         verbose_name = "PostUtilisateur"
 
+    objects = PostManager()
 
+
+
+class PostPeerManager(AbstractManager):
+    pass
 class PostPeer(GeneralPost, AbstractPostCommon):
     peer = models.ForeignKey("core_author.Peer", on_delete=models.CASCADE, verbose_name="Promotion", related_name="posts", null=True, blank=True)
     class Meta:
         verbose_name = "PostPromo"
 
+    # objects = PostPeerManager
+
 class PostService(GeneralPost, AbstractPostCommon):
     service = models.ForeignKey("core_author.Service", on_delete=models.CASCADE, verbose_name="Service", related_name="posts") 
     class Meta:
         verbose_name = "PostService"
+
+    objects = PostManager()
     
     def __str__(self):
         return self.title

@@ -2,12 +2,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from django.core.cache import cache
-from core.auth. permissions import UserPermission
+from core.auth.permissions import UserPermission
 from core.abstract.viewsets import AbstractViewSet
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
 
 from core.content.serializers import (
     PostUserSerializer, PostPeerSerializer,
-    GeneralPostSerializer, PostServiceSerializer,
+    #GeneralPostSerializer,
+     PostServiceSerializer,
     CommentSerializer
     )
 
@@ -17,23 +20,43 @@ from core.content.models import (
     )
 
 
+from rest_framework.response import Response
+from rest_framework.response import Response
+from rest_framework import status
+from .models import GeneralPost, PostService, PostPeer, PostUser
+from .serializers import PostServiceSerializer, PostPeerSerializer, PostUserSerializer
 
-class GeneralPostViewSet(AbstractViewSet):
-    http_method_names = ("get", )
-    permission_classes = (UserPermission,)
-    serializer_class = GeneralPostSerializer
-    filterset_fields = [ "updated"]
+class GeneralPostViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = GeneralPost.objects.all().order_by("created")
+        posts_user, posts_peer, posts_service = [], [], []
 
-    def get_queryset(self):
-        return GeneralPost.objects.all()
+        for general_post in queryset:
+            post_service = PostService.objects.filter(public_id=general_post.public_id).first()
+            post_peer = PostPeer.objects.filter(public_id=general_post.public_id).first()
+            post_user = PostUser.objects.filter(public_id=general_post.public_id).first()
 
-    def get_object(self):
-        obj = GeneralPost.objects.get_object_by_public_id(self.kwargs["pk"])
+            if post_peer:
+                posts_peer.append(post_peer)
+            if post_user:
+                posts_user.append(post_user) 
+            if post_service:
+                posts_service.append(post_service)
 
-        self.check_object_permissions(self.request, obj)
+        print(posts_peer)
+        post_peer_serializer = PostPeerSerializer(posts_peer, many=True)
+        post_user_serializer = PostUserSerializer(posts_user, many=True)
+        post_service_serializer = PostServiceSerializer(posts_service, many=True) 
 
-        return obj
-    
+        peer_data = post_peer_serializer.data
+        user_data = post_user_serializer.data
+        service_data = post_service_serializer.data
+
+        return Response({"post_peers": peer_data, "post_users": user_data, "post_services": service_data})
+        # else:
+        #     return Response({"message": "No specific posts found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 ###################### PostUserViewSet 
 class PostUserViewSet(AbstractViewSet):
     http_method_names = ("post", "get",  "delete")
