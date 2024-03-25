@@ -28,8 +28,8 @@ from .serializers import PostServiceSerializer, PostPeerSerializer, PostUserSeri
 
 class GeneralPostViewSet(viewsets.ViewSet):
     def list(self, request):
-        queryset = GeneralPost.objects.all().order_by("created")
-        posts_user, posts_peer, posts_service = [], [], []
+        queryset = GeneralPost.objects.all().order_by("-created")
+        queryset_data = []
 
         for general_post in queryset:
             post_service = PostService.objects.filter(public_id=general_post.public_id).first()
@@ -37,24 +37,14 @@ class GeneralPostViewSet(viewsets.ViewSet):
             post_user = PostUser.objects.filter(public_id=general_post.public_id).first()
 
             if post_peer:
-                posts_peer.append(post_peer)
+                queryset_data.append(PostPeerSerializer(post_peer).data)
             if post_user:
-                posts_user.append(post_user) 
+                queryset_data.append(PostUserSerializer(post_user).data)
             if post_service:
-                posts_service.append(post_service)
+                queryset_data.append(PostServiceSerializer(post_service).data)
 
-        print(posts_peer)
-        post_peer_serializer = PostPeerSerializer(posts_peer, many=True)
-        post_user_serializer = PostUserSerializer(posts_user, many=True)
-        post_service_serializer = PostServiceSerializer(posts_service, many=True) 
-
-        peer_data = post_peer_serializer.data
-        user_data = post_user_serializer.data
-        service_data = post_service_serializer.data
-
-        return Response({"post_peers": peer_data, "post_users": user_data, "post_services": service_data})
-        # else:
-        #     return Response({"message": "No specific posts found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(queryset_data)
+        
 
 
 ###################### PostUserViewSet 
