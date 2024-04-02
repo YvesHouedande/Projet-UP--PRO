@@ -6,10 +6,10 @@ from core.author.models import User
 
 
 class UserSerializer(AbstractSerializer):
-    # posts_count = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField()
 
-    # def get_posts_count(self, instance):
-    #     return instance.posts.all().count()
+    def get_posts_count(self, instance):
+        return instance.posts.all().count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -38,7 +38,7 @@ class UserSerializer(AbstractSerializer):
             "is_active",
             "created",
             "updated",
-            # "posts_count",
+            "posts_count",
         ]
         # List of all the fields that can only be read by the user
         read_only_field = ["is_active"]

@@ -9,6 +9,8 @@ from core.abstract.models import AbstractModel, AbstractManager
 from core.utils import user_directory_path
 
 
+
+
 class UserManager(BaseUserManager, AbstractManager):
     def create_user(self, username, email, password=None, model_name=None, **extra_fields):
         if not username:
@@ -65,7 +67,7 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
 
     bio = models.TextField(null=True, blank=True)
     avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path, verbose_name="Image Profile")
-    follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés")
+    follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
     #posts_liked = models.ManyToManyField("core_content.PostUser", related_name="liked_by")
     
 
@@ -96,7 +98,6 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
         """Return True if the user has liked a `post`; else False"""
         return self.posts_liked.filter(pk=post.pk).exists()
 
-    
 
 class Student(User):
     LEVEL_CHOICES = (
@@ -127,6 +128,7 @@ class Peer(AbstractModel):
     manager = models.OneToOneField("Student", on_delete=models.PROTECT, related_name="peer_managed", verbose_name='Gerant')
     year = models.DateField(verbose_name="année")
     cover = models.ImageField(null=True, blank=True, upload_to="Peer/")
+    follows = models.ManyToManyField("User", related_name="P_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
 
     def add_student(self,  student:Student=None):
         student.peer = self
@@ -137,8 +139,6 @@ class Peer(AbstractModel):
     def __str__(self) -> str:
         return f"{self.label}"
     
-    # def post(for_peer=False):
-    #     if for_peer:
 
   
 class Professor(User):
@@ -151,20 +151,26 @@ class Professor(User):
         return f"{self.email}"
 
 class Service(AbstractModel):
-    SERVICE_CHOICES = (
-        ("communnuty", "COMMUNAUTE"),
-        ("administration", "ADMINISTRATION")
-    )
+    # SERVICE_CHOICES = (
+    #     ("communnuty", "COMMUNAUTE"),
+    #     ("school", "ADMINISTRATION")
+    # )
 
     label = models.CharField(max_length=255, verbose_name="Service") 
     cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")
     manager = models.ForeignKey("core_author.User", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Gerant")
     follows = models.ManyToManyField("core_author.User", blank=True, related_name="services_followed", verbose_name="Abonnes")
-    ttype = models.CharField(max_length=255, choices = SERVICE_CHOICES, verbose_name="type de service", null=True, blank=True)
+    # ttype = models.CharField(max_length=255, choices = SERVICE_CHOICES, verbose_name="type de service", null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    school = models.ForeignKey("core_center.School", null=True, blank=True, on_delete=models.CASCADE)
+    follows = models.ManyToManyField("User", related_name="S_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
+
 
     def __str__(self) -> str:
         return f"{self.label}"
+    
+    def school_exist(self):
+        return True if self.school else False
 
 class Personnel(User):
     job = models.CharField(max_length=255, null=True, blank=True)
@@ -176,6 +182,8 @@ class PeerUser(AbstractModel):
     peer = models.ForeignKey("Peer", on_delete=models.PROTECT)
     student = models.ForeignKey("Student", on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
+   
+
 
     class Meta:
         verbose_name = "EtudiantPromo"

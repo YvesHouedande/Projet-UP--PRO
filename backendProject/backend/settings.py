@@ -146,3 +146,6 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.MultiPartParser",
     ],
 }
+
+#Posts Settings
+POPULARITY_THRESHOLD = 10

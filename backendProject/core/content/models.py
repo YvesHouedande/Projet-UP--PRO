@@ -1,5 +1,15 @@
 from django.db import models
 from core.abstract.models import AbstractModel, AbstractManager, AbstractPostCommon
+from core.author.models import (
+    Student, Professor, Personnel
+)
+
+from django.conf import settings
+
+
+
+
+
 
 
 class CommentManager(AbstractManager):
@@ -34,12 +44,27 @@ class GeneralPost(AbstractModel):
     def __str__(self):
         return f"{self.title}"
     
+    def is_popular(self):
+        print("from is_popular: --------------------------", self.likes.count() > settings.POPULARITY_THRESHOLD )
+        return self.likes.count() > settings.POPULARITY_THRESHOLD
+    
 class PostUser(GeneralPost, AbstractPostCommon):
     class Meta:
         verbose_name = "PostUtilisateur"
 
     objects = PostManager()
 
+    def post_type(self):
+        student = Student.objects.filter(public_id=self.author.public_id).first()
+        professor = Professor.objects.filter(public_id=self.public_id).first()
+        personnel = Personnel.objects.filter(public_id=self.public_id).first()
+        
+        if student:
+            return "Etudiant"
+        if professor:
+            return "Professeur"
+        if personnel:
+            return "Staff"
 
 
 class PostPeerManager(AbstractManager):
@@ -48,6 +73,9 @@ class PostPeer(GeneralPost, AbstractPostCommon):
     peer = models.ForeignKey("core_author.Peer", on_delete=models.CASCADE, verbose_name="Promotion", related_name="posts", null=True, blank=True)
     class Meta:
         verbose_name = "PostPromo"
+
+    def post_type(self):
+        return "Promo"
 
     # objects = PostPeerManager
 
@@ -60,6 +88,9 @@ class PostService(GeneralPost, AbstractPostCommon):
     
     def __str__(self):
         return self.title
+    
+    def post_type(self):
+        return "Adminitration" if self.service.school_exist() else "Comunautaire"
 
 
 class Event(AbstractModel):
