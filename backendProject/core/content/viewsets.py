@@ -60,33 +60,50 @@ from rest_framework.pagination import PageNumberPagination
         
 class GeneralPostViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
-    
-    def list(self, request):
-        queryset_service = PostService.objects.filter(service__follows=request.user)
 
+    def list(self, request):
         filter_value = request.query_params.get('filter')
         if filter_value == "administration":
-            ad_posts = sorted(queryset_service, key=lambda x: x.post_type()=="Administration", reverse=True)
-            posts_count = len(ad_posts) 
+            return self.get_administration_posts(request)
+        elif filter_value == "popular":
+            return self.get_popular_posts(request)
+        else:
+            return self.get_all_posts(request)
 
-            posts_data = PostServiceSerializer(ad_posts, many=True, context={'request': request}).data
-            for post_data in posts_data:
-                post_data["author"] = UserSerializer(request.user, context={'request': request}).data
-
-            return Response({"posts_count": posts_count, "posts": posts_data}) 
+    def get_administration_posts(self, request):
+        queryset_service, final_data = PostService.objects.filter(service__follows=request.user), []
+        ad_posts = [x for x in queryset_service if x.post_type()=="Adminitration"]
+        posts_count = len(ad_posts)
         
-        #if not filter for important post, so we get other data from db
+        for post in ad_posts:
+            post_data = PostServiceSerializer(post, context={'request': request}).data
+            post_data["author"] = UserSerializer(request.user, context={'request': request}).data
+            post_data["type"] = post.post_type()
+            final_data.append(post_data)
+
+        return Response({"posts_count": posts_count, "posts": final_data}) 
+
+    def get_popular_posts(self, request):
+        queryset_service = PostService.objects.filter(service__follows=request.user)
         queryset_user = PostUser.objects.filter(author__follows=request.user)
         queryset_peer = PostPeer.objects.filter(peer__follows=request.user)
 
         all_querysets = list(queryset_user) + list(queryset_service) + list(queryset_peer)
-        if filter_value == "popular":
-            all_posts = [x for x in all_querysets if x.is_popular()]
-        else:
-            all_posts = sorted(all_querysets, key=lambda x: x.created, reverse=True)
+        all_posts = [x for x in queryset_service if x.is_popular()]
+        return self.serialize_posts(all_posts, request)
 
+    def get_all_posts(self, request):
+        queryset_service = PostService.objects.filter(service__follows=request.user)
+        queryset_user = PostUser.objects.filter(author__follows=request.user)
+        queryset_peer = PostPeer.objects.filter(peer__follows=request.user)
+
+        all_querysets = list(queryset_user) + list(queryset_service) + list(queryset_peer)
+        all_posts = sorted(all_querysets, key=lambda x: x.created, reverse=True)
+        return self.serialize_posts(all_posts, request)
+
+    def serialize_posts(self, posts, request):
         queryset_data = []
-        for post in all_posts:
+        for post in posts:
             serializer = None
             if isinstance(post, PostUser):
                 serializer = PostUserSerializer(post, context={'request': request})
@@ -100,11 +117,8 @@ class GeneralPostViewSet(viewsets.ViewSet):
                 data["author"] = UserSerializer(post.author, context={'request': request}).data 
                 queryset_data.append(data)
         
-        # Calculer le nombre de publications
-        posts_count = len(all_posts)
-
+        posts_count = len(posts)
         return Response({'posts_count': posts_count, 'posts': queryset_data})
-
 
 
 
