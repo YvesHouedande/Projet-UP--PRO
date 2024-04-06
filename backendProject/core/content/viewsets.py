@@ -1,31 +1,27 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from django.core.cache import cache
 from core.auth.permissions import UserPermission
 from core.abstract.viewsets import AbstractViewSet
 from rest_framework import viewsets
+from django.http.response import Http404
 
 from core.content.serializers import (
     PostUserSerializer, PostPeerSerializer,
-     PostServiceSerializer,
+     PostServiceSerializer, EventSerializer,
     CommentSerializer
     )
 
 from core.content.models import (
-    PostPeer, PostUser, GeneralPost,
-    PostService, Comment
+    PostPeer, PostUser, 
+    PostService, Comment, Event
     )
 
 from core.author.serializers import UserSerializer
-
-from rest_framework.response import Response
-from rest_framework.response import Response
 from rest_framework import status
-from .models import GeneralPost, PostService, PostPeer, PostUser
+from .models import  PostService, PostPeer, PostUser
 from .serializers import PostServiceSerializer, PostPeerSerializer, PostUserSerializer
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
 
 # class GeneralPostViewSet(viewsets.ViewSet):
 #     permission_classes = [IsAuthenticated] 
@@ -57,7 +53,7 @@ from rest_framework.pagination import PageNumberPagination
 #             queryset_data.append(data)
 
 #         return Response(queryset_data) 
-        
+      
 class GeneralPostViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
@@ -115,13 +111,14 @@ class GeneralPostViewSet(viewsets.ViewSet):
                 data = serializer.data
                 data["type"] = post.post_type()
                 data["author"] = UserSerializer(post.author, context={'request': request}).data 
+                data["like_links"] = post.post_like_actions()
                 queryset_data.append(data)
         
         posts_count = len(posts)
         return Response({'posts_count': posts_count, 'posts': queryset_data})
+    
 
-
-
+    
 ###################### PostUserViewSet 
 class PostUserViewSet(AbstractViewSet):
     http_method_names = ("post", "get",  "delete")
@@ -189,11 +186,29 @@ class PostPeerViewSet(AbstractViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+    
+    @action(methods=["get"], detail=True)
+    def like(self, request, *args, **kwargs):
+        post = self.get_object()
+        user = self.request.user
+        user.like_post(post)
+
+        serializer = self.serializer_class(post, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["get"], detail=True)
+    def remove_like(self, request, *args, **kwargs):
+        post = self.get_object()
+        user = self.request.user
+        user.unlike_post(post)
+
+        serializer = self.serializer_class(post, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 ###################### PostServiceViewSet
 class PostServiceViewSet(AbstractViewSet):
-    http_method_names = ("post", "get",  "delete", "patch")
+    http_method_names = ("get",  "delete")
     permission_classes = (UserPermission,)
     serializer_class = PostServiceSerializer
     filterset_fields = ["updated"]
@@ -208,6 +223,24 @@ class PostServiceViewSet(AbstractViewSet):
 
         return obj
 
+    @action(methods=["get"], detail=True)
+    def like(self, request, *args, **kwargs):
+        post = self.get_object()
+        user = self.request.user
+        user.like_post(post)
+
+        serializer = self.serializer_class(post, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["get"], detail=True)
+    def remove_like(self, request, *args, **kwargs):
+        post = self.get_object()
+        user = self.request.user
+
+        user.unlike_post(post)
+
+        serializer = self.serializer_class(post, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 ###################### CommentViewset
@@ -218,11 +251,30 @@ class CommentViewset(AbstractViewSet):
     filterset_fields = ["updated"]
 
     def get_queryset(self):
+        post_pk = self.get("post_pk")
+        if post_pk :
+            return Comment.objects.filter(post__public_id=post_pk)
         return Comment.objects.all()
 
     def get_object(self):
         obj = Comment.objects.get_object_by_public_id(self.kwargs["pk"])
-
         self.check_object_permissions(self.request, obj)
+        return obj
+    
 
+class EventViewSet(AbstractViewSet):
+    http_method_names = ("post", "get",  "delete")
+    permission_classes = (UserPermission,)
+    serializer_class = EventSerializer
+    filterset_fields = ["-created"]
+
+    def get_queryset(self):
+        service_pk = self.kwargs.get("service_pk")
+        if service_pk :
+            return Event.objects.filter(service__public_id=service_pk)
+        return Event.objects.all()
+
+    def get_object(self):
+        obj = Event.objects.get_object_by_public_id(self.kwargs["pk"])
+        self.check_object_permissions(self.request, obj)
         return obj

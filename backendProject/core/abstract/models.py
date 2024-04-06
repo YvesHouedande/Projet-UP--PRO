@@ -64,10 +64,9 @@ class AbstractPostCommon(models.Model):
         ("AUDIO", 'Audio'),
     ]
     content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, verbose_name="Type de fichier", null=True)
-    file = models.FileField(upload_to=get_upload_path, null=True, blank=True, verbose_name="Fichier")
-    description = models.TextField(null=True, blank=True)
+    file = models.ImageField(upload_to=get_upload_path, null=True, blank=True, verbose_name="Image")
+    content = models.TextField(null=True, blank=True, verbose_name="contenu")
     edited = models.BooleanField(default=False, verbose_name="edité?")
-    # likes = models.ManyToManyField(to="core_author.User", related_name='posts',blank=True)
 
     class Meta:
         abstract = True

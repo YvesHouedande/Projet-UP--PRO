@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 from .models import PostPeer
 
 from core.abstract.serializers import AbstractSerializer, AbstractPostSerializer
@@ -12,47 +11,6 @@ from core.content.models import (
 )
 
 
-# class GeneralPostSerializer(AbstractSerializer, AbstractPostSerializer):
-#     class Meta:
-#         model = GeneralPost
-#         fields = "__all__"
-
-    # def to_representaion(self, instance):
-    #     rep = super.to_represenation(self, instance)
-
-    #     post_peer = get_object_or_404(PostPeer, public_id=instance.public_id)
-    #     post_user = get_object_or_404(PostUser, public_id=instance.public_id)
-    #     post_service = get_object_or_404(PostService, public_id=instance.public_id)
-
-    #     if post_peer:
-    #         rep["post_peer"] = PostPeerSerializer(post_peer, context=self.context).data
-    #     elif post_user:
-    #         rep["post_user"] = PostPeerSerializer(post_user, context=self.context).data
-    #     elif post_service:
-    #         rep["post_service"] = PostPeerSerializer(post_user, context=self.context).data
-
-
-# class GeneralPostSerializer(serializers.Serializer):
-#     # content_type = serializers.CharField()
-#     # post_peer_data = serializers.SerializerMethodField()
-#     post_service_data = serializers.SerializerMethodField()
-#     # post_user_data = serializers.SerializerMethodField() 
-
-    
-
-#     def get_post_service_data(self, obj):
-#         serializer = PostServiceSerializer(obj)
-
-#         return serializer.data
-    
-#     # def get_post_peer_data(self, obj):
-#     #     serializer = PostPeerSerializer(obj)
-#     #     return serializer.data
-
-#     # def get_post_user_data(self, obj):
-#     #     serializer = PostUserSerializer(obj)
-
-#         # return serializer.data
 
 class PostUserSerializer(AbstractSerializer, AbstractPostSerializer):
     class Meta:
@@ -63,7 +21,7 @@ class PostUserSerializer(AbstractSerializer, AbstractPostSerializer):
             "public_id",
             "author",
             "content_type",
-            "description",
+            "content",
             "file",
             "edited",
             "likes_count",
@@ -75,10 +33,22 @@ class PostUserSerializer(AbstractSerializer, AbstractPostSerializer):
 
 
 class PostPeerSerializer(AbstractSerializer, AbstractPostSerializer):
-    # author = serializers.CharField()
     class Meta:
         model = PostPeer
-        fields = "__all__"
+        fields = [
+            "title",
+            "public_id",
+            "author",
+            "content_type",
+            "content",
+            "file",
+            "edited",
+            "likes_count",
+            "comments_count",
+            "created",
+            "updated",
+            ]
+    read_only_fields = ["edited"]
 
 class PostServiceSerializer(AbstractSerializer, AbstractPostSerializer):
     author = serializers.SlugRelatedField(
@@ -122,14 +92,10 @@ class CommentSerializer(AbstractSerializer):
 
 
 class EventSerializer(AbstractSerializer):
-    author = serializers.SlugRelatedField(
-    queryset=Event.objects.all(), slug_field="public_id"
-    )
-
-
-    def validate_author(self, value):
-        if self.context["request"].user != value:
-            raise ValidationError("You can't create a post for another user.")
+    #create event for service that i only managed
+    def validate_service(self, value):
+        if self.context["request"].user != value.manager:
+            raise ValidationError("Tu ne peux pas creer un event pour un service dont tu n'est pas resposable")
         return value
     
     class Meta:

@@ -5,10 +5,7 @@ from core.author.models import (
 )
 
 from django.conf import settings
-
-
-
-
+from core.utils import post_like_actions
 
 
 
@@ -27,7 +24,7 @@ class Comment(AbstractModel):
         verbose_name="Commentaire"
 
     def __str__(self):
-        return f"commentaire: {self.public_id}, Post: {self.post.title}"
+        return f"Post: {self.post.title[0:25]}, type: {self.post.public_id}"
      
 
 #####################
@@ -45,7 +42,6 @@ class GeneralPost(AbstractModel):
         return f"{self.title}"
     
     def is_popular(self):
-        print("from is_popular: --------------------------", self.likes.count() > settings.POPULARITY_THRESHOLD )
         return self.likes.count() > settings.POPULARITY_THRESHOLD
     
 class PostUser(GeneralPost, AbstractPostCommon):
@@ -65,6 +61,10 @@ class PostUser(GeneralPost, AbstractPostCommon):
             return "Professeur"
         if personnel:
             return "Staff"
+    
+    def post_like_actions(self):
+        return post_like_actions(self, "user_post")
+        
 
 
 class PostPeerManager(AbstractManager):
@@ -76,6 +76,11 @@ class PostPeer(GeneralPost, AbstractPostCommon):
 
     def post_type(self):
         return "Promo"
+
+    def post_like_actions(self):
+        return post_like_actions(self, "post_peer")
+    
+
 
     # objects = PostPeerManager
 
@@ -91,17 +96,20 @@ class PostService(GeneralPost, AbstractPostCommon):
     
     def post_type(self):
         return "Adminitration" if self.service.school_exist() else "Comunautaire"
+    
+    def post_like_actions(self):
+        return post_like_actions(self, "post_service")
 
 
 class Event(AbstractModel):
     label = models.CharField(max_length=255, verbose_name="Titre", null=True, blank=True)
-    service = models.ForeignKey("core_author.Service", on_delete=models.CASCADE)
+    service = models.ForeignKey("core_author.Service", related_name='events', on_delete=models.CASCADE)
     moment = models.DateTimeField(null=True, blank=True)
     place = models.CharField(max_length=255, null=True, blank=True, verbose_name="Lieu")
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.label
+        return f"Event: {self.label}, service: {self.service.label}"
     
     class Meta:
         verbose_name = "Evénement"

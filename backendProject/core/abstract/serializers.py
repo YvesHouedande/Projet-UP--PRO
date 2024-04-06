@@ -30,11 +30,14 @@ class AbstractPostSerializer(serializers.ModelSerializer):
             raise ValidationError("You can't create a post for another user.")
         return value
 
+    def validate_content(self, value):
+        if not value:
+            raise serializers.ValidationError("Le champ 'content' est requis.")
+        return value
+    
     def update(self, instance, validated_data):
         if not instance.edited:
             validated_data["edited"] = True
-
         instance = super().update(instance, validated_data)
-
         return instance
 

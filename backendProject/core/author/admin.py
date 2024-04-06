@@ -1,8 +1,8 @@
 from django.contrib import admin
-from core.abstract.models import AbstractModel
 from .models import (
     User, Student, Service,
-    Peer, Professor, PeerUser
+    Peer, Professor, PeerPosition,
+    Personnel
 )
 
 
@@ -16,8 +16,9 @@ admin.site.register(User, AbstractUserAdmin)
 admin.site.register(Student) 
 admin.site.register(Peer) 
 admin.site.register(Professor) 
-admin.site.register(Service)
-admin.site.register(PeerUser)
+admin.site.register(Service) 
+admin.site.register(Personnel)
+admin.site.register(PeerPosition)
 
 
 
