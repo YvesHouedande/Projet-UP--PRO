@@ -13,7 +13,7 @@ class UserPermission(BasePermission):
                               "general_post", "peer", "peer-position",
                               "school", "student", "study-student",
                               "study-professor", "professor", "personnel",
-                              "study-personnel", "peer-student", 
+                              "study-personnel", "peer-student", "user-service"
                               ]:
             return bool(request.user and request.user.is_authenticated)
         
@@ -49,7 +49,7 @@ class UserPermission(BasePermission):
             "post-comment","service","service-event", "event", "user", "auth-logout",
             "peer","peer-position", "school", "study", "student", "study-student",
             "professor", "study-professor", "personnel", "study-personnel", "school-professor",
-            "school-personnel", "school-service", "school-student", "peer-student"
+            "school-personnel", "school-service", "school-student", "peer-student", "user-service"
                             ]:
             if request.user.is_anonymous:
                 return request.method in SAFE_METHODS

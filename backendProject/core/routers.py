@@ -32,12 +32,14 @@ general_post = routers.NestedSimpleRouter(router, r"general_post", lookup="post"
 general_post.register(r"comment", CommentViewset, basename="post-comment")
 
 ################################# Author Management ##########################
-#############User i follow
-router.register(r"user", UserViewSet, basename="user")#user that i follow
+################ user->data ################ 
+router.register(r"user", UserViewSet, basename="user")#all user
+user = routers.NestedSimpleRouter(router, r"user", lookup="user")
+user.register(r"service", ServiceViewSet, basename="user-service")#all i follow or manage
 
 router.register(r"student", StudentViewSet, basename="student")
 router.register(r"professor", ProfessorViewSet, basename="professor")
-router.register(r"personnel", ProfessorViewSet, basename="personnel")
+router.register(r"personnel", PersonnelViewSet, basename="personnel")
 
 # router.register(r"study/students", StudentViewSet, basename="study-students")################
 ################ peer->data ################ 
@@ -74,4 +76,5 @@ urlpatterns = [
     *router.urls, *general_post.urls,
     *service.urls, *peer.urls, 
     *study.urls, *school.urls,
+    *user.urls,
 ]  

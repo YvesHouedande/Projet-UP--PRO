@@ -167,7 +167,6 @@ class Service(AbstractModel):
     cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")
     manager = models.ForeignKey("core_author.User", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Gerant")
     follows = models.ManyToManyField("core_author.User", blank=True, related_name="services_followed", verbose_name="Abonnes")
-    # ttype = models.CharField(max_length=255, choices = SERVICE_CHOICES, verbose_name="type de service", null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     school = models.ForeignKey("core_center.School", null=True, blank=True, on_delete=models.CASCADE)
     follows = models.ManyToManyField("User", related_name="S_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)

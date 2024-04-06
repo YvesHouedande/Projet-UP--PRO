@@ -22,7 +22,7 @@ class UserViewSet(AbstractViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # return User.objects.all()
+        return User.objects.all()
         return  user.follows.all()
 
     def get_object(self):
@@ -142,9 +142,18 @@ class ServiceViewSet(AbstractViewSet):
 
     #only service i managed
     def get_queryset(self):
-        # if self.request.user.is_superuser:
-        #     return Service.objects.all()
-        return Service.objects.filter(manager=self.request.user)
+        user_pk = self.kwargs.get("user_pk")#here, user_pk is user_public_id
+        school_pk = self.kwargs.get("school_pk")
+        if user_pk:
+            try:
+                user = User.objects.get(public_id=user_pk)
+                from django.db.models import Q
+                return Service.objects.filter(Q(follows=user) | Q(manager=user))
+            except User.DoesNotExist:
+                return []
+        if school_pk:
+               return Service.objects.filter(school__public_id=school_pk)
+        return Service.objects.all()
 
     def get_object(self):
         obj = Service.objects.get_object_by_public_id(self.kwargs["pk"])
