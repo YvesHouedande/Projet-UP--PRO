@@ -85,7 +85,7 @@ class GeneralPostViewSet(viewsets.ViewSet):
         queryset_peer = PostPeer.objects.filter(peer__follows=request.user)
 
         all_querysets = list(queryset_user) + list(queryset_service) + list(queryset_peer)
-        all_posts = [x for x in queryset_service if x.is_popular()]
+        all_posts = [x for x in all_querysets if x.is_popular()]
         return self.serialize_posts(all_posts, request)
 
     def get_all_posts(self, request):

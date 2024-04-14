@@ -11,15 +11,14 @@ from core.content.viewsets import (
     CommentViewset, EventViewSet,
 )
 from core.center.viewsets import SchoolViewSet,StudyViewSet #SchoolPersonViewSet 
-# from core.center.models import Study
 
 router = routers.SimpleRouter()
 ################################# Content Management ##########################
 #############related to the connected user
 router.register(r"general_post", GeneralPostViewSet, basename="general_post")# return all kind of post:PostUser,PostService...
-router.register(r"general_post/filter", GeneralPostViewSet, basename="general_post")
+router.register(r"general_post/filter", GeneralPostViewSet, basename="general_post")#administration or popular
 
-#############return all for in kind of post
+#############Each kind of post
 router.register(r"post_user", PostUserViewSet, basename="post_user")
 router.register(r"post_service", PostServiceViewSet, basename="post_service")
 router.register(r"post_peer", PostPeerViewSet, basename="post_peer")
@@ -31,17 +30,18 @@ router.register(r"event", EventViewSet, basename="event")
 general_post = routers.NestedSimpleRouter(router, r"general_post", lookup="post")
 general_post.register(r"comment", CommentViewset, basename="post-comment")
 
-################################# Author Management ##########################
+#################################Author Management ##########################
 ################ user->data ################ 
 router.register(r"user", UserViewSet, basename="user")#all user
 user = routers.NestedSimpleRouter(router, r"user", lookup="user")
-user.register(r"service", ServiceViewSet, basename="user-service")#all i follow or manage
+user.register(r"service", ServiceViewSet, basename="user-service")
+user.register(r"friends", UserViewSet, basename="user-friend")#all i follow or manage
 
 router.register(r"student", StudentViewSet, basename="student")
 router.register(r"professor", ProfessorViewSet, basename="professor")
 router.register(r"personnel", PersonnelViewSet, basename="personnel")
 
-# router.register(r"study/students", StudentViewSet, basename="study-students")################
+#router.register(r"study/students", StudentViewSet, basename="study-students")################
 ################ peer->data ################ 
 router.register(r"peer", PeerViewSet, basename="peer")
 peer = routers.NestedSimpleRouter(router, r"peer", lookup="peer")
@@ -49,12 +49,12 @@ peer.register(r"position", PeerPositionViewSet, basename="peer-position")
 peer.register(r"student", StudentViewSet, basename="peer-student")
 
 
-################ service->data ################ 
+################service->data ################ 
 router.register(r"service", ServiceViewSet, basename="service")#service viewset
 service = routers.NestedSimpleRouter(router, r"service", lookup="service")
 service.register(r"event", EventViewSet, basename="service-event")
 
-################################# Center Management laterv ##########################
+################################# Center Management later ##########################
 ################ school->data ################  
 router.register(r"school", SchoolViewSet, basename="school")#
 school = routers.NestedSimpleRouter(router, r"school", lookup="school")

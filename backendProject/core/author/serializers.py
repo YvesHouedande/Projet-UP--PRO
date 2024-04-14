@@ -9,6 +9,8 @@ from core.author.models import(
      Professor, Personnel
      )
 from core.center.models import School, Study
+
+
 class UserSerializer(AbstractSerializer):
     posts_count = serializers.SerializerMethodField()
  
@@ -161,4 +163,4 @@ class PeerPositionSerializer(AbstractSerializer):
         return data
     class Meta:
         model = PeerPosition
-        fields = "__all__"  
+        fields = "__all__"

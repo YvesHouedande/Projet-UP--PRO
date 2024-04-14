@@ -21,9 +21,14 @@ class UserViewSet(AbstractViewSet):
     permission_classes = (UserPermission,)
 
     def get_queryset(self):
-        user = self.request.user
+        user_pk = self.kwargs.get("user_pk") # here, user_pk is user_public_id
+        if user_pk:
+            try:
+                user = User.objects.get(public_id=user_pk)
+                return user.follows.all()
+            except User.DoesNotExist:
+                return []
         return User.objects.all()
-        return  user.follows.all()
 
     def get_object(self):
         obj = User.objects.get_object_by_public_id(self.kwargs.get("pk"))
@@ -140,8 +145,12 @@ class ServiceViewSet(AbstractViewSet):
     serializer_class = ServiceSerializer
     filterset_fields = ["created"]
 
-    #only service i managed
     def get_queryset(self):
+        """
+        only service i managed or i
+        follow base on user_pk else,
+        return all
+        """
         user_pk = self.kwargs.get("user_pk")#here, user_pk is user_public_id
         school_pk = self.kwargs.get("school_pk")
         if user_pk:
