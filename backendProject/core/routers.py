@@ -15,7 +15,7 @@ from core.center.viewsets import SchoolViewSet,StudyViewSet #SchoolPersonViewSet
 router = routers.SimpleRouter()
 ################################# Content Management ##########################
 #############related to the connected user
-router.register(r"general_post", GeneralPostViewSet, basename="general_post")# return all kind of post:PostUser,PostService...
+router.register(r"general_post", GeneralPostViewSet, basename="general_post")# return all kind of post:PostUser,PostService... with all data
 router.register(r"general_post/filter", GeneralPostViewSet, basename="general_post")#administration or popular
 
 #############Each kind of post

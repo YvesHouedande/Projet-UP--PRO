@@ -22,6 +22,8 @@ from rest_framework import status
 from .models import  PostService, PostPeer, PostUser
 from .serializers import PostServiceSerializer, PostPeerSerializer, PostUserSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import filters
+from django.db.models import Q
 
 # class GeneralPostViewSet(viewsets.ViewSet):
 #     permission_classes = [IsAuthenticated] 
@@ -58,15 +60,47 @@ class GeneralPostViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
+        search_param = request.query_params.get('search')
         filter_value = request.query_params.get('filter')
+        
+        # Si un paramètre de recherche est fourni, filtrez les résultats en fonction de ce paramètre
+        if search_param:
+            queryset_service = PostService.objects.filter(
+                Q(title__icontains=search_param) | 
+                Q(service__label__icontains=search_param) |
+                Q(service__manager__first_name__icontains=search_param) |
+                Q(service__manager__last_name__icontains=search_param)
+            ).distinct()
+            
+            queryset_user = PostUser.objects.filter(
+                Q(title__icontains=search_param) |
+                Q(author__first_name__icontains=search_param) |
+                Q(author__last_name__icontains=search_param)
+            ).distinct()
+
+            queryset_peer = PostPeer.objects.filter(
+                Q(title__icontains=search_param) |
+                Q(peer__label__icontains=search_param) |
+                Q(peer__study__label__icontains=search_param) |
+                Q(peer__manager__first_name__icontains=search_param) |
+                Q(peer__manager__last_name__icontains=search_param)
+            ).distinct()
+
+            all_querysets = list(queryset_user) + list(queryset_service) + list(queryset_peer)
+            all_posts = sorted(all_querysets, key=lambda x: x.created, reverse=True)
+            return self.serialize_posts(all_posts, request)
+
         if filter_value == "administration":
             return self.get_administration_posts(request)
         elif filter_value == "popular":
             return self.get_popular_posts(request)
         else:
+            print("*################################################################")
             return self.get_all_posts(request)
+        print("################################################################")
 
     def get_administration_posts(self, request):
+        """Return all important services i follow """
         queryset_service, final_data = PostService.objects.filter(service__follows=request.user), []
         ad_posts = [x for x in queryset_service if x.post_type()=="Adminitration"]
         posts_count = len(ad_posts)
@@ -76,10 +110,10 @@ class GeneralPostViewSet(viewsets.ViewSet):
             post_data["author"] = UserSerializer(request.user, context={'request': request}).data
             post_data["type"] = post.post_type()
             final_data.append(post_data)
-
         return Response({"posts_count": posts_count, "posts": final_data}) 
 
     def get_popular_posts(self, request):
+        """Return all popular services i follows """
         queryset_service = PostService.objects.filter(service__follows=request.user)
         queryset_user = PostUser.objects.filter(author__follows=request.user)
         queryset_peer = PostPeer.objects.filter(peer__follows=request.user)
@@ -88,7 +122,9 @@ class GeneralPostViewSet(viewsets.ViewSet):
         all_posts = [x for x in all_querysets if x.is_popular()]
         return self.serialize_posts(all_posts, request)
 
+
     def get_all_posts(self, request):
+        """Return all services i follows """
         queryset_service = PostService.objects.filter(service__follows=request.user)
         queryset_user = PostUser.objects.filter(author__follows=request.user)
         queryset_peer = PostPeer.objects.filter(peer__follows=request.user)
@@ -267,6 +303,8 @@ class EventViewSet(AbstractViewSet):
     permission_classes = (UserPermission,)
     serializer_class = EventSerializer
     filterset_fields = ["-created"]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['label', "description"] 
 
     def get_queryset(self):
         service_pk = self.kwargs.get("service_pk")

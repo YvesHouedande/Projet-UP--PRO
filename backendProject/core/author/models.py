@@ -120,8 +120,6 @@ class Student(User):
         return f"email: {self.email}, school: {self.school}, study: {self.study}"
     
 
-    
-
 class Professor(User):
     subject = models.CharField(max_length=255, verbose_name="matière")
     school = models.ManyToManyField("core_center.School", verbose_name="ecole")

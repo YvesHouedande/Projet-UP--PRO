@@ -12,13 +12,15 @@ from core.author.models import (
     )
 from rest_framework.response import Response
 from core.auth.permissions import UserPermission
-
+from rest_framework import filters
 
 #user i follows
 class UserViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     serializer_class = UserSerializer
     permission_classes = (UserPermission,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['first_name', 'last_name'] 
 
     def get_queryset(self):
         user_pk = self.kwargs.get("user_pk") # here, user_pk is user_public_id
@@ -144,6 +146,8 @@ class ServiceViewSet(AbstractViewSet):
     permission_classes = (UserPermission,)
     serializer_class = ServiceSerializer
     filterset_fields = ["created"]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['label',] 
 
     def get_queryset(self):
         """
@@ -193,6 +197,9 @@ class PeerPositionViewSet(AbstractViewSet):
     permission_classes = (UserPermission,)
     serializer_class = PeerPositionSerializer
     filterset_fields = ["-created"]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['position', 'student__first_name', 'student__last_name']  
+
 
     def get_queryset(self):
         peer_pk = self.kwargs.get("peer_pk")

@@ -101,3 +101,4 @@ class EventSerializer(AbstractSerializer):
     class Meta:
         model = Event
         fields = "__all__" 
+    
