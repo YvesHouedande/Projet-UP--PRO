@@ -1,3 +1,4 @@
+from core.content.models import PostUser
 from core.abstract.viewsets import AbstractViewSet
 from core.author.serializers import (
     UserSerializer, ServiceSerializer,
@@ -10,20 +11,22 @@ from core.author.models import (
     PeerPosition, Student,
     Professor, Personnel
     )
-from rest_framework.response import Response
+from django.db.models import Q
 from core.auth.permissions import UserPermission
 from rest_framework import filters
+from rest_framework.permissions import IsAuthenticated
+
 
 #user i follows
 class UserViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     serializer_class = UserSerializer
-    permission_classes = (UserPermission,)
+    permission_classes = (UserPermission, IsAuthenticated)
     filter_backends = [filters.SearchFilter]
     search_fields = ['first_name', 'last_name'] 
 
     def get_queryset(self):
-        user_pk = self.kwargs.get("user_pk") # here, user_pk is user_public_id
+        user_pk = self.kwargs.get("user__pk") # here, user_pk is user_public_id
         if user_pk:
             try:
                 user = User.objects.get(public_id=user_pk)
@@ -34,7 +37,7 @@ class UserViewSet(AbstractViewSet):
 
     def get_object(self):
         obj = User.objects.get_object_by_public_id(self.kwargs.get("pk"))
-        self.check_object_permissions(self.request, obj)
+        # self.check_object_permissions(self.request, obj)
         return obj
     
     def create(self, request, *args, **kwargs):

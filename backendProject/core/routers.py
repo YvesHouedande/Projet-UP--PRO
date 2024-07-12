@@ -10,13 +10,26 @@ from core.content.viewsets import (
     PostUserViewSet, PostPeerViewSet,
     CommentViewset, EventViewSet,
 )
+
+from core.auth.viewsets import (
+    RegisterViewSet,
+    LoginViewSet,
+    RefreshViewSet,
+    LogoutViewSet,
+)
 from core.center.viewsets import SchoolViewSet,StudyViewSet #SchoolPersonViewSet 
 
 router = routers.SimpleRouter()
+################################# auth ##########################
+router.register(r"auth/register", RegisterViewSet, basename="auth-register")
+router.register(r"auth/login", LoginViewSet, basename="auth-login")
+router.register(r"auth/refresh", RefreshViewSet, basename="auth-refresh")
+router.register(r"auth/logout", LogoutViewSet, basename="auth-logout")
+
 ################################# Content Management ##########################
 #############related to the connected user
 router.register(r"general_post", GeneralPostViewSet, basename="general_post")# return all kind of post:PostUser,PostService... with all data
-router.register(r"general_post/filter", GeneralPostViewSet, basename="general_post")#administration or popular
+router.register(r"general_post/filter", GeneralPostViewSet, basename="general_post_filter")#administration or popular
 
 #############Each kind of post
 router.register(r"post_user", PostUserViewSet, basename="post_user")
@@ -36,6 +49,7 @@ router.register(r"user", UserViewSet, basename="user")#all user
 user = routers.NestedSimpleRouter(router, r"user", lookup="user")
 user.register(r"service", ServiceViewSet, basename="user-service")
 user.register(r"friends", UserViewSet, basename="user-friend")#all i follow or manage
+user.register(r"post", PostUserViewSet, basename="user-post")#all post user posted
 
 router.register(r"student", StudentViewSet, basename="student")
 router.register(r"professor", ProfessorViewSet, basename="professor")

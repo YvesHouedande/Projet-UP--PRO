@@ -1,2 +1,9 @@
 {
+    "python.analysis.autoImportCompletions": true,
+    "vsintellicode.python.completionsEnabled": true,
+    "intellicodeApiExamples.python.enabled": true,
+    "python.analysis.indexing": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": true,
 }

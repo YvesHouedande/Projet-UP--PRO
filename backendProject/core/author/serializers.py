@@ -35,7 +35,7 @@ class UserSerializer(AbstractSerializer):
         fields = [
             "public_id",
             "id",
-            "username",
+            # "username",
             "name",
             "first_name",
             "last_name",

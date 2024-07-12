@@ -1,0 +1,45 @@
+{
+  "name": "front-end",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-basic-styles": "^41.4.2",
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-essentials": "^41.4.2",
+    "@ckeditor/ckeditor5-font": "^41.4.2",
+    "@ckeditor/ckeditor5-image": "^41.4.2",
+    "@ckeditor/ckeditor5-link": "^41.4.2",
+    "@ckeditor/ckeditor5-paragraph": "^41.4.2",
+    "@ckeditor/ckeditor5-react": "^7.0.0",
+    "axios": "^1.6.8",
+    "axios-auth-refresh": "^3.3.6",
+    "emoji-picker-react": "^4.10.0",
+    "flowbite-react": "^0.9.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.2.1",
+    "react-router": "^6.22.3",
+    "react-router-dom": "^6.23.1",
+    "swr": "^2.2.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "vite": "^5.2.0"
+  }
+}

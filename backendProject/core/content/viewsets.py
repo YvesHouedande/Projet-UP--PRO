@@ -1,10 +1,11 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from core.author.models import User
 from core.auth.permissions import UserPermission
 from core.abstract.viewsets import AbstractViewSet
 from rest_framework import viewsets
-from django.http.response import Http404
+from rest_framework.permissions import IsAuthenticated
 
 from core.content.serializers import (
     PostUserSerializer, PostPeerSerializer,
@@ -95,9 +96,7 @@ class GeneralPostViewSet(viewsets.ViewSet):
         elif filter_value == "popular":
             return self.get_popular_posts(request)
         else:
-            print("*################################################################")
             return self.get_all_posts(request)
-        print("################################################################")
 
     def get_administration_posts(self, request):
         """Return all important services i follow """
@@ -158,16 +157,23 @@ class GeneralPostViewSet(viewsets.ViewSet):
 ###################### PostUserViewSet 
 class PostUserViewSet(AbstractViewSet):
     http_method_names = ("post", "get",  "delete")
-    permission_classes = (UserPermission,)
+    permission_classes = ( IsAuthenticated, UserPermission)
     serializer_class = PostUserSerializer
     filterset_fields = [ "updated"]
 
     def get_queryset(self):
+        user_pk = self.kwargs.get("user__pk")  # Correction de la clé ici
+        if user_pk:
+            try:
+                user = User.objects.get(public_id=user_pk)
+            except User.DoesNotExist:
+                return PostUser.objects.none()
+            return PostUser.objects.filter(author=user)
         return PostUser.objects.all()
 
     def get_object(self):
         obj = PostUser.objects.get_object_by_public_id(self.kwargs["pk"])
-        self.check_object_permissions(self.request, obj)
+        # self.check_object_permissions(self.request, obj)
         return obj
 
     def list(self, request, *args, **kwargs):
@@ -207,9 +213,43 @@ class PostUserViewSet(AbstractViewSet):
     
 
 ###################### PostPeerviewSet
+# class PostPeerViewSet(AbstractViewSet):
+#     http_method_names = ("post", "get",  "delete", "put")
+#     permission_classes = (UserPermission, IsAuthenticated)
+#     serializer_class = PostPeerSerializer
+#     filterset_fields = ["updated"]
+
+#     def get_queryset(self):
+#         return PostPeer.objects.all()
+
+#     def get_object(self):
+#         obj = PostPeer.objects.get_object_by_public_id(self.kwargs["pk"])
+
+#         self.check_object_permissions(self.request, obj)
+
+#         return obj
+    
+#     @action(methods=["get"], detail=True)
+#     def like(self, request, *args, **kwargs):
+#         post = self.get_object()
+#         user = self.request.user
+#         user.like_post(post)
+
+#         serializer = self.serializer_class(post, context={"request": request})
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+#     @action(methods=["get"], detail=True)
+#     def remove_like(self, request, *args, **kwargs):
+#         post = self.get_object()
+#         user = self.request.user
+#         user.unlike_post(post)
+
+#         serializer = self.serializer_class(post, context={"request": request})
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
 class PostPeerViewSet(AbstractViewSet):
     http_method_names = ("post", "get",  "delete", "put")
-    permission_classes = (UserPermission,)
+    permission_classes = (UserPermission, IsAuthenticated)
     serializer_class = PostPeerSerializer
     filterset_fields = ["updated"]
 
@@ -218,8 +258,10 @@ class PostPeerViewSet(AbstractViewSet):
 
     def get_object(self):
         obj = PostPeer.objects.get_object_by_public_id(self.kwargs["pk"])
+        print(f"Getting object: {obj}")
 
         self.check_object_permissions(self.request, obj)
+        print("Object permissions checked")
 
         return obj
     

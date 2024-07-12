@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -15,7 +13,7 @@ SECRET_KEY = 'django-insecure-xzas7&_ez#k!*k)^)ghj!af@@a5569)7ik0$&p9^@526x9d4@!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -28,19 +26,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #external package
-    'debug_toolbar',
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "rest_framework_simplejwt.token_blacklist",
     'core',
     'core.author',
     'core.content',
     'core.center',
     'core.auth',
-    "rest_framework" 
+    
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -67,6 +70,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+ROOT_URLCONF = "backend.urls"
+
 
 
 # Database
@@ -129,16 +134,12 @@ MEDIA_ROOT = BASE_DIR / "uploads"
 
 DEFAULT_AVATAR_URL = "https://api.dicebear.com/7.x/lorelei/svg" 
 
-#django toolbar
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
-]
 
 
 REST_FRAMEWORK = {
-
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_PARSER_CLASSES": [
@@ -149,3 +150,8 @@ REST_FRAMEWORK = {
 
 #Posts Settings
 POPULARITY_THRESHOLD = 10
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
