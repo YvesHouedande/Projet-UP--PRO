@@ -2,10 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
+from core.views import upload_image 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(("core.routers", "core"), namespace="core-api")),
+     path('upload/', upload_image, name='upload_image'),
 ]
 
 if settings.DEBUG: 

@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from .models import PostPeer
 
 from core.abstract.serializers import AbstractSerializer, AbstractPostSerializer
-from core.author.models import User
+from core.author.models import Service, User
 from core.author.serializers import UserSerializer
 from core.content.models import (
     PostUser, PostPeer, PostService,
@@ -22,7 +22,7 @@ class PostUserSerializer(AbstractSerializer, AbstractPostSerializer):
             "author",
             "content_type",
             "content",
-            "file",
+            "image",
             "edited",
             "likes_count",
             "comments_count",
@@ -92,13 +92,21 @@ class CommentSerializer(AbstractSerializer):
 
 
 class EventSerializer(AbstractSerializer):
-    #create event for service that i only managed
+    service = serializers.SlugRelatedField(
+    queryset=Service.objects.all(), slug_field="public_id"
+    )
+    class Meta:
+        model = Event
+        fields = [
+            "label",
+            "description",
+            "moment",
+            'service',
+            ]
+        
     def validate_service(self, value):
         if self.context["request"].user != value.manager:
             raise ValidationError("Tu ne peux pas creer un event pour un service dont tu n'est pas resposable")
         return value
-    
-    class Meta:
-        model = Event
-        fields = "__all__" 
+ 
     

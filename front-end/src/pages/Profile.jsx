@@ -21,7 +21,7 @@ export default function Profile() {
         const response = await axiosService.get(`/user/${user.public_id}/post`);
         // const response = await axiosService.get(`/post_peer/`);
 
-        setPosts(response.data); // Assurez-vous que la structure des données correspond à la réponse du backend
+        setPosts(response.data); 
       } catch (error) {
         setError(error);
       } finally {

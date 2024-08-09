@@ -5,12 +5,15 @@ import { FaCalendarAlt } from 'react-icons/fa';
 import { AiTwotoneAudio } from 'react-icons/ai';
 import { MdOutlineVideoLibrary } from 'react-icons/md';
 import CreateEvent from '../events/CreateEvent';
-import CKEditorComponent from './CKEditorComponent';
+import RichPost from '../posts/CreateRichPost';
 import { CiText } from "react-icons/ci";
+import CreateImagePost from '../posts/CreateImagePost';
+
 
 export default function Feed() {
-  const [IsCkEditorOpen, setIsCkEditorOpen] = useState(false);
+  const [IsRichPostOpen, setIsRichPostOpen] = useState(false);
   const [IsEventOpen, setIsEventOpen] = useState(false);
+  const [IsCreateImagePostOpen, setIsCreateImagePostOpen] = useState(false);
 
   return (
     <div className=''>
@@ -18,8 +21,8 @@ export default function Feed() {
         <p>Faire Un Post...</p>
         <hr className="my-2" />
         <div className="actions flex justify-between space-x-4">
-          <FaImage className="w-8 h-8 hover:cursor-pointer" />
-          <TfiWrite className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsCkEditorOpen(true)} />
+          <FaImage className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsCreateImagePostOpen(true)} /> 
+          <TfiWrite className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsRichPostOpen(true)} />
           <FaCalendarAlt className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsEventOpen(true)}/>
           <AiTwotoneAudio className="w-8 h-8 hover:cursor-pointer" />
           <MdOutlineVideoLibrary className="w-8 h-8 hover:cursor-pointer" />
@@ -27,8 +30,9 @@ export default function Feed() {
         </div>
       </div>
 
-      {IsCkEditorOpen && (<CKEditorComponent show={IsCkEditorOpen} onClose={() => setIsCkEditorOpen(false)} />)}
-      {IsEventOpen && ( <CreateEvent show={IsEventOpen} onClose={() => setIsEventOpen(false)}/> )}
+      {IsEventOpen && (<CreateEvent show={IsEventOpen} onClose={() => setIsEventOpen(false)} />)}
+      {IsRichPostOpen && (<RichPost show={IsRichPostOpen} onClose={() => setIsRichPostOpen(false)} />)}
+      {IsCreateImagePostOpen && ( <CreateImagePost show={IsCreateImagePostOpen} onClose={() => setIsCreateImagePostOpen(false)}/> )}
       
    </div>
   );

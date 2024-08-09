@@ -9,7 +9,7 @@ import {
 const axiosService = axios.create({
   baseURL: import.meta.env.VITE_REACT_APP_API_URL,
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "multipart/form-data",
   },
 });
 

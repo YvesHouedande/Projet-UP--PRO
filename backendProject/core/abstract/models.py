@@ -59,12 +59,11 @@ class AbstractModel(models.Model):
 
 class AbstractPostCommon(models.Model):
     CONTENT_TYPE_CHOICES = [
-        ("RAW_TEXT", 'Raw Text'), 
-        ("VIDEO", 'Video'),
-        ("AUDIO", 'Audio'),
+        ("IMAGE POST", 'Image Post'), 
+        ("RICH POST", 'Rich Post'),
     ]
     content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, verbose_name="Type de fichier", null=True)
-    file = models.ImageField(upload_to=get_upload_path, null=True, blank=True, verbose_name="Image")
+    image = models.ImageField(upload_to=get_upload_path, null=True, blank=True, verbose_name="Image")
     content = models.TextField(null=True, blank=True, verbose_name="contenu")
     edited = models.BooleanField(default=False, verbose_name="edité?")
 

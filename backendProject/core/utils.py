@@ -15,8 +15,8 @@ def get_upload_path(instance, filename):
         return os.path.join('publications', 'other', filename)
     
 def post_like_actions(obj, view_name):
-    like = f"api/{view_name}/{obj.public_id}/like/"
-    unlike = f"api/{view_name}/{obj.public_id}/remove_like/"
+    like = f"/{view_name}/{obj.public_id}/like/"
+    unlike = f"/{view_name}/{obj.public_id}/remove_like/"
     return {
         "like_link":like,
         "unlike_link":unlike

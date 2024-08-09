@@ -58,7 +58,7 @@ from django.db.models import Q
 #         return Response(queryset_data) 
       
 class GeneralPostViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, UserPermission]
 
     def list(self, request):
         search_param = request.query_params.get('search')
@@ -123,11 +123,9 @@ class GeneralPostViewSet(viewsets.ViewSet):
 
 
     def get_all_posts(self, request):
-        """Return all services i follows """
         queryset_service = PostService.objects.filter(service__follows=request.user)
         queryset_user = PostUser.objects.filter(author__follows=request.user)
         queryset_peer = PostPeer.objects.filter(peer__follows=request.user)
-
         all_querysets = list(queryset_user) + list(queryset_service) + list(queryset_peer)
         all_posts = sorted(all_querysets, key=lambda x: x.created, reverse=True)
         return self.serialize_posts(all_posts, request)
@@ -211,41 +209,6 @@ class PostUserViewSet(AbstractViewSet):
         serializer = self.serializer_class(post, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
-###################### PostPeerviewSet
-# class PostPeerViewSet(AbstractViewSet):
-#     http_method_names = ("post", "get",  "delete", "put")
-#     permission_classes = (UserPermission, IsAuthenticated)
-#     serializer_class = PostPeerSerializer
-#     filterset_fields = ["updated"]
-
-#     def get_queryset(self):
-#         return PostPeer.objects.all()
-
-#     def get_object(self):
-#         obj = PostPeer.objects.get_object_by_public_id(self.kwargs["pk"])
-
-#         self.check_object_permissions(self.request, obj)
-
-#         return obj
-    
-#     @action(methods=["get"], detail=True)
-#     def like(self, request, *args, **kwargs):
-#         post = self.get_object()
-#         user = self.request.user
-#         user.like_post(post)
-
-#         serializer = self.serializer_class(post, context={"request": request})
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-#     @action(methods=["get"], detail=True)
-#     def remove_like(self, request, *args, **kwargs):
-#         post = self.get_object()
-#         user = self.request.user
-#         user.unlike_post(post)
-
-#         serializer = self.serializer_class(post, context={"request": request})
-#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PostPeerViewSet(AbstractViewSet):
     http_method_names = ("post", "get",  "delete", "put")
@@ -358,3 +321,10 @@ class EventViewSet(AbstractViewSet):
         obj = Event.objects.get_object_by_public_id(self.kwargs["pk"])
         self.check_object_permissions(self.request, obj)
         return obj
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        print(request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -34,7 +34,7 @@ class PostManager(AbstractManager):
 class GeneralPost(AbstractModel):
     title = models.CharField(max_length=100, verbose_name="Titre")
     author = models.ForeignKey(to="core_author.User", on_delete=models.CASCADE, verbose_name="Auteur")
-    likes = models.ManyToManyField(to="core_author.User", related_name='posts',blank=True) 
+    likes = models.ManyToManyField(to="core_author.User", related_name='posts', blank=True) 
 
     objects = PostManager()
 
@@ -63,7 +63,7 @@ class PostUser(GeneralPost, AbstractPostCommon):
             return "Staff"
     
     def post_like_actions(self):
-        return post_like_actions(self, "user_post")
+        return post_like_actions(self, "post_user")
         
 
 
