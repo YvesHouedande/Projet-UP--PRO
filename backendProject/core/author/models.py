@@ -63,6 +63,7 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path, verbose_name="Image Profile")
     follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
     #posts_liked = models.ManyToManyField("core_content.PostUser", related_name="liked_by")
+    role =  models.CharField(max_length=255, verbose_name="Role", null=True, blank=True)
     
     USERNAME_FIELD = "username"
     EMAIL_FIELD = "email"       
@@ -138,8 +139,6 @@ class Personnel(User):
     school = models.ForeignKey("core_center.School", verbose_name="ecole", null=True, blank=True, on_delete=models.CASCADE)
     study = models.ManyToManyField("core_center.Study" , verbose_name="Filière")
 
-
- 
 class Peer(AbstractModel):
     label = models.CharField(max_length=255, verbose_name="Nom de la Promo")
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
@@ -159,7 +158,6 @@ class Peer(AbstractModel):
     def __str__(self) -> str:
         return f"{self.label}"
     
-
 class Service(AbstractModel):
     label = models.CharField(max_length=255, verbose_name="Service") 
     cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")

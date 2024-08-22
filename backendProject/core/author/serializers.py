@@ -13,6 +13,7 @@ from core.center.models import School, Study
 
 class UserSerializer(AbstractSerializer):
     posts_count = serializers.SerializerMethodField()
+    
  
     def get_posts_count(self, instance):
         return instance.posts.all().count()
@@ -47,6 +48,7 @@ class UserSerializer(AbstractSerializer):
             "updated",
             "posts_count",
             "is_superuser",
+            'role',
         ]
         # List of all the fields that can only be read by the user
         read_only_fields = ["is_active", "is_superuser"]

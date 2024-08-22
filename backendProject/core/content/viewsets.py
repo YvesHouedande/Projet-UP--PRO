@@ -292,7 +292,7 @@ class CommentViewset(AbstractViewSet):
     filterset_fields = ["updated"]
 
     def get_queryset(self):
-        post_pk = self.get("post_pk")
+        post_pk = self.kwargs.get("post__pk")
         if post_pk :
             return Comment.objects.filter(post__public_id=post_pk)
         return Comment.objects.all()
@@ -301,6 +301,12 @@ class CommentViewset(AbstractViewSet):
         obj = Comment.objects.get_object_by_public_id(self.kwargs["pk"])
         self.check_object_permissions(self.request, obj)
         return obj
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
 class EventViewSet(AbstractViewSet):
@@ -324,7 +330,6 @@ class EventViewSet(AbstractViewSet):
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        print(request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
