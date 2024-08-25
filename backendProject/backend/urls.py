@@ -9,7 +9,8 @@ urlpatterns = [
      path('upload/', upload_image, name='upload_image'),
 ]
 
-if settings.DEBUG: 
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 

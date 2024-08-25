@@ -6,6 +6,7 @@ from core.auth.permissions import UserPermission
 from core.abstract.viewsets import AbstractViewSet
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from django.core.cache import cache
 
 from core.content.serializers import (
     PostUserSerializer, PostPeerSerializer,
@@ -96,6 +97,8 @@ class GeneralPostViewSet(viewsets.ViewSet):
         elif filter_value == "popular":
             return self.get_popular_posts(request)
         else:
+            data = cache.get("all_post")
+
             return self.get_all_posts(request)
 
     def get_administration_posts(self, request):

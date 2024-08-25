@@ -1,0 +1,8 @@
+.env
+front-end
+.vscode
+__pycache__
+*.pyc
+.git
+pytest.init
+

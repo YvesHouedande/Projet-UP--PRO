@@ -1,20 +1,21 @@
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+# Charger les variables d'environnement à partir du fichier .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xzas7&_ez#k!*k)^)ghj!af@@a5569)7ik0$&p9^@526x9d4@!'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 
@@ -25,25 +26,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #external package
-    "rest_framework",
-    "rest_framework_simplejwt",
-    "corsheaders",
-    "rest_framework_simplejwt.token_blacklist",
+    # External packages
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
+    # Custom apps
     'core',
     'core.author',
     'core.content',
     'core.center',
     'core.auth',
-    
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-
     'corsheaders.middleware.CorsMiddleware',
-
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -70,20 +69,31 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-ROOT_URLCONF = "backend.urls"
-
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST'),
+        'PORT': os.getenv('DATABASE_PORT', '5432'),
     }
 }
 
+# Cache (Redis)
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -103,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -115,31 +124,28 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
+
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "uploads"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = "core_author.User" 
+AUTH_USER_MODEL = "core_author.User"
 
-# Media files
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "uploads"
-
-DEFAULT_AVATAR_URL = "https://api.dicebear.com/7.x/lorelei/svg" 
-
-
-
+# REST Framework settings
 REST_FRAMEWORK = {
-    # "DEFAULT_AUTHENTICATION_CLASSES": (
-    #     "rest_framework_simplejwt.authentication.JWTAuthentication",   
-    # ),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",   
+    ), 
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_PARSER_CLASSES": [
@@ -148,10 +154,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-#Posts Settings
-POPULARITY_THRESHOLD = 10
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
-
+# CORS settings
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Other custom settings
+POPULARITY_THRESHOLD = 10
+DEFAULT_AVATAR_URL = "https://api.dicebear.com/7.x/lorelei/svg"

@@ -1,0 +1,30 @@
+# Pull official base image
+FROM python:3.11.4-slim-buster
+
+# Set working directory
+WORKDIR /app
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install psycopg2 dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
+COPY . .
+
+# Expose the port that the application will run on
+EXPOSE 8000
+
+# Command to start the Django application using gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "backend.wsgi:application"]
