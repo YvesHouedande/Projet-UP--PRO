@@ -36,7 +36,7 @@ export default function RichPost({ show, onClose }) {
         }
 
         const formData = new FormData();
-        formData.append('author', user.id);
+        formData.append('author', user.public_id);
         formData.append('title', form.title);
         formData.append('content_type', form.content_type);
         formData.append('content', form.content);
@@ -45,7 +45,7 @@ export default function RichPost({ show, onClose }) {
         }
 
         axiosService
-            .post('/post_user/', formData)
+            .post('/general_post/', formData)
             .then(() => {
                 console.log('Post created 🚀');
                 setForm({

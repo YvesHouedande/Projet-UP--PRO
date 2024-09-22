@@ -26,9 +26,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # External packages
+    # External packages 
     'rest_framework',
-    'rest_framework_simplejwt',
+    'rest_framework_simplejwt', 
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
     # Custom apps
@@ -48,7 +48,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # project middlewares  
+    'core.author.middleware.inp_validation_middleware.check_inphb_email'    
 ]
+
+
+
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -127,7 +132,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 
 # Media files
@@ -146,12 +151,14 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",   
     ), 
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 4,
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.MultiPartParser",
     ],
+
 }
 
 # CORS settings
@@ -161,3 +168,18 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Other custom settings
 POPULARITY_THRESHOLD = 10
 DEFAULT_AVATAR_URL = "https://api.dicebear.com/7.x/lorelei/svg"
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID ')
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'in-v3.mailjet.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '895c4e663150787e55caa59b5fb15af5'  # Remplace par ta clé API Mailjet
+EMAIL_HOST_PASSWORD = '7e76183dab8b24fccdc835e49c183d37'  # Remplace par ta clé secrète Mailjet
+DEFAULT_FROM_EMAIL = 'dineraduti@gmail.com'  # L'adresse email que tu veux utiliser comme expéditeur
+
+ 
+      
+
+
+ 

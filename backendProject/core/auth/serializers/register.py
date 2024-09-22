@@ -19,15 +19,24 @@ class RegisterSerializer(UserSerializer):
         model = User
         # List of all the fields that can be included in a request or a response
         fields = [
-            "id",
+            "public_id",
+            # "id",
+            "username",
             "name",
+            "first_name",
+            "last_name",
             "bio",
             "avatar",
             "email",
-            "username",
-            "first_name",
-            "last_name",
-            "password",
+            # "is_active",
+            "created",
+            "updated",
+            "posts_count",
+            "is_superuser",
+            "status_choice",
+            "from_inp",
+            'inp_mail',
+            "password"
         ]
 
     def create(self, validated_data):

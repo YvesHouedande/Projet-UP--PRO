@@ -51,7 +51,7 @@ class UserPermission(BasePermission):
             "peer","peer-position", "school", "study", "student", "study-student",
             "professor", "study-professor", "personnel", "study-personnel", "school-professor",
             "school-personnel", "school-service", "school-student", "peer-student", "user-service",
-            "user-post"
+            "user-post", "user-event"
                             ]:
             if request.user.is_anonymous:
                 return request.method in SAFE_METHODS

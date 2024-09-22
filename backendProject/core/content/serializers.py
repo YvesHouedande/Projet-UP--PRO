@@ -1,20 +1,18 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from .models import PostPeer
-
 from core.abstract.serializers import AbstractSerializer, AbstractPostSerializer
 from core.author.models import Service, User
-from core.author.serializers import UserSerializer
+from core.author.serializers import ServiceSerializer, UserSerializer
 from core.content.models import (
-    PostUser, PostPeer, PostService,
     GeneralPost, Comment, Event
 )
 
-
-
-class PostUserSerializer(AbstractSerializer, AbstractPostSerializer):
+class GeneralPostSerializer(AbstractSerializer, AbstractPostSerializer):
+    author = serializers.SlugRelatedField(
+    queryset=User.objects.all(), slug_field="public_id"
+    )
     class Meta:
-        model = PostUser
+        model = GeneralPost
         # List of all the fields that can be included in a request or a response
         fields = [
             "title",
@@ -28,44 +26,15 @@ class PostUserSerializer(AbstractSerializer, AbstractPostSerializer):
             "comments_count",
             "created",
             "updated",
+            'source',
         ]
         read_only_fields = ["edited"]
 
-
-class PostPeerSerializer(AbstractSerializer, AbstractPostSerializer):
-    class Meta:
-        model = PostPeer
-        fields = [
-            "title",
-            "public_id",
-            "author",
-            "content_type",
-            "content",
-            "file",
-            "edited",
-            "likes_count",
-            "comments_count",
-            "created",
-            "updated",
-            ]
-    read_only_fields = ["edited"]
-
-class PostServiceSerializer(AbstractSerializer, AbstractPostSerializer):
-    author = serializers.SlugRelatedField(
-    queryset=User.objects.all(), slug_field="public_id"
-    )
-    likes_count = serializers.SerializerMethodField()
-    comments_count = serializers.SerializerMethodField()
-
-    def get_comments_count(self, instance):
-        return instance.comment_set.count()
-
-    def get_likes_count(self, instance):
-        return instance.likes.count()
-    class Meta:
-        model = PostService
-        fields = "__all__"
-
+    def to_representation(self, instance): 
+        rep = super().to_representation(instance)
+        author = User.objects.get_object_by_public_id(rep["author"])
+        rep["author"] = UserSerializer(author, context=self.context).data
+        return rep
 
 class CommentSerializer(AbstractSerializer):
     author = serializers.SlugRelatedField(
@@ -102,11 +71,21 @@ class EventSerializer(AbstractSerializer):
             "description",
             "moment",
             'service',
+            "cover",
+            "place"
             ]
         
     def validate_service(self, value):
         if self.context["request"].user != value.manager:
             raise ValidationError("Tu ne peux pas creer un event pour un service dont tu n'est pas resposable")
         return value
- 
     
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        service_label = Service.objects.get_object_by_public_id(rep["service"]).label
+        # rep["service"] = ServiceSerializer(service, context=self.context).data
+        rep["service_label"] =  service_label
+
+        return rep
+  
+     

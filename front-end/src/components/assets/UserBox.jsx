@@ -1,12 +1,12 @@
 import React from "react";
 import InpBan from "../../assets/Logo-INP-HB.png";
-import AvatarImg from "../../assets/avatar-1.jpg";
+
 
 
 import { Avatar } from "flowbite-react";
 
 
-export default function UserBox({name, lastPub, role, school}) {
+export default function UserBox({name, email, role, school, AvatarImg}) {
   return (
     <div className=" mb-5 bg-gray-100 hidden lg:block">
       <img src={InpBan} alt="inpBan" />
@@ -17,7 +17,7 @@ export default function UserBox({name, lastPub, role, school}) {
             <p>{name}</p>
         </div>
       </div>
-      <p className="text-center underline hover:cursor-pointer text-green-500">Dernière Publication{lastPub}</p>
+      <p className="text-center underline hover:cursor-pointer text-green-500">{email}</p>
     </div>
   );
 }

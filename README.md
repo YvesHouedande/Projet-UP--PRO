@@ -1,5 +1,7 @@
 # API Documentation
 
+## Migrations order: core_author, core_content, core_center
+
 ## Overview
 
 This document provides a reference documentation for the API of our application. The API allows users to access and manipulate data related to students, professors, staff, and schools.

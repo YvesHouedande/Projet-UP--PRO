@@ -13,25 +13,25 @@ export default function NavBox() {
   return (
     <div className='bg-gray-100 p-1'>
         <NavboxOption
-        title="Accueil"
+        title="Profil"
         Icon={FaUser}
         counter={105}
         >
         </NavboxOption>
 
-        <NavboxOption
+        {/* <NavboxOption
         title="Amis"
         Icon={FaUserFriends}
         counter={105}
         >
-        </NavboxOption>
+        </NavboxOption> */}
 
-        <NavboxOption
+        {/* <NavboxOption
         title="Messages"
         Icon={FaMessage }
         counter={105}
         >
-        </NavboxOption>
+        </NavboxOption> */}
 
         <NavboxOption
         title="Promos"

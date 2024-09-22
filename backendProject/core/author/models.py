@@ -1,4 +1,6 @@
 
+from operator import mod
+from pyexpat import model
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -8,6 +10,11 @@ from django.db import models
 from core.abstract.models import AbstractModel, AbstractManager
 from core.utils import user_directory_path
 from core.abstract.models import  AbstractManager
+import random
+import string
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 
 class UserManager(BaseUserManager, AbstractManager):
@@ -49,21 +56,28 @@ class UserManager(BaseUserManager, AbstractManager):
     
 
 class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
+    STATUS_CHOICES = (
+        ('etudiant', "ETUDIANT"),
+        ('professeur', "PROFESSEUR"),
+        ('administration', "ADMINISTRATION"),
+        ('autre', "AUTRE"),
+    )
     username = models.CharField(db_index=True, max_length=255, unique=True, verbose_name="Nom Utilisateur")
-    first_name = models.CharField(max_length=255, verbose_name="Nom")
-    last_name = models.CharField(max_length=255, verbose_name="Prenom")
-    # status_choice = models.CharField(choices = STATUS_CHOICES, max_length=10, verbose_name="statut")
+    first_name = models.CharField(max_length=255, verbose_name="Nom", null=True)
+    last_name = models.CharField(max_length=255, verbose_name="Prenom", null=True)
+    status_choice = models.CharField(choices = STATUS_CHOICES, max_length=15, verbose_name="statut")
 
     email = models.EmailField(db_index=True, unique=True)
+    inp_mail = models.EmailField(db_index=True, unique=True, null=True)
+    from_inp = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True, verbose_name="est actif")
     is_superuser = models.BooleanField(default=False, verbose_name="est admin")
     is_staff = models.BooleanField(default=False, verbose_name="est staff")
+    validation_code = models.CharField(null=True, blank=True, max_length=6)
 
     bio = models.TextField(null=True, blank=True)
     avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path, verbose_name="Image Profile")
     follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
-    #posts_liked = models.ManyToManyField("core_content.PostUser", related_name="liked_by")
-    role =  models.CharField(max_length=255, verbose_name="Role", null=True, blank=True)
     
     USERNAME_FIELD = "username"
     EMAIL_FIELD = "email"       
@@ -91,9 +105,30 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
     def has_liked_post(self, post):
         """Return True if the user has liked a `post`; else False"""
         return self.posts_liked.filter(pk=post.pk).exists()
+    
+    def _generate_validation_code(self):
+        """Génère un code de validation aléatoire"""
+        code = ''.join(random.choices(string.digits, k=6))
+        self.validation_code = code
+        self.save()
+        return code
+
+    def send_validation_email(self):
+        """Envoie un email de validation à l'utilisateur"""
+        if self.inp_mail:
+            print("----------------------------Envoie du Mail-------------------------------")
+            code = self._generate_validation_code()
+            send_mail(
+                'Votre code de validation INP',
+                f'Voici votre code de validation: {code}',
+                settings.DEFAULT_FROM_EMAIL,
+                [self.inp_mail],
+                fail_silently=False,
+            )
 
 
-class Student(User):
+
+class Student(AbstractModel, models.Model):
     LEVEL_CHOICES = (
         ('ts1', "TS1"),
         ('ts2', "TS2"),
@@ -106,6 +141,7 @@ class Student(User):
         ("master1", "Master1"),
         ("master2", "Master2"),
     )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, related_name="students", verbose_name="Filière")
     school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, related_name="students", verbose_name="Ecole")
     level_choices = models.CharField(choices=LEVEL_CHOICES, max_length=10, null=True, verbose_name="Niveau")
@@ -121,7 +157,8 @@ class Student(User):
         return f"email: {self.email}, school: {self.school}, study: {self.study}"
     
 
-class Professor(User):
+class Professor(AbstractModel, models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.CharField(max_length=255, verbose_name="matière")
     school = models.ManyToManyField("core_center.School", verbose_name="ecole")
     study = models.ManyToManyField("core_center.Study", verbose_name="Filière")
@@ -133,13 +170,14 @@ class Professor(User):
         return f"{self.email}"
     
 
-class Personnel(User):
+class Personnel(AbstractModel, models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     job = models.CharField(max_length=255, null=True, blank=True)
     administration =  models.CharField(max_length=255, null=True, blank=True)
     school = models.ForeignKey("core_center.School", verbose_name="ecole", null=True, blank=True, on_delete=models.CASCADE)
     study = models.ManyToManyField("core_center.Study" , verbose_name="Filière")
 
-class Peer(AbstractModel):
+class Peer(AbstractModel, models.Model):
     label = models.CharField(max_length=255, verbose_name="Nom de la Promo")
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
     school =  models.ForeignKey("core_center.School", on_delete=models.PROTECT, verbose_name="Ecole", null=True, blank=True)
@@ -158,7 +196,7 @@ class Peer(AbstractModel):
     def __str__(self) -> str:
         return f"{self.label}"
     
-class Service(AbstractModel):
+class Service(AbstractModel, models.Model):
     label = models.CharField(max_length=255, verbose_name="Service") 
     cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")
     manager = models.ForeignKey("core_author.User", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Gerant")
@@ -174,7 +212,7 @@ class Service(AbstractModel):
         return True if self.school else False
 
 
-class PeerPosition(AbstractModel):
+class PeerPosition(AbstractModel, models.Model):
     peer = models.ForeignKey("Peer", on_delete=models.PROTECT)
     student = models.OneToOneField("Student", on_delete=models.PROTECT)
     position = models.CharField(max_length=255, unique=True, null=True, blank=True)

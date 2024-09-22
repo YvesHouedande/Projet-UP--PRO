@@ -1,128 +1,21 @@
-// import { useNavigate } from "react-router-dom";
-// import axiosService from "../helpers/axios";
-// import axios from "axios";
-
-// function useUserActions() {
-//   const navigate = useNavigate();
-//   const baseURL = import.meta.env.VITE_REACT_APP_API_URL
-
-//   return {
-//     login,
-//     register,
-//     logout,
-//     edit,
-//   };
-
-//   // Login the user
-//   function login(data) {
-//     return axios.post(`${baseURL}/auth/login/`, data).then((res) => {
-//       // Registering the account and tokens in the store
-//       setUserData(res.data);
-//       navigate("/");
-//     });
-//   }
-
-//   // Register the user
-//   function register(data) {
-//     return axios.post(`${baseURL}/auth/register/`, data).then((res) => {
-//       // Registering the account and tokens in the store
-//       setUserData(res.data);
-//       navigate("/");
-//     });
-//   }
-
-//   // Edit the user
-//   function edit(data, userId) {
-//     return axiosService
-//       .patch(`${baseURL}/user/${userId}/`, data, {
-//         headers: {
-//           "content-type": "multipart/form-data",
-//         },
-//       })
-//       .then((res) => {
-//         // Registering the account in the store
-//         localStorage.setItem(
-//           "auth",
-//           JSON.stringify({
-//             access: getAccessToken(),
-//             refresh: getRefreshToken(),
-//             user: res.data,
-//           })
-//         );
-//       });
-//   }
-
-//   // Logout the user
-//   function logout() {
-//     return axiosService
-//       .post(`${baseURL}/auth/logout/`, { refresh: getRefreshToken() })
-//       .then(() => {
-//         localStorage.removeItem("auth");
-//         navigate("/login");
-//       });
-//   }
-// }
-
-// // Get the user
-// function getUser() {
-//   const auth = JSON.parse(localStorage.getItem("auth")) || null;
-//   if (auth) {
-//     return auth.user;
-//   } else {
-//     return null;
-//   }
-// }
-
-// // Get the access token
-// function getAccessToken() {
-//   const auth = JSON.parse(localStorage.getItem("auth"));
-//   return auth.access;
-// }
-
-// // Get the refresh token
-// function getRefreshToken() {
-//   const auth = JSON.parse(localStorage.getItem("auth"));
-//   return auth.refresh;
-// }
-
-// // Set the access, token and user property
-// function setUserData(data) {
-//   localStorage.setItem(
-//     "auth",
-//     JSON.stringify({
-//       access: data.access,
-//       refresh: data.refresh,
-//       user: data.user,
-//     })
-//   );
-// }
-
-// export {
-//   useUserActions,
-//   getUser,
-//   getAccessToken,
-//   getRefreshToken,
-//   setUserData,
-// };
-
-
 import { useNavigate } from "react-router-dom";
-import axiosService from "../helpers/axios";
 import axios from "axios";
+import axiosService from "../helpers/axios";
 
 function useUserActions() {
   const navigate = useNavigate();
   const baseURL = import.meta.env.VITE_REACT_APP_API_URL;
 
   return {
-    login,
+    basicLogin,
+    googleLogin,
     register,
     logout,
     edit,
   };
 
-  // Login the user
-  async function login(data) {
+  // Connexion classique
+  async function basicLogin(data) {
     try {
       const res = await axios.post(`${baseURL}/auth/login/`, data);
       if (isValidUserData(res.data)) {
@@ -137,7 +30,29 @@ function useUserActions() {
     }
   }
 
-  // Register the user
+  // Connexion via Google
+  async function googleLogin(response) {
+      console.log("Google login response:", response); // Vérifiez si la réponse est correcte
+      const { credential: tokenId } = response; // Récupérer le token d'identité Google
+      console.log("Token ID:", tokenId);
+
+      try {
+          const res = await axios.post(`${baseURL}/auth/google/login/`, {
+              token: tokenId,
+          });
+
+          const { access, refresh, user } = res.data;
+          localStorage.setItem('auth', JSON.stringify({ access, refresh, user }));
+
+          axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+          navigate("/");
+      } catch (err) {
+          console.error('Google Login Failed:', err); // Afficher les erreurs
+          throw err;
+      }
+  }
+
+  // Enregistrement de l'utilisateur
   async function register(data) {
     try {
       const res = await axios.post(`${baseURL}/auth/register/`, data);
@@ -153,15 +68,41 @@ function useUserActions() {
     }
   }
 
-  // Edit the user
-  async function edit(data, userId) {
-    try {
-      const res = await axiosService.patch(`/user/${userId}/`, data, {
+  // Modification des données utilisateur
+  // function edit(data, userId) {
+  //   try {
+  //     const res = axiosService.patch(`${baseURL}/user/${userId}/`, data, {
+  //       headers: {
+  //         "content-type": "multipart/form-data",
+  //       },
+  //     });
+  //     if (res.data) {
+  //       console.log(res.data)
+  //       localStorage.setItem(
+  //         "auth",
+  //         JSON.stringify({
+  //           access: getAccessToken(),
+  //           refresh: getRefreshToken(),
+  //           user: res.data,
+  //         })
+  //       );
+  //     } else {
+  //       throw new Error("Invalid data structure from edit response");
+  //     }
+  //   } catch (error) {
+  //     console.error("Edit error:", error);
+  //     throw error;
+  //   }
+  // }
+  function edit(data, userId) {
+    return axiosService
+      .patch(`${baseURL}/user/${userId}/`, data, {
         headers: {
           "content-type": "multipart/form-data",
         },
-      });
-      if (res.data && res.data.user) {
+      })
+      .then((res) => {
+        // Registering the account in the store
         localStorage.setItem(
           "auth",
           JSON.stringify({
@@ -170,19 +111,15 @@ function useUserActions() {
             user: res.data,
           })
         );
-      } else {
-        throw new Error("Invalid data structure from edit response");
-      }
-    } catch (error) {
-      console.error("Edit error:", error);
-      throw error;
-    }
+      });
   }
 
-  // Logout the user
+  
+
+  // Déconnexion de l'utilisateur
   async function logout() {
     try {
-      await axiosService.post(`${baseURL}/auth/logout/`, { refresh: getRefreshToken() });
+      await axios.post(`${baseURL}/auth/logout/`, { refresh: getRefreshToken() });
       localStorage.removeItem("auth");
       navigate("/login");
     } catch (error) {
@@ -192,30 +129,30 @@ function useUserActions() {
   }
 }
 
-// Helper function to validate user data structure
+// Validation de la structure des données utilisateur
 function isValidUserData(data) {
   return data && data.access && data.refresh && data.user;
 }
 
-// Get the user
+// Récupérer l'utilisateur
 function getUser() {
   const auth = JSON.parse(localStorage.getItem("auth")) || null;
   return auth ? auth.user : null;
 }
 
-// Get the access token
+// Récupérer le token d'accès
 function getAccessToken() {
   const auth = JSON.parse(localStorage.getItem("auth"));
   return auth ? auth.access : null;
 }
 
-// Get the refresh token
+// Récupérer le token de rafraîchissement
 function getRefreshToken() {
   const auth = JSON.parse(localStorage.getItem("auth"));
   return auth ? auth.refresh : null;
 }
 
-// Set the access, token and user property
+// Enregistrer les données utilisateur
 function setUserData(data) {
   localStorage.setItem(
     "auth",

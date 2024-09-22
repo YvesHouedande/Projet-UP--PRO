@@ -6,18 +6,19 @@ from core.author.viewsets import (
     PersonnelViewSet,
 )
 from core.content.viewsets import (
-    GeneralPostViewSet, PostServiceViewSet,
-    PostUserViewSet, PostPeerViewSet,
-    CommentViewset, EventViewSet,
+    GeneralPostViewSet, CommentViewset, 
+    EventViewSet,
 )
 
 from core.auth.viewsets import (
-    RegisterViewSet,
-    LoginViewSet,
-    RefreshViewSet,
-    LogoutViewSet,
+    RegisterViewSet, LoginViewSet, 
+    RefreshViewSet, LogoutViewSet,
+    LoginGoogleViewSet, SendValidationCodeToEmailViewSet,
+    ValidateEmailCodeViewSet,
 )
-from core.center.viewsets import SchoolViewSet,StudyViewSet #SchoolPersonViewSet 
+from core.center.viewsets import (
+    SchoolViewSet, StudyViewSet
+    )
 
 router = routers.SimpleRouter()
 ################################# auth ##########################
@@ -25,31 +26,28 @@ router.register(r"auth/register", RegisterViewSet, basename="auth-register")
 router.register(r"auth/login", LoginViewSet, basename="auth-login")
 router.register(r"auth/refresh", RefreshViewSet, basename="auth-refresh")
 router.register(r"auth/logout", LogoutViewSet, basename="auth-logout")
+router.register(r"auth/google/login", LoginGoogleViewSet, basename="google-auth-logout")
+    
+router.register(r'send-validation-code-to-email', SendValidationCodeToEmailViewSet, basename='send-validation-email')
+router.register(r'validate-email-code', ValidateEmailCodeViewSet, basename='validate-email-code')
+
 
 ################################# Content Management ##########################
-#############related to the connected user
-router.register(r"general_post", GeneralPostViewSet, basename="general_post")# return all kind of post:PostUser,PostService... with all data
-router.register(r"general_post/filter", GeneralPostViewSet, basename="general_post_filter")#administration or popular
+router.register(r"general_post", GeneralPostViewSet, basename="general_post")# return all 
 
-#############Each kind of post
-router.register(r"post_user", PostUserViewSet, basename="post_user")
-router.register(r"post_service", PostServiceViewSet, basename="post_service")
-router.register(r"post_peer", PostPeerViewSet, basename="post_peer")
-
-#############event
 router.register(r"event", EventViewSet, basename="event")
 
-#############comments on post
 general_post = routers.NestedSimpleRouter(router, r"general_post", lookup="post")
 general_post.register(r"comment", CommentViewset, basename="post-comment")
 
 #################################Author Management ##########################
-################ user->data ################ 
 router.register(r"user", UserViewSet, basename="user")#all user
 user = routers.NestedSimpleRouter(router, r"user", lookup="user")
 user.register(r"service", ServiceViewSet, basename="user-service")
-user.register(r"friends", UserViewSet, basename="user-friend")#all i follow or manage
-user.register(r"post", PostUserViewSet, basename="user-post")#all post user posted
+user.register(r"friends", UserViewSet, basename="user-friend")
+user.register(r"general_post", GeneralPostViewSet, basename="user-post")
+user.register(r"event", EventViewSet, basename="user-event")
+
 
 router.register(r"student", StudentViewSet, basename="student")
 router.register(r"professor", ProfessorViewSet, basename="professor")

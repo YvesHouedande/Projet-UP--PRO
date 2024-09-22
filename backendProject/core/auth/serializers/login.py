@@ -13,7 +13,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         data["user"] = UserSerializer(self.user, context=self.context).data
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
-        print(f'token--------------------------{data}')
+        # print(f'token--------------------------{data}')
 
         if api_settings.UPDATE_LAST_LOGIN:
             update_last_login(None, self.user)

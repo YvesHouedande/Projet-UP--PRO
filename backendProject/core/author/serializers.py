@@ -32,23 +32,25 @@ class UserSerializer(AbstractSerializer):
  
     class Meta:
         model = User
-        # List of all the fields that can be included in a request or a response
+            # List of all the fields that can be included in a request or a responseserie
         fields = [
             "public_id",
-            "id",
-            # "username",
+            # "id",
+            "username",
             "name",
             "first_name",
             "last_name",
             "bio",
             "avatar",
             "email",
-            "is_active",
+            # "is_active",
             "created",
             "updated",
             "posts_count",
             "is_superuser",
-            'role',
+            "status_choice",
+            "from_inp",
+            'inp_mail',
         ]
         # List of all the fields that can only be read by the user
         read_only_fields = ["is_active", "is_superuser"]
@@ -123,7 +125,9 @@ class PersonnelSerializer(AbstractSerializer):
             "created",
             "updated", 
             "posts_count",
-        ]
+        ] 
+
+
 
 
 class ServiceSerializer(AbstractSerializer):

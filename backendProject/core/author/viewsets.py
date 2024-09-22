@@ -1,4 +1,3 @@
-from core.content.models import PostUser
 from core.abstract.viewsets import AbstractViewSet
 from core.author.serializers import (
     UserSerializer, ServiceSerializer,
@@ -11,7 +10,6 @@ from core.author.models import (
     PeerPosition, Student,
     Professor, Personnel
     )
-from django.db.models import Q
 from core.auth.permissions import UserPermission
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
@@ -19,11 +17,17 @@ from rest_framework.permissions import IsAuthenticated
 
 #user i follows
 class UserViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
+    http_method_names = ("post", "get", "patch") 
     serializer_class = UserSerializer
     permission_classes = (UserPermission, IsAuthenticated)
     filter_backends = [filters.SearchFilter]
-    search_fields = ['first_name', 'last_name'] 
+    search_fields = [
+        'first_name', 
+        'last_name', 
+        'username', 
+        'email',
+        'inp_mail'
+        ] 
 
     def get_queryset(self):
         user_pk = self.kwargs.get("user__pk") # here, user_pk is user_public_id
@@ -43,29 +47,6 @@ class UserViewSet(AbstractViewSet):
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
  
-#router.register(r"study/students", StudentViewSet, basename="study-students")################ 
-# class StudentViewSet(AbstractViewSet):
-#     http_method_names = ("post", "get")
-#     permission_classes = (UserPermission,)
-#     serializer_class = StudentSerializer
-#     filterset_fields = ["-created"]
-
-#     def get_queryset(self):
-#         if self.basename == "student":
-#             # Retourner tous les étudiants
-#             return Student.objects.all()
-#         elif self.basename == "study-students":
-#             # Retourner les étudiants associés à une étude spécifique
-#             study_id = self.request.query_params.get("study_id")
-#             if study_id:
-#                 return Student.objects.filter(study_id=study_id)
-#             else:
-#                 return Student.objects.none()  # Aucun ID d'étude fourni, aucun étudiant retourné
-#         else:
-#             # Si le basename ne correspond à aucun des noms de route définis dans les routes, 
-#             # vous pouvez choisir de retourner une queryset vide ou une erreur, selon vos besoins.
-#             return Student.objects.none()
-    
 class StudentViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     permission_classes = (UserPermission,)
@@ -142,29 +123,25 @@ class PersonnelViewSet(AbstractViewSet):
         return obj
 
 
-
-
 class ServiceViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     permission_classes = (UserPermission,)
     serializer_class = ServiceSerializer
     filterset_fields = ["created"]
-    filter_backends = [filters.SearchFilter]
     search_fields = ['label',] 
 
     def get_queryset(self):
         """
         only service i managed or i
         follow base on user_pk else,
-        return all
+        return all.
         """
-        user_pk = self.kwargs.get("user_pk")#here, user_pk is user_public_id
-        school_pk = self.kwargs.get("school_pk")
+        user_pk = self.kwargs.get("user__pk")#here, user_pk is user_public_id
+        school_pk = self.kwargs.get("school__pk")
         if user_pk:
             try:
                 user = User.objects.get(public_id=user_pk)
-                from django.db.models import Q
-                return Service.objects.filter(Q(follows=user) | Q(manager=user))
+                return Service.objects.filter(manager=user)
             except User.DoesNotExist:
                 return []
         if school_pk:
@@ -178,7 +155,6 @@ class ServiceViewSet(AbstractViewSet):
 
         return obj
     
-
 class PeerViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     permission_classes = (UserPermission,)
@@ -194,7 +170,6 @@ class PeerViewSet(AbstractViewSet):
         self.check_object_permissions(self.request, obj)
         return obj
     
-
 class PeerPositionViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     permission_classes = (UserPermission,)

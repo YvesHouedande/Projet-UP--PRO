@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { Button, Modal, Label, TextInput } from 'flowbite-react';
 import axiosService from '../../helpers/axios';
 import { getUser } from '../../hooks/user.actions';
+import { mutate } from 'swr';
+import { useContext } from 'react';
+import { Context } from '../../pages/Layout';
 
 export default function CreateImagePost({ show, onClose }) {
+  const { showInfo, setShowInfo } = useContext(Context)
+  
   const [form, setForm] = useState({
     title: "",
     content_type: "IMAGE POST",
@@ -28,7 +33,8 @@ export default function CreateImagePost({ show, onClose }) {
     }
 
     const formData = new FormData();
-    formData.append('author', user.id);
+    formData.append('author', user.public_id);
+    formData.append('source', user.status_choice);
     formData.append('title', form.title);
     formData.append('content_type', form.content_type);
     if (form.image) {
@@ -36,18 +42,25 @@ export default function CreateImagePost({ show, onClose }) {
     }
 
     axiosService
-      .post('/post_user/', formData)
+      .post('/general_post/', formData)
       .then(() => {
         console.log('Post created 🚀');
         setForm({
           title: "",
           image: null,
         });
+        mutate('/general_post');
         onClose();
       })
       .catch((error) => {
-        console.log('Error:', error);
-        alert('Une erreur s\'est produite lors de l\'envoi du formulaire.');
+        setShowInfo({
+          ...showInfo,
+          showMessage: true,
+          message: error.response.data.error,
+          type:'inp_mail'
+        })
+        onClose();
+
       });
   };
 
