@@ -3,8 +3,15 @@ import { Button, Modal, Label, Textarea, TextInput } from 'flowbite-react';
 import EmojiPicker from 'emoji-picker-react';
 import axiosService from '../../helpers/axios';
 import { getUser } from '../../hooks/user.actions';
+import { mutate } from 'swr';
+import { useContext } from 'react';
+import { Context } from '../../pages/Layout';
+
 
 export default function CreateSimplePost({ show, onClose }) {
+    // for mail validation
+    const { showInfo, setShowInfo } = useContext(Context)
+
     const [form, setForm] = useState({
         title: "",
         content_type: "SIMPLE POST",
@@ -36,11 +43,16 @@ export default function CreateSimplePost({ show, onClose }) {
                 setForm({
                     content: "",
                 });
+                mutate('/general_post');
                 onClose();
             })
             .catch((error) => {
-                console.log('Error:', error);
-                alert('Une erreur s\'est produite lors de l\'envoi du formulaire.');
+                setShowInfo({
+                ...showInfo,
+                showMessage: true,
+                message: error.response.data.error,
+                type:'inp_mail'
+                })
             });
     };
 

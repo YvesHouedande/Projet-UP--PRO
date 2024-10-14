@@ -1,0 +1,15 @@
+# Content viewset: cache
+# event list
+# promotions
+# ecole
+# Gestion des champs de modifications
+
+
+
+
+################## Notions #################
+#1 la comparaison est superficiel sans react.memo sur les tableaux et les objets
+#2 Utiliser react memo pour un composant de liste complexe avec de nombreux props: efficacité
+#3 du point 2, mm si une cle est utilisé pour les elements de listes
+#4 dès qu"un state du parent change, le parrent ainsi que tous ses enfant se re-render, tout est excuter
+#4 mais si l'enfant possede son propre etat, l'etat reste echanger mais le composant enfant sera quand mm re-render

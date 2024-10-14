@@ -72,7 +72,8 @@ class EventSerializer(AbstractSerializer):
             "moment",
             'service',
             "cover",
-            "place"
+            "place", 
+            "public_id"
             ]
         
     def validate_service(self, value):

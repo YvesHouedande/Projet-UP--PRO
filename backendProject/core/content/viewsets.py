@@ -23,6 +23,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters
 
 class GeneralPostViewSet(AbstractViewSet):
+    http_method_names = ("post", "get", "patch") 
     permission_classes = [IsAuthenticated, UserPermission]
     serializer_class = GeneralPostSerializer
 
@@ -147,7 +148,7 @@ class CommentViewset(AbstractViewSet):
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
+from rest_framework.exceptions import NotFound
 class EventViewSet(AbstractViewSet):
     """
     A ViewSet for viewing and editing event instances.
@@ -155,7 +156,7 @@ class EventViewSet(AbstractViewSet):
     - Inherits from ViewSet to provide standard CRUD operations.
     - Uses search filters to enable searching on specified fields.
     """
-    http_method_names = ["post", "get", "delete"]
+    http_method_names = ["post", "get", "delete", 'patch']
     permission_classes = [UserPermission]
     filter_backends = [filters.SearchFilter]
     serializer_class = EventSerializer
@@ -164,7 +165,6 @@ class EventViewSet(AbstractViewSet):
     def get_queryset(self):
         service_pk = self.kwargs.get("service__pk")
         user_pk = self.kwargs.get("user__pk")  # Corrected key
-        print("----------------------------", user_pk)
         if user_pk:
             try:
                 user = User.objects.get(public_id=user_pk)
@@ -173,7 +173,7 @@ class EventViewSet(AbstractViewSet):
             return Event.objects.filter(service__manager__public_id=user_pk)
 
         if service_pk:
-            return Event.objects.filter(service__public_id=service_pk)
+            return Event.objects.filter(service__public_id=service_pk) 
 
         return Event.objects.all()
 
@@ -187,4 +187,20 @@ class EventViewSet(AbstractViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, *args, **kwargs):
+        """
+        Supprimer un événement via son `public_id`.
+        """
+        try:
+            event = self.get_object()
+        except Event.DoesNotExist:
+            raise NotFound({"detail": "Événement non trouvé."})
+
+        # Vérification des permissions de l'utilisateur pour supprimer l'événement
+        self.check_object_permissions(request, event)
+
+        # Suppression de l'événement
+        event.delete()
+        return Response({"detail": "Événement supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
 

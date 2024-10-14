@@ -13,6 +13,12 @@ from core.author.models import (
 from core.auth.permissions import UserPermission
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
+
 
 
 #user i follows
@@ -48,80 +54,91 @@ class UserViewSet(AbstractViewSet):
         return super().create(request, *args, **kwargs)
  
 class StudentViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
-    permission_classes = (UserPermission,)
+    http_method_names = ("get", "patch", "delete")
+    permission_classes = (IsAuthenticated,)
     serializer_class = StudentSerializer
-    filterset_fields = ["-created"]
 
     def get_queryset(self):
-        study_pk = self.kwargs.get("study_pk")
-        peer_pk = self.kwargs.get("peer_pk")
-        school_pk = self.kwargs.get("school_pk")
-
-        if study_pk :
-            print("####################study/student")
-            return Student.objects.filter(study__public_id=study_pk)
-        if peer_pk:
-            print("####################peer/student")
-            return Student.objects.filter(peer__public_id=peer_pk)
-        if school_pk:
-            print("####################school/student")
-            return Student.objects.filter(school__public_id=school_pk)
-
         return Student.objects.all()
-        
-    
-    def get_object(self):
-        obj = Student.objects.get_object_by_public_id(self.kwargs["pk"])
-        self.check_object_permissions(self.request, obj)
-        return obj
 
+    def get_object(self):
+        user_pk = self.kwargs.get("user__pk")
+        user = get_object_or_404(User, public_id=user_pk)
+        return get_object_or_404(Student, user=user)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        for field in instance._meta.fields:
+            if field.name not in ['id', 'user']:
+                setattr(instance, field.name, field.get_default())
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 class ProfessorViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
-    permission_classes = (UserPermission,)
+    http_method_names = ("get", "patch", "delete")
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProfessorSerializer
-    filterset_fields = ["-created"]
 
     def get_queryset(self):
-        study_pk = self.kwargs.get("study_pk")
-        school_pk = self.kwargs.get("school_pk")
-
-        if study_pk :
-            print("#################study/professor")
-            return Professor.objects.filter(study__public_id=study_pk)
-        if school_pk :
-            print("#################school/professor")
-            return Professor.objects.filter(school__public_id=school_pk)
-    
         return Professor.objects.all()
-        
+
     def get_object(self):
-        obj = Student.objects.get_object_by_public_id(self.kwargs["pk"])
-        self.check_object_permissions(self.request, obj)
-        return obj
-    
+        user_pk = self.kwargs.get("user__pk")
+        user = get_object_or_404(User, public_id=user_pk)
+        return get_object_or_404(Professor, user=user)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        for field in instance._meta.fields:
+            if field.name not in ['id', 'user']:
+                setattr(instance, field.name, field.get_default())
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 class PersonnelViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
-    permission_classes = (UserPermission,)
+    http_method_names = ("get", "patch", "delete")
+    permission_classes = (IsAuthenticated,)
     serializer_class = PersonnelSerializer
-    filterset_fields = ["-created"]
 
     def get_queryset(self):
-        study_pk = self.kwargs.get("study_pk")#api/study/public_id/personnel
-        school_pk = self.kwargs.get("school_pk")#api/school/public_id/personnel
-        if study_pk :
-            return Personnel.objects.filter(study__public_id=study_pk)
-        if school_pk :
-            return Personnel.objects.filter(school__public_id=school_pk)
         return Personnel.objects.all()
-        
-    def get_object(self):
-        obj = Student.objects.get_object_by_public_id(self.kwargs["pk"])
-        self.check_object_permissions(self.request, obj)
-        return obj
 
+    def get_object(self):
+        user_pk = self.kwargs.get("user__pk")
+        user = get_object_or_404(User, public_id=user_pk)
+        return get_object_or_404(Personnel, user=user)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        for field in instance._meta.fields:
+            if field.name not in ['id', 'user']:
+                setattr(instance, field.name, field.get_default())
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 class ServiceViewSet(AbstractViewSet):
     http_method_names = ("post", "get")

@@ -26,8 +26,8 @@ function App() {
         element={<Home/>}
       >
       </Route>
-            <Route
-        path='/profile'
+      <Route
+        path="/profile/:profileId/"
         element={<Profile/>}
       >
       </Route>

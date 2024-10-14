@@ -5,10 +5,11 @@ import ErrorModal from '../assets/MessageModal';
 
 export default function RegisterForm() {
   const [form, setForm] = useState({
-    username: "",
     email: "",
     password: "",
-    status_choice: "etudiant", // Valeur par défaut
+    first_name: "",
+    last_name: "",
+    status_choice: "etudiant",
   });
   const [errors, setErrors] = useState({}); // État pour stocker les erreurs spécifiques
   const [isModalOpen, setIsModalOpen] = useState(false); // État pour gérer l'affichage du modal d'erreur
@@ -19,9 +20,10 @@ export default function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = {
-      username: form.username,
       email: form.email,
       password: form.password,
+      first_name: form.first_name,
+      last_name: form.last_name,
       status_choice: form.status_choice,
     };
 
@@ -30,8 +32,6 @@ export default function RegisterForm() {
       setErrors({});
       setModalError("");
       
-      
-
       await userActions.register(data);
     } catch (err) {
       if (err.response && err.response.data) {
@@ -47,13 +47,13 @@ export default function RegisterForm() {
     try {
       await userActions.googleLogin(response);
     } catch (err) {
-      setModalError("Google registration failed.");
+      setModalError("L'inscription avec Google a échoué.");
       setIsModalOpen(true);
     }
   };
 
   const handleGoogleLoginFailure = (error) => {
-    setModalError("Google registration was unsuccessful. Please try again.");
+    setModalError("L'inscription avec Google a échoué. Veuillez réessayer.");
     setIsModalOpen(true);
   };
 
@@ -68,16 +68,28 @@ export default function RegisterForm() {
           <h2 className="text-2xl font-bold mb-6 text-center">Inscription</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-gray-700">Nom d'utilisateur</label>
+              <label htmlFor="first_name" className="block text-gray-700">Prénom</label>
               <input
                 type="text"
-                id="username"
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                id="first_name"
+                value={form.first_name}
+                onChange={(e) => setForm({ ...form, first_name: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-500"
                 required
               />
-              {errors.username && <p className="text-red-500">{errors.username[0]}</p>}
+              {errors.first_name && <p className="text-red-500">{errors.first_name[0]}</p>}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="last_name" className="block text-gray-700">Nom</label>
+              <input
+                type="text"
+                id="last_name"
+                value={form.last_name}
+                onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-500"
+                required
+              />
+              {errors.last_name && <p className="text-red-500">{errors.last_name[0]}</p>}
             </div>
             <div className="mb-4">
               <label htmlFor="email" className="block text-gray-700">Adresse email</label>

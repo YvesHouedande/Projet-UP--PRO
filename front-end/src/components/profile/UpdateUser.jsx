@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { Modal, Button, FileInput } from 'flowbite-react';
-import { getUser, useUserActions } from '../../hooks/user.actions';
+import { useUserActions } from '../../hooks/user.actions';
 
-export default function UpdateUser({ isModalOpen, handleCloseModal }) {
-    const user = getUser();
-    const userActions = useUserActions();
+export default function UpdateUser({ user, handleCloseEdit }) {
+  const userActions = useUserActions();
   const [formData, setFormData] = useState({
     username: user.username,
     name: user.name,
     first_name: user.first_name,
     last_name: user.last_name,
-    bio: user.bio || '', // Initialisation vide si aucune bio
+    bio: user.bio || '',
     email: user.email,
     status_choice: user.status_choice,
   });
@@ -20,26 +18,23 @@ export default function UpdateUser({ isModalOpen, handleCloseModal }) {
     e.preventDefault();
     const formDataWithFile = new FormData();
 
-    // Ajout des données de l'utilisateur
     Object.keys(formData).forEach(key => {
       formDataWithFile.append(key, formData[key]);
     });
 
-    // Ajout du fichier avatar si disponible
     if (avatarFile) {
       formDataWithFile.append('avatar', avatarFile);
     }
 
     try {
-      // Assurez-vous que vous avez l'ID utilisateur
-      userActions.edit(formDataWithFile, user.public_id); // Assurez-vous que votre fonction prend les deux paramètres
-      handleCloseModal();
+      await userActions.edit(formDataWithFile, user.public_id);
+      handleCloseEdit();
     } catch (error) {
       console.error("Erreur lors de la mise à jour des informations de l'utilisateur", error);
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
@@ -49,113 +44,21 @@ export default function UpdateUser({ isModalOpen, handleCloseModal }) {
   };
 
   return (
-    <Modal show={isModalOpen} onClose={handleCloseModal}>
-      <Modal.Header>
-        Modifier les Informations
-      </Modal.Header>
-      <Modal.Body>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Avatar</label>
-            <FileInput
-              onChange={handleFileChange}
-              className="w-full"
-              id="avatar"
-              name="avatar"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Nom d'utilisateur</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Nom complet</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Prénom</label>
-            <input
-              type="text"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Nom de famille</label>
-            <input
-              type="text"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Choix de statut</label>
-            <input
-              type="text"
-              name="status_choice"
-              value={formData.status_choice}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 capitalize mb-1">Bio</label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="4"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              color="gray"
-              onClick={handleCloseModal}
-            >
-              Annuler
-            </Button>
-            <Button type="submit">
-              Enregistrer
-            </Button>
-          </div>
-        </form>
-      </Modal.Body>
-    </Modal>
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="col-span-2">
+        <input type="file" onChange={handleFileChange} className="p-2 border rounded w-full" />
+      </div>
+      <input name="username" value={formData.username} onChange={handleChange} placeholder="Nom d'utilisateur" className="p-2 border rounded" />
+      <input name="name" value={formData.name} onChange={handleChange} placeholder="Nom complet" className="p-2 border rounded" />
+      <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="Prénom" className="p-2 border rounded" />
+      <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Nom de famille" className="p-2 border rounded" />
+      <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="p-2 border rounded" />
+      <input name="status_choice" value={formData.status_choice} onChange={handleChange} placeholder="Statut" className="p-2 border rounded" />
+      <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="p-2 border rounded col-span-2" rows="4" />
+      <div className="col-span-2 flex justify-end space-x-2 mt-4">
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Enregistrer</button>
+        <button type="button" onClick={handleCloseEdit} className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Annuler</button>
+      </div>
+    </form>
   );
 }

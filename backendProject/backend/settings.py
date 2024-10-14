@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # project middlewares  
-    'core.author.middleware.inp_validation_middleware.check_inphb_email'    
+    # 'core.author.middleware.inp_validation_middleware.check_inphb_email'    
 ]
 
 
@@ -174,9 +174,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'in-v3.mailjet.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = '895c4e663150787e55caa59b5fb15af5'  # Remplace par ta clé API Mailjet
-EMAIL_HOST_PASSWORD = '7e76183dab8b24fccdc835e49c183d37'  # Remplace par ta clé secrète Mailjet
-DEFAULT_FROM_EMAIL = 'dineraduti@gmail.com'  # L'adresse email que tu veux utiliser comme expéditeur
+EMAIL_HOST_USER = '895c4e663150787e55caa59b5fb15af5'
+EMAIL_HOST_PASSWORD = '8c0bc892bde732e7ef1fea439f03c7d8'
+DEFAULT_FROM_EMAIL = 'dineraduti@gmail.com'
+
+# Ajoutez ces lignes pour désactiver la vérification du certificat (à utiliser avec précaution)
+EMAIL_USE_SSL = False
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
 
  
       

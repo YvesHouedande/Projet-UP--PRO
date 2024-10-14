@@ -434,18 +434,15 @@ import Loading from '../components/assets/Loading';
 import MessageModal from '../components/assets/MessageModal';
 import Layout from './Layout';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { FaBell } from 'react-icons/fa'; // Icone de cloche (React Icons)
+import { FaBell } from 'react-icons/fa';
 
 export default function Home() {
   const user = getUser();
   const [posts, setPosts] = useState([]);
   const [nextUrl, setNextUrl] = useState(null);
-  const [newPostsCount, setNewPostsCount] = useState(0); // Compteur de nouveaux posts
-  const postContainerRef = React.createRef(); // Ref pour le container des posts
 
   // SWR for fetching posts
   const { data, error, isLoading } = useSWR('/general_post', fetcher, {
-    refreshInterval: 60000, 
     revalidateOnFocus: false, 
     onSuccess: (data) => {
       if (data.results) {
@@ -455,40 +452,6 @@ export default function Home() {
     },
   });
 
-  // Vérifier si de nouveaux posts sont disponibles
-  // useEffect(() => {
-  //   const checkForNewPosts = async () => {
-  //     try {
-  //       const latestData = await fetcher('/general_post');
-  //       const newCount = latestData.results.filter(
-  //         (post) => !posts.some((existingPost) => existingPost.public_id === post.public_id)
-  //       ).length;
-
-  //       if (newCount > 0) {
-  //         setNewPostsCount(newCount); // Mettre à jour le nombre de nouveaux posts
-  //       }
-  //     } catch (error) {
-  //       console.error('Erreur lors de la vérification des nouveaux posts:', error);
-  //     }
-  //   };
-
-  //   const interval = setInterval(() => {
-  //     checkForNewPosts();
-  //   }, 10000); // Vérification toutes les 40 secondes
-
-  //   return () => clearInterval(interval);
-  // }, [posts]);
-
-  // Charger les nouveaux posts à la demande
-  const loadNewPosts = () => {
-    mutate('/general_post'); // Force SWR à récupérer les nouvelles données
-    setNewPostsCount(0); // Réinitialiser le compteur après chargement
-
-    // Scroller vers le haut de la liste des posts
-    if (postContainerRef.current) {
-      postContainerRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   // Fetch more posts on scroll
   const fetchMorePosts = useCallback(async () => {
@@ -526,7 +489,7 @@ export default function Home() {
           <Feed />
           
             {/* Ref pour le conteneur des posts */}
-          <div ref={postContainerRef}>
+          <div >
             <InfiniteScroll
               dataLength={posts.length}
               next={fetchMorePosts}
@@ -543,20 +506,9 @@ export default function Home() {
 
         {/* Right Sidebar - hidden on small screens */}
         <div className="rightBar hidden md:block">
-          <SuggestionBox />
+          {/* <SuggestionBox /> */}
           <MeetBox />
         </div>
-
-        {/* Icône flottante pour les nouveaux posts */}
-        {newPostsCount > 0 && (
-          <div
-            className="fixed bottom-5 right-5 bg-blue-500 text-white rounded-full p-4 shadow-lg cursor-pointer flex items-center space-x-2 z-50"
-            onClick={loadNewPosts} // Charger les nouveaux posts au clic
-          >
-            <FaBell className="text-2xl" /> {/* Icone de cloche */}
-            <span className="font-bold">{newPostsCount} nouveaux posts</span>
-          </div>
-        )}
       </div>
     </Layout>
   );

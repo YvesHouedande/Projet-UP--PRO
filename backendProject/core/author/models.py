@@ -1,4 +1,3 @@
-
 from operator import mod
 from pyexpat import model
 from django.contrib.auth.models import (
@@ -18,36 +17,32 @@ from django.conf import settings
 
 
 class UserManager(BaseUserManager, AbstractManager):
-    def create_user(self, username, email, password=None, model_name=None, **extra_fields):
-        if not username:
-            raise ValueError('Le nom d\'utilisateur est obligatoire.')
+    def create_user(self, email, password=None, model_name=None, **extra_fields):
         if not email:
             raise ValueError('L\'adresse email est obligatoire.')
         email = self.normalize_email(email)
         
+        # Utiliser l'email comme username
+        extra_fields.setdefault('username', email)
+        
         if model_name == 'professor':
-            user = Professor(username=username, email=email, **extra_fields)
+            user = Professor(email=email, **extra_fields)
         elif model_name == 'student':
-            user = Student(username=username, email=email, **extra_fields)
+            user = Student(email=email, **extra_fields)
         else:
-            user = self.model(username=username, email=email, **extra_fields)
+            user = self.model(email=email, **extra_fields)
         
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email, password, **kwargs):
-        """
-        Create and return a `User` with superuser (admin) permissions.
-        """
+    def create_superuser(self, email, password, **kwargs):
         if password is None:
             raise TypeError("Superusers must have a password.")
         if email is None:
             raise TypeError("Superusers must have an email.")
-        if username is None:
-            raise TypeError("Superusers must have an username.")
 
-        user = self.create_user(username, email, password, **kwargs)
+        user = self.create_user(email=email, password=password, **kwargs)
         user.is_superuser = True
         user.is_staff = True
         user.save(using=self._db)
@@ -79,9 +74,9 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(null=True, blank=True, upload_to=user_directory_path, verbose_name="Image Profile")
     follows = models.ManyToManyField("self", related_name="followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
     
-    USERNAME_FIELD = "username"
+    USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"       
-    REQUIRED_FIELDS = ["email"]
+    REQUIRED_FIELDS = []  # Retirez "email" d'ici car il est déjà le USERNAME_FIELD
 
     objects = UserManager()
 
@@ -126,9 +121,13 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
                 fail_silently=False,
             )
 
+    def save(self, *args, **kwargs):
+        if not self.username:
+            self.username = self.email
+        super().save(*args, **kwargs)
 
 
-class Student(AbstractModel, models.Model):
+class Student(AbstractModel):
     LEVEL_CHOICES = (
         ('ts1', "TS1"),
         ('ts2', "TS2"),
@@ -141,7 +140,7 @@ class Student(AbstractModel, models.Model):
         ("master1", "Master1"),
         ("master2", "Master2"),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, related_name="students", verbose_name="Filière")
     school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, related_name="students", verbose_name="Ecole")
     level_choices = models.CharField(choices=LEVEL_CHOICES, max_length=10, null=True, verbose_name="Niveau")
@@ -149,6 +148,7 @@ class Student(AbstractModel, models.Model):
     bac_year = models.DateField(null=True, blank=True, verbose_name="Année du bac")
     class Meta:
         verbose_name="Etudiant"
+        abstract = False
 
     def get_email(self):
         return self.user_ptr
@@ -157,27 +157,32 @@ class Student(AbstractModel, models.Model):
         return f"email: {self.email}, school: {self.school}, study: {self.study}"
     
 
-class Professor(AbstractModel, models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class Professor(AbstractModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     subject = models.CharField(max_length=255, verbose_name="matière")
     school = models.ManyToManyField("core_center.School", verbose_name="ecole")
     study = models.ManyToManyField("core_center.Study", verbose_name="Filière")
 
     class Meta:
         verbose_name="Professeur"
+        abstract = False
 
     def __str__(self) -> str:
         return f"{self.email}"
     
 
-class Personnel(AbstractModel, models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class Personnel(AbstractModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     job = models.CharField(max_length=255, null=True, blank=True)
     administration =  models.CharField(max_length=255, null=True, blank=True)
     school = models.ForeignKey("core_center.School", verbose_name="ecole", null=True, blank=True, on_delete=models.CASCADE)
     study = models.ManyToManyField("core_center.Study" , verbose_name="Filière")
 
-class Peer(AbstractModel, models.Model):
+    class Meta:
+        verbose_name="Personnel"
+        abstract = False
+
+class Peer(AbstractModel):
     label = models.CharField(max_length=255, verbose_name="Nom de la Promo")
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
     school =  models.ForeignKey("core_center.School", on_delete=models.PROTECT, verbose_name="Ecole", null=True, blank=True)
@@ -192,11 +197,12 @@ class Peer(AbstractModel, models.Model):
 
     class Meta:
         verbose_name = "Promotion"
+        abstract = False    
     
     def __str__(self) -> str:
         return f"{self.label}"
     
-class Service(AbstractModel, models.Model):
+class Service(AbstractModel):
     label = models.CharField(max_length=255, verbose_name="Service") 
     cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")
     manager = models.ForeignKey("core_author.User", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Gerant")
@@ -210,15 +216,19 @@ class Service(AbstractModel, models.Model):
     
     def school_exist(self):
         return True if self.school else False
+    
+    class Meta:
+        verbose_name = "Service"
+        abstract = False
 
-
-class PeerPosition(AbstractModel, models.Model):
+class PeerPosition(AbstractModel):
     peer = models.ForeignKey("Peer", on_delete=models.PROTECT)
     student = models.OneToOneField("Student", on_delete=models.PROTECT)
     position = models.CharField(max_length=255, unique=True, null=True, blank=True)
    
     class Meta:
         verbose_name = "Rôle-Promo"
+        abstract = False
 
     def __str__(self) -> str:
         return f"peer: {self.peer.label}, student: {self.student.get_email()}, positon:{self.position}"

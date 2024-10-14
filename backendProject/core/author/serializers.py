@@ -14,120 +14,74 @@ from core.center.models import School, Study
 class UserSerializer(AbstractSerializer):
     posts_count = serializers.SerializerMethodField()
     
- 
     def get_posts_count(self, instance):
-        return instance.posts.all().count()
+        return instance.posts.count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         if not representation["avatar"]:
             representation["avatar"] = settings.DEFAULT_AVATAR_URL
-            return representation
-        if settings.DEBUG:  # debug enabled for dev
+        elif settings.DEBUG:
             request = self.context.get("request")
-            representation["avatar"] = request.build_absolute_uri(
-                representation["avatar"]
-            )
+            representation["avatar"] = request.build_absolute_uri(representation["avatar"])
         return representation
  
     class Meta:
         model = User
-            # List of all the fields that can be included in a request or a responseserie
         fields = [
-            "public_id",
-            # "id",
-            "username",
-            "name",
-            "first_name",
-            "last_name",
-            "bio",
-            "avatar",
-            "email",
-            # "is_active",
-            "created",
-            "updated",
-            "posts_count",
-            "is_superuser",
-            "status_choice",
-            "from_inp",
-            'inp_mail',
+            "public_id", "name", "first_name", "last_name", "bio", "avatar",
+            "email", "created", "updated", "posts_count", "is_superuser",
+            "status_choice", "from_inp", 'inp_mail',
         ]
-        # List of all the fields that can only be read by the user
         read_only_fields = ["is_active", "is_superuser"]
 
 
 class StudentSerializer(AbstractSerializer):
     posts_count = serializers.SerializerMethodField()
+    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id")
+    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id")
 
     def get_posts_count(self, instance):
-        return instance.posts.all().count()
+        return instance.posts.count()
+
     class Meta:
         model = Student
         fields = [
-            "id",
-            "username",
-            "name",
-            "first_name",
-            "last_name",
-            "bio",
-            "avatar",
-            "email",
-            "study",
-            "school",
-            "created",
-            "updated", 
-            "posts_count",
+            "bac_year", "study", "school", "level_choices","public_id","id",
+            "created", "updated", "posts_count",'user'
         ]  
 
 
 class ProfessorSerializer(AbstractSerializer):
     posts_count = serializers.SerializerMethodField()
+    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", many=True)
+    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id", many=True)
 
     def get_posts_count(self, instance):
-        return instance.posts.all().count()
+        return instance.posts.count()
+
     class Meta:
         model = Professor
         fields = [
-            "id",
-            "username",
-            "name",
-            "first_name",
-            "last_name",
-            "study",
-            "school",
-            "bio",
-            "avatar",
-            "email",
-            "created",
-            "updated", 
-            "posts_count",
+            "subject", "study", "school",
+            "created", "updated", "posts_count",
         ]
 
 
 class PersonnelSerializer(AbstractSerializer):
     posts_count = serializers.SerializerMethodField()
+    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", many=True)
+    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id")
 
     def get_posts_count(self, instance):
-        return instance.posts.all().count()
+        return instance.posts.count()
+
     class Meta:
         model = Personnel
         fields = [
-            "id",
-            "username",
-            "name",
-            "first_name",
-            "last_name",
-            "study",
-            "school",
-            "bio",
-            "avatar",
-            "email",
-            "created",
-            "updated", 
-            "posts_count",
+            "study", "job", "administration", "school",
+            "created", "updated", "posts_count",
         ] 
-
-
 
 
 class ServiceSerializer(AbstractSerializer):
@@ -137,7 +91,7 @@ class ServiceSerializer(AbstractSerializer):
     event_count = serializers.SerializerMethodField()
 
     def get_event_count(self, instance):
-        return instance.events.all().count()
+        return instance.events.count()
     class Meta:
         model = Service
         fields = "__all__" 
@@ -154,19 +108,21 @@ class PeerSerializer(AbstractSerializer):
         model = Peer
         fields = "__all__" 
 
-class PeerPositionSerializer(AbstractSerializer):
-    peer = serializers.SlugRelatedField(
-    queryset=Peer.objects.all(), slug_field="public_id"
-    )
+class PeerPositionSerializer(AbstractSerializer): 
+    pass
+    # peer = serializers.SlugRelatedField(
+    # queryset=Peer.objects.all(), slug_field="public_id"
+    # )
     # student = serializers.SlugRelatedField(
-    # queryset=Student.objects.all(), slug_field="public_id" 
+    #     queryset=Student.objects.all(), slug_field="public_id", read_only=True
     # )
     
-    def validate(self, data): 
-        #student should update it's data to the peer it own
-        if data["student"].peer != data["peer"]: 
-            raise ValidationError("You can't create a position for student not in your peer")
-        return data
-    class Meta:
-        model = PeerPosition
-        fields = "__all__"
+    # def validate(self, data):
+    #     student = self.context['request'].user.student
+    #     if student.peer != data["peer"]:
+    #         raise ValidationError("Vous ne pouvez pas créer une position pour un étudiant qui n'est pas dans votre promotion")
+    #     data['student'] = student
+    #     return data
+    # class Meta:
+    #     model = PeerPosition
+    #     fields = "__all__"

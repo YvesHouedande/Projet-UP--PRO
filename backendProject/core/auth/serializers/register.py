@@ -21,7 +21,7 @@ class RegisterSerializer(UserSerializer):
         fields = [
             "public_id",
             # "id",
-            "username",
+            # "username",
             "name",
             "first_name",
             "last_name",

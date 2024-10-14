@@ -1,18 +1,38 @@
 import React from 'react';
-import {getStateTime }from '../../hooks/utils';
+import { getStateTime } from '../../hooks/utils';
+import { useNavigate } from 'react-router-dom';
 
-const UserCard = ({ user }) => (
-  <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2 text-black">
-    <div className="flex items-center">
-      <img src={user.avatar} alt={`${user.first_name} ${user.last_name}`} className="w-16 h-16 object-cover rounded-full mr-4"/>
-      <div>
-        <h3 className="font-bold text-lg">{user.first_name} {user.last_name}</h3>
-        <p className="text-gray-600">{user.status_choice}</p>
-        <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg">Voir Profil</button>
-      </div>
-    </div>
-  </div>
-);
+const UserCard = ({ user }) => {
+  const navigate = useNavigate();
+
+  const handleNavigateToProfile = () => {
+        navigate(`/profile/${user.public_id}/`);
+    };
+
+    return (
+        <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2 text-black">
+            <div className="flex items-center">
+                <img 
+                    src={user.avatar} 
+                    alt={`${user.first_name} ${user.last_name}`} 
+                    className="w-16 h-16 object-cover rounded-full mr-4" 
+                />
+                <div>
+                    <h3 className="font-bold text-lg">
+                        {user.first_name} {user.last_name}
+                    </h3>
+                    <p className="text-gray-600">{user.status_choice}</p>
+                    <button 
+                        className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg"
+                        onClick={handleNavigateToProfile}
+                    >
+                        Voir Profil
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const SchoolCard = ({ school }) => (
   <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2">

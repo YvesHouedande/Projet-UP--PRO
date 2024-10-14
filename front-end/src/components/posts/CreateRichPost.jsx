@@ -3,8 +3,14 @@ import { Button, Modal, Label, Textarea, TextInput } from 'flowbite-react';
 import EmojiPicker from 'emoji-picker-react';
 import axiosService from '../../helpers/axios';
 import { getUser } from '../../hooks/user.actions';
+import { mutate } from 'swr';
+import { useContext } from 'react';
+import { Context } from '../../pages/Layout';
+
 
 export default function RichPost({ show, onClose }) {
+    const { showInfo, setShowInfo } = useContext(Context)
+
     const [form, setForm] = useState({
         title: "",
         content_type: "RICH POST",
@@ -53,17 +59,22 @@ export default function RichPost({ show, onClose }) {
                     content: "",
                     image: null,
                 });
+                mutate('/general_post');
                 onClose();
             })
             .catch((error) => {
-                console.log('Error:', error);
-                alert('Une erreur s\'est produite lors de l\'envoi du formulaire.');
+                setShowInfo({
+                ...showInfo,
+                showMessage: true,
+                message: error.response.data.error,
+                type:'inp_mail'
+                })
             });
     };
 
     return (
         <Modal dismissible show={show} onClose={onClose}>
-            <Modal.Header>Poster un événement</Modal.Header>
+            <Modal.Header>Poster une Publication</Modal.Header>
             <Modal.Body>
                 <div className='my-4'>
                     <div className="mb-2 block">

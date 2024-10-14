@@ -48,10 +48,14 @@ user.register(r"friends", UserViewSet, basename="user-friend")
 user.register(r"general_post", GeneralPostViewSet, basename="user-post")
 user.register(r"event", EventViewSet, basename="user-event")
 
+# Ajoutez ces nouvelles routes pour gérer les informations INP
+user.register(r"etudiant", StudentViewSet, basename="user-student")
+user.register(r"professeur", ProfessorViewSet, basename="user-professor")
+user.register(r"administration", PersonnelViewSet, basename="user-personnel")
 
-router.register(r"student", StudentViewSet, basename="student")
-router.register(r"professor", ProfessorViewSet, basename="professor")
-router.register(r"personnel", PersonnelViewSet, basename="personnel")
+# router.register(r"student", StudentViewSet, basename="student")
+# router.register(r"professor", ProfessorViewSet, basename="professor")
+# router.register(r"personnel", PersonnelViewSet, basename="personnel")
 
 #router.register(r"study/students", StudentViewSet, basename="study-students")################
 ################ peer->data ################ 
@@ -82,7 +86,6 @@ study.register(r"student", StudentViewSet, basename="study-student") # all stude
 study.register(r"professor", ProfessorViewSet, basename="study-professor")
 study.register(r"personnel", PersonnelViewSet, basename="study-personnel") 
 
-# router.register(r"school/(?P<schoolname>[^/.]+)", SchoolPersonViewSet, basename="SchoolPerson")#school data
 
 urlpatterns = [
     *router.urls, *general_post.urls,

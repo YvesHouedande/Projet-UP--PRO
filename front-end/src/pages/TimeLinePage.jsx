@@ -44,7 +44,6 @@ export default function TimeLinePage() {
   const user = getUser();
 
   const { data, error, isLoading } = useSWR('/event', fetcher, {
-    refreshInterval: 20000,
   });
 
   // if (isLoading) return <Loading />;

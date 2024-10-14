@@ -14,7 +14,7 @@ class UserPermission(BasePermission):
                               "school", "student", "study-student",
                               "study-professor", "professor", "personnel",
                               "study-personnel", "peer-student", "user-service",
-                              "user-post"
+                              "user-post", 'user-event', 'event', "user-inp-info"
                               ]:
             return bool(request.user and request.user.is_authenticated)
         
@@ -51,7 +51,7 @@ class UserPermission(BasePermission):
             "peer","peer-position", "school", "study", "student", "study-student",
             "professor", "study-professor", "personnel", "study-personnel", "school-professor",
             "school-personnel", "school-service", "school-student", "peer-student", "user-service",
-            "user-post", "user-event"
+            "user-post", "user-event", 'event', "user-inp-info"
                             ]:
             if request.user.is_anonymous:
                 return request.method in SAFE_METHODS
