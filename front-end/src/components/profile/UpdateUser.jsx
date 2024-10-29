@@ -11,6 +11,7 @@ export default function UpdateUser({ user, handleCloseEdit }) {
     bio: user.bio || '',
     email: user.email,
     status_choice: user.status_choice,
+    number: user.number || '',
   });
   const [avatarFile, setAvatarFile] = useState(null);
 
@@ -53,7 +54,14 @@ export default function UpdateUser({ user, handleCloseEdit }) {
       <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="Prénom" className="p-2 border rounded" />
       <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Nom de famille" className="p-2 border rounded" />
       <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="p-2 border rounded" />
-      <input name="status_choice" value={formData.status_choice} onChange={handleChange} placeholder="Statut" className="p-2 border rounded" />
+      <select name="status_choice" value={formData.status_choice} onChange={handleChange} className="p-2 border rounded">
+        <option value="">Sélectionnez un statut</option>
+        <option value="etudiant">Étudiant</option>
+        <option value="professeur">Professeur</option>
+        <option value="personnel">Personnel</option>
+        <option value="autre">Autre</option>
+      </select>
+      <input name="number" value={formData.number} onChange={handleChange} placeholder="Numéro de contact" className="p-2 border rounded" />
       <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="p-2 border rounded col-span-2" rows="4" />
       <div className="col-span-2 flex justify-end space-x-2 mt-4">
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Enregistrer</button>

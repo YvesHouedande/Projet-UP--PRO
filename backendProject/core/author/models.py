@@ -54,7 +54,7 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
     STATUS_CHOICES = (
         ('etudiant', "ETUDIANT"),
         ('professeur', "PROFESSEUR"),
-        ('administration', "ADMINISTRATION"),
+        ('personnel', "PERSONNEL"),
         ('autre', "AUTRE"),
     )
     username = models.CharField(db_index=True, max_length=255, unique=True, verbose_name="Nom Utilisateur")
@@ -62,6 +62,7 @@ class User(AbstractModel, AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=255, verbose_name="Prenom", null=True)
     status_choice = models.CharField(choices = STATUS_CHOICES, max_length=15, verbose_name="statut")
 
+    number = models.CharField(max_length=10, verbose_name="Contact", null=True, blank=True) 
     email = models.EmailField(db_index=True, unique=True)
     inp_mail = models.EmailField(db_index=True, unique=True, null=True)
     from_inp = models.BooleanField(default=False)
@@ -154,7 +155,7 @@ class Student(AbstractModel):
         return self.user_ptr
 
     def __str__(self):
-        return f"email: {self.email}, school: {self.school}, study: {self.study}"
+        return f"email: {self.user.email}, school: {self.school}, study: {self.study}"
     
 
 class Professor(AbstractModel):
@@ -176,7 +177,7 @@ class Personnel(AbstractModel):
     job = models.CharField(max_length=255, null=True, blank=True)
     administration =  models.CharField(max_length=255, null=True, blank=True)
     school = models.ForeignKey("core_center.School", verbose_name="ecole", null=True, blank=True, on_delete=models.CASCADE)
-    study = models.ManyToManyField("core_center.Study" , verbose_name="Filière")
+    study = models.ForeignKey("core_center.Study" , verbose_name="Filière", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name="Personnel"

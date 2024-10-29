@@ -24,10 +24,9 @@ class SchoolViewSet(AbstractViewSet):
 class StudyViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     serializer_class = StudySerializer
-    filterset_fields = ["-created"]
 
     def get_queryset(self):
-        study_pk = self.kwargs.get("study_pk")
+        study_pk = self.kwargs.get("study__pk")
         if study_pk :
             return Study.objects.filter(study__public_id=study_pk)
         return Study.objects.all()

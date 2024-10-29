@@ -31,57 +31,119 @@ class UserSerializer(AbstractSerializer):
         fields = [
             "public_id", "name", "first_name", "last_name", "bio", "avatar",
             "email", "created", "updated", "posts_count", "is_superuser",
-            "status_choice", "from_inp", 'inp_mail',
+            "status_choice", "from_inp", 'inp_mail', "number",
         ]
         read_only_fields = ["is_active", "is_superuser"]
 
 
 class StudentSerializer(AbstractSerializer):
-    posts_count = serializers.SerializerMethodField()
-    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id")
-    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id")
-
-    def get_posts_count(self, instance):
-        return instance.posts.count()
+    """
+    Serializer for the Student model.
+    Handles the serialization and deserialization of Student objects.
+    """
+    user = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field="public_id")
+    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", required=False, allow_null=True)
+    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id", required=True)
+    level_choices_display = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
         fields = [
-            "bac_year", "study", "school", "level_choices","public_id","id",
-            "created", "updated", "posts_count",'user'
-        ]  
+            "user", "bac_year", "study", "school", "level_choices", "level_choices_display", "public_id", "id",
+            "created", "updated", 
+        ]
+
+    def get_level_choices_display(self, obj):
+        """
+        Get the display value for the level_choices field.
+        """
+        return obj.get_level_choices_display() if obj.level_choices else None
+
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the output format.
+        """
+        representation = super().to_representation(instance)
+        
+        # Format the study field
+        representation['study'] = {
+            "id": instance.study.public_id,
+            "name": instance.study.label
+        } if instance.study else None
+        
+        # Format the school field
+        representation['school'] = {
+            "id": instance.school.public_id,
+            "name": instance.school.label
+        } if instance.school else None
+        
+        return representation
 
 
 class ProfessorSerializer(AbstractSerializer):
-    posts_count = serializers.SerializerMethodField()
-    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", many=True)
-    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id", many=True)
-
-    def get_posts_count(self, instance):
-        return instance.posts.count()
+    """
+    Serializer for the Professor model.
+    Handles the serialization and deserialization of Professor objects.
+    """
+    user = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field="public_id")
+    study = serializers.SerializerMethodField()
+    school = serializers.SerializerMethodField()
 
     class Meta:
         model = Professor
         fields = [
-            "subject", "study", "school",
-            "created", "updated", "posts_count",
+            "user", "subject", "study", "school",
+            "created", "updated", "public_id", "id"
         ]
+
+    def get_study(self, obj):
+        """
+        Get the list of studies associated with the professor.
+        """
+        return [{"id": study.id, "name": study.label} for study in obj.study.all()] if obj.study.exists() else []
+
+    def get_school(self, obj):
+        """
+        Get the list of schools associated with the professor.
+        """
+        return [{"id": school.id, "name": school.label} for school in obj.school.all()] if obj.school.exists() else []
 
 
 class PersonnelSerializer(AbstractSerializer):
-    posts_count = serializers.SerializerMethodField()
-    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", many=True)
-    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id")
-
-    def get_posts_count(self, instance):
-        return instance.posts.count()
+    """
+    Serializer for the Personnel model.
+    Handles the serialization and deserialization of Personnel objects.
+    """
+    user = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field="public_id")
+    study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", required=False, allow_null=True)
+    school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id", required=True)
 
     class Meta:
         model = Personnel
         fields = [
-            "study", "job", "administration", "school",
-            "created", "updated", "posts_count",
-        ] 
+            "user", "study", "job", "school","administration",
+            "created", "updated", "public_id", "id"
+        ]
+
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the output format.
+        """
+        representation = super().to_representation(instance)
+        
+        # Format the study field
+        representation['study'] = {
+            "id": instance.study.public_id,
+            "name": instance.study.label
+        } if instance.study else None
+        
+        # Format the school field
+        representation['school'] = {
+            "id": instance.school.public_id,
+            "name": instance.school.label
+        } if instance.school else None
+        
+        return representation
 
 
 class ServiceSerializer(AbstractSerializer):
@@ -126,3 +188,4 @@ class PeerPositionSerializer(AbstractSerializer):
     # class Meta:
     #     model = PeerPosition
     #     fields = "__all__"
+

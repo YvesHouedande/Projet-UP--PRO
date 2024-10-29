@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import { MdEdit } from 'react-icons/md';
 import axiosService, { fetcher } from '../../helpers/axios';
@@ -12,13 +12,25 @@ export default function InfoINPTab({ user }) {
   const currentUser = getUser();
   const canEdit = currentUser && currentUser.public_id === user?.public_id;
 
-  const { data: inpInfo, error, mutate } = useSWR(
-    `/user/${user.public_id}/${user.status_choice}/`,
+  const getEndpoint = (status) => {
+    switch(status) {
+      case 'etudiant': return 'student';
+      case 'professeur': return 'professor';
+      case 'personnel': return 'personnel';
+      default: return '';
+    }
+  };
+
+  const { data: inpInfoResponse, error, mutate } = useSWR(
+    () => `/user/${user.public_id}/${getEndpoint(user.status_choice)}/`,
     fetcher
   );
 
   if (error) return <div className="text-red-500">Erreur lors du chargement des informations INP</div>;
-  if (!inpInfo) return <Loading />;
+  if (!inpInfoResponse) return <Loading />;
+
+  const inpInfo = inpInfoResponse.results[0] || null;
+  const isNewProfile = !inpInfo;
 
   const handleEdit = () => setIsEditing(true);
   const handleCloseEdit = () => setIsEditing(false);
@@ -33,14 +45,18 @@ export default function InfoINPTab({ user }) {
             onClick={handleEdit}
           >
             <MdEdit size={20} className="mr-2" />
-            Modifier les informations
+            {isNewProfile ? "Créer le profil" : "Modifier les informations"}
           </button>
         )}
       </div>
       {isEditing ? (
         <UpdateINPInfo user={user} inpInfo={inpInfo} handleCloseEdit={handleCloseEdit} mutate={mutate} />
       ) : (
-        <InfoInpDisplay user={user} inpInfo={inpInfo} />
+        isNewProfile ? (
+          <p>Aucun profil INP n'a été créé pour cet utilisateur.</p>
+        ) : (
+          <InfoInpDisplay user={user} inpInfo={inpInfo} />
+        )
       )}
     </div>
   );

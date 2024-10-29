@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    container_name: api_public
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8000"  # Remplace "8000:8000" par "8001:8000" pour éviter le conflit
+    depends_on:
+      - db
+      - redis
+
+  nginx:
+    container_name: nginx_public
+    restart: on-failure
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./staticfiles:/app/staticfiles
+      - ./uploads:/app/uploads
+    ports:
+      - "81:80"  # Remplace "80:80" par "81:80" pour éviter le conflit
+    depends_on:
+      - web
+
+  db:
+    container_name: postgres_public
+    image: postgres:13
+    volumes:
+      - postgres_data_public:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+
+  redis:
+    container_name: redis_public
+    image: redis:7.4
+
+volumes:
+  postgres_data_public:

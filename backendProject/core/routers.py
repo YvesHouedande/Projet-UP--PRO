@@ -49,13 +49,13 @@ user.register(r"general_post", GeneralPostViewSet, basename="user-post")
 user.register(r"event", EventViewSet, basename="user-event")
 
 # Ajoutez ces nouvelles routes pour gérer les informations INP
-user.register(r"etudiant", StudentViewSet, basename="user-student")
-user.register(r"professeur", ProfessorViewSet, basename="user-professor")
-user.register(r"administration", PersonnelViewSet, basename="user-personnel")
+user.register(r"student", StudentViewSet, basename="user-student")
+user.register(r"professor", ProfessorViewSet, basename="user-professor")
+user.register(r"personnel", PersonnelViewSet, basename="user-personnel")
 
-# router.register(r"student", StudentViewSet, basename="student")
-# router.register(r"professor", ProfessorViewSet, basename="professor")
-# router.register(r"personnel", PersonnelViewSet, basename="personnel")
+router.register(r"student", StudentViewSet, basename="student")
+router.register(r"professor", ProfessorViewSet, basename="professor")
+router.register(r"personnel", PersonnelViewSet, basename="personnel")
 
 #router.register(r"study/students", StudentViewSet, basename="study-students")################
 ################ peer->data ################ 

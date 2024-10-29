@@ -47,12 +47,13 @@ export default function InfoTab({ user }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <InfoItem label="Nom complet" value={`${user?.first_name} ${user.last_name}`} />
             <InfoItem label="Statut" value={user?.status_choice} />
+            <InfoItem label="Contact" value={"+225 "+user?.number} />
             <InfoItem label="Nombre de publications" value={user?.posts_count} />
             <InfoItem label="Email INP" value={user?.inp_mail || "Aucun email INP"} />
             <InfoItem label="Créé le" value={new Date(user?.created).toLocaleDateString()} />
             <InfoItem label="Mis à jour le" value={new Date(user?.updated).toLocaleDateString()} />
             <InfoItem label="De INP" value={user?.from_inp ? "Oui" : "Non"} />
-            <InfoItem label="Bio" value={user?.bio || "Aucune bio ajoutée"} />
+            {/* <InfoItem label="Bio" value={user?.bio || "Aucune bio ajoutée"} /> */}
           </div>
         </>
       )}

@@ -35,7 +35,7 @@ class StudySerializer(AbstractSerializer):
     )
     class Meta:
         model = Study
-        fields = "__all__"  
+        fields = '__all__'
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

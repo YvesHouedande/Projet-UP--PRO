@@ -114,7 +114,7 @@ export default function RegisterForm() {
               >
                 <option value="etudiant">Étudiant</option>
                 <option value="professeur">Professeur</option>
-                <option value="administration">Administration</option>
+                <option value="personnel">Personnel</option>
                 <option value="autre">Autre</option>
               </select>
               {errors.status_choice && <p className="text-red-500">{errors.status_choice[0]}</p>}

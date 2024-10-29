@@ -59,13 +59,14 @@ class AbstractPostCommon(models.Model):
     CONTENT_TYPE_CHOICES = [
         ("IMAGE POST", 'Image Post'), 
         ("RICH POST", 'Rich Post'),
-        ("SIMPLE POST", 'Simple Post'),
+        ("SIMPLE POST", 'Simple Post'), 
 
     ]
 
     POST_SOURCE_CHOICES = [
         ("etudiant", 'ETUDIANT'), 
         ("professeur", 'PROFESSEUR'),
+        ("personnel", 'PERSONNEL'),
         ("service", 'SERVICE'),
         ("promotion", 'PROMOTION'),
         ("autre", 'AUTRE'),
