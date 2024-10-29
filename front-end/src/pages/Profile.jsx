@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import InfoTab from '../components/profile/InfoTab'; 
-import InfoINPTab from '../components/profile/InfoINPTab'; // Ajoutez cette ligne
+import InfoINPTab from '../components/profile/InfoINPTab';
 import PublicationsTab from '../components/profile/PublicationsTab'; 
 import EventsTab from '../components/profile/EventsTab'; 
 import Layout from './Layout';
@@ -20,24 +20,23 @@ export default function UserProfile() {
   const [activeTab, setActiveTab] = useState('info');
   const { profileId } = useParams();
 
-  const { data: user, error } = useSWR(`/user/${profileId}`, fetcher);
+  const { data: user, error, mutate } = useSWR(`/user/${profileId}`, fetcher);
 
-  // Gestion des erreurs et chargement
   if (error) return <div>Error: {error.message}</div>;
   if (!user) return <Loading />;
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
-        return <InfoTab user={user} />;
+        return <InfoTab user={user} mutate={mutate} />;
       case 'infoINP':
-        return <InfoINPTab user={user} />;
+        return <InfoINPTab user={user} mutate={mutate} />;
       case 'publications':
         return <PublicationsTab user={user} />;
       case 'events':
         return <EventsTab user={user} />;
       default:
-        return <InfoTab user={user} />;
+        return <InfoTab user={user} mutate={mutate} />;
     }
   };
 

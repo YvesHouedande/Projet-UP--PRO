@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useUserActions } from '../../hooks/user.actions';
 
-export default function UpdateUser({ user, handleCloseEdit }) {
+export default function UpdateUser({ user, handleCloseEdit, mutate }) {
   const userActions = useUserActions();
   const [formData, setFormData] = useState({
     username: user.username,
-    name: user.name,
     first_name: user.first_name,
     last_name: user.last_name,
     bio: user.bio || '',
@@ -49,23 +48,80 @@ export default function UpdateUser({ user, handleCloseEdit }) {
       <div className="col-span-2">
         <input type="file" onChange={handleFileChange} className="p-2 border rounded w-full" />
       </div>
-      <input name="username" value={formData.username} onChange={handleChange} placeholder="Nom d'utilisateur" className="p-2 border rounded" />
-      <input name="name" value={formData.name} onChange={handleChange} placeholder="Nom complet" className="p-2 border rounded" />
-      <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="Prénom" className="p-2 border rounded" />
-      <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Nom de famille" className="p-2 border rounded" />
-      <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="p-2 border rounded" />
-      <select name="status_choice" value={formData.status_choice} onChange={handleChange} className="p-2 border rounded">
+      <input 
+        name="username" 
+        value={formData.username} 
+        onChange={handleChange} 
+        placeholder="Nom d'utilisateur" 
+        className="p-2 border rounded" 
+      />
+      <input 
+        name="first_name" 
+        value={formData.first_name} 
+        onChange={handleChange} 
+        placeholder="Prénom" 
+        className="p-2 border rounded" 
+      />
+      <input 
+        name="last_name" 
+        value={formData.last_name} 
+        onChange={handleChange} 
+        placeholder="Nom de famille" 
+        className="p-2 border rounded" 
+      />
+      <input 
+        name="email" 
+        value={formData.email} 
+        onChange={handleChange} 
+        placeholder="Email" 
+        className="p-2 border rounded" 
+      />
+      <select 
+        name="status_choice" 
+        value={formData.status_choice} 
+        onChange={handleChange} 
+        className="p-2 border rounded"
+      >
         <option value="">Sélectionnez un statut</option>
         <option value="etudiant">Étudiant</option>
         <option value="professeur">Professeur</option>
         <option value="personnel">Personnel</option>
         <option value="autre">Autre</option>
       </select>
-      <input name="number" value={formData.number} onChange={handleChange} placeholder="Numéro de contact" className="p-2 border rounded" />
-      <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="p-2 border rounded col-span-2" rows="4" />
+      <input 
+        type="number" 
+        name="number" 
+        value={formData.number} 
+        onChange={handleChange} 
+        placeholder="Numéro de contact" 
+        className="p-2 border rounded"
+        pattern="[0-9]{10}"
+        minLength="10"
+        maxLength="10"
+        title="Veuillez entrer un numéro de téléphone valide à 10 chiffres"
+      />
+      <textarea 
+        name="bio" 
+        value={formData.bio} 
+        onChange={handleChange} 
+        placeholder="Bio" 
+        className="p-2 border rounded col-span-2" 
+        rows="4" 
+      />
       <div className="col-span-2 flex justify-end space-x-2 mt-4">
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Enregistrer</button>
-        <button type="button" onClick={handleCloseEdit} className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Annuler</button>
+        <button 
+          type="submit" 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Enregistrer
+        </button>
+        <button 
+          type="button" 
+          onClick={handleCloseEdit} 
+          className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Annuler
+        </button>
       </div>
     </form>
   );

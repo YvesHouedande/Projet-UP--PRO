@@ -11,7 +11,7 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-export default function InfoTab({ user }) {
+export default function InfoTab({ user, mutate }) {
   const [isEditing, setIsEditing] = useState(false);
   const currentUser = getUser();
   const canEdit = currentUser && currentUser.public_id === user?.public_id;
@@ -20,15 +20,20 @@ export default function InfoTab({ user }) {
     setIsEditing(true);
   };
 
-  const handleCloseEdit = () => {
+  const handleCloseEdit = async () => {
     setIsEditing(false);
+    await mutate();
   };
 
   return (
     <div className="info-tab p-6 bg-white rounded-lg shadow-md border border-gray-200">
         <h2 className="text-2xl font-semibold">Informations de l'utilisateur</h2>
       {isEditing ? (
-        <UpdateUser user={user} handleCloseEdit={handleCloseEdit} />
+        <UpdateUser 
+          user={user} 
+          handleCloseEdit={handleCloseEdit}
+          mutate={mutate}
+        />
       ) : (
         <>
           <div className="flex items-center mb-4">

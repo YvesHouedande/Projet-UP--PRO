@@ -69,31 +69,6 @@ function useUserActions() {
   }
 
   // Modification des données utilisateur
-  // function edit(data, userId) {
-  //   try {
-  //     const res = axiosService.patch(`${baseURL}/user/${userId}/`, data, {
-  //       headers: {
-  //         "content-type": "multipart/form-data",
-  //       },
-  //     });
-  //     if (res.data) {
-  //       console.log(res.data)
-  //       localStorage.setItem(
-  //         "auth",
-  //         JSON.stringify({
-  //           access: getAccessToken(),
-  //           refresh: getRefreshToken(),
-  //           user: res.data,
-  //         })
-  //       );
-  //     } else {
-  //       throw new Error("Invalid data structure from edit response");
-  //     }
-  //   } catch (error) {
-  //     console.error("Edit error:", error);
-  //     throw error;
-  //   }
-  // }
   function edit(data, userId) {
     return axiosService
       .patch(`${baseURL}/user/${userId}/`, data, {
@@ -102,7 +77,6 @@ function useUserActions() {
         },
       })
       .then((res) => {
-        // Registering the account in the store
         localStorage.setItem(
           "auth",
           JSON.stringify({
@@ -111,10 +85,9 @@ function useUserActions() {
             user: res.data,
           })
         );
+        return res.data;
       });
   }
-
-  
 
   // Déconnexion de l'utilisateur
   async function logout() {
