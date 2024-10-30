@@ -13,6 +13,8 @@ import random
 import string
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 
@@ -184,22 +186,40 @@ class Personnel(AbstractModel):
         abstract = False
 
 class Peer(AbstractModel):
-    label = models.CharField(max_length=255, verbose_name="Nom de la Promo")
+    label = models.CharField(max_length=255, verbose_name="Nom de la Promo", unique=True)
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
-    school =  models.ForeignKey("core_center.School", on_delete=models.PROTECT, verbose_name="Ecole", null=True, blank=True)
+    school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, verbose_name="Ecole", null=True, blank=True)
     description = models.TextField()
     manager = models.OneToOneField("Student", on_delete=models.PROTECT, related_name="peer_managed", verbose_name='Gerant')
     year = models.DateField(verbose_name="année")
     cover = models.ImageField(null=True, blank=True, upload_to="Peer/")
     follows = models.ManyToManyField("User", related_name="P_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
 
-    def add_student(self,  student:Student=None):
-        student.peer = self
+    def clean(self):
+        # Vérifier si une promotion existe déjà pour cette filière cette année
+        current_year = timezone.now().year
+        if Peer.objects.filter(
+            study=self.study,
+            year__year=current_year
+        ).exists() and not self.pk:
+            raise ValidationError("Une promotion existe déjà pour cette filière cette année")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Nouveau Peer
+            current_year = timezone.now().year
+            # Générer le label automatiquement
+            self.label = f"{self.study.label}{str(current_year)[2:]}"
+            # Définir l'année automatiquement
+            self.year = timezone.datetime(current_year, 1, 1)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Promotion"
-        abstract = False    
-    
+        unique_together = ('study', 'year')
+
+    def add_student(self,  student:Student=None):
+        student.peer = self
+
     def __str__(self) -> str:
         return f"{self.label}"
     

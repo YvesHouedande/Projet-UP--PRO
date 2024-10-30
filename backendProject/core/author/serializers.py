@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.conf import settings
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound
 
 from core.abstract.serializers import AbstractSerializer
 from core.author.models import(
@@ -12,10 +12,10 @@ from core.center.models import School, Study
 
 
 class UserSerializer(AbstractSerializer):
-    posts_count = serializers.SerializerMethodField()
+    # posts_count = serializers.SerializerMethodField()
     
-    def get_posts_count(self, instance):
-        return instance.posts.count()
+    # def get_posts_count(self, instance):
+    #     return instance.posts.count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -29,54 +29,85 @@ class UserSerializer(AbstractSerializer):
     class Meta:
         model = User
         fields = [
-            "public_id", "name", "first_name", "last_name", "bio", "avatar",
-            "email", "created", "updated", "posts_count", "is_superuser",
-            "status_choice", "from_inp", 'inp_mail', "number",
+            'public_id', 'first_name', 'last_name', 
+            'email', 'avatar', 'status_choice', 'number',
+            # 'posts_count',
         ]
-        read_only_fields = ["is_active", "is_superuser"]
 
 
-class StudentSerializer(AbstractSerializer):
-    """
-    Serializer for the Student model.
-    Handles the serialization and deserialization of Student objects.
-    """
+class StudentBaseSerializer(AbstractSerializer):
+    """Sérialiseur de base avec les champs communs"""
     user = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field="public_id")
     study = serializers.SlugRelatedField(queryset=Study.objects.all(), slug_field="public_id", required=False, allow_null=True)
     school = serializers.SlugRelatedField(queryset=School.objects.all(), slug_field="public_id", required=True)
-    level_choices_display = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
         fields = [
-            "user", "bac_year", "study", "school", "level_choices", "level_choices_display", "public_id", "id",
-            "created", "updated", 
+            "public_id", "user", "study", "school",
+            "bac_year", "level_choices"
+        ]
+
+class StudentUpdateSerializer(StudentBaseSerializer):
+    """Serializer pour la création et mise à jour"""
+    level_choices_display = serializers.SerializerMethodField()
+
+    class Meta(StudentBaseSerializer.Meta):
+        fields = StudentBaseSerializer.Meta.fields + [
+            "level_choices_display", "created", "updated"
         ]
 
     def get_level_choices_display(self, obj):
-        """
-        Get the display value for the level_choices field.
-        """
         return obj.get_level_choices_display() if obj.level_choices else None
 
     def to_representation(self, instance):
-        """
-        Override the to_representation method to customize the output format.
-        """
         representation = super().to_representation(instance)
-        
-        # Format the study field
         representation['study'] = {
             "id": instance.study.public_id,
             "name": instance.study.label
         } if instance.study else None
-        
-        # Format the school field
         representation['school'] = {
             "id": instance.school.public_id,
             "name": instance.school.label
-        } if instance.school else None
-        
+        }
+        return representation
+
+class StudentDetailSerializer(StudentBaseSerializer):
+    """Serializer pour l'affichage détaillé avec infos utilisateur"""
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    avatar = serializers.SerializerMethodField()
+    number = serializers.CharField(source='user.number', read_only=True)
+    level_choices_display = serializers.SerializerMethodField()
+
+    class Meta(StudentBaseSerializer.Meta):
+        fields = StudentBaseSerializer.Meta.fields + [
+            'first_name', 'last_name', 'email', 
+            'avatar', 'number', 'level_choices_display'
+        ]
+
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.user.avatar:
+            if request and settings.DEBUG:  # En développement
+                return request.build_absolute_uri(obj.user.avatar.url)
+            return obj.user.avatar.url
+        return settings.DEFAULT_AVATAR_URL
+
+    def get_level_choices_display(self, obj):
+        return obj.get_level_choices_display() if obj.level_choices else None
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['study'] = {
+            "id": instance.study.public_id,
+            "name": instance.study.label
+        } if instance.study else None
+        representation['school'] = {
+            "id": instance.school.public_id,
+            "name": instance.school.label
+        }
         return representation
 
 
@@ -160,15 +191,18 @@ class ServiceSerializer(AbstractSerializer):
 
 
 class PeerSerializer(AbstractSerializer):
-    school = serializers.SlugRelatedField(
-        queryset=School.objects.all(), slug_field="public_id",
-    )
-    study = serializers.SlugRelatedField(
-        queryset=Study.objects.all(), slug_field="public_id",
-    )
-    class Meta: 
+    """Sérialiseur pour l'affichage détaillé d'une promotion"""
+    study_label = serializers.CharField(source='study.label', read_only=True)
+    school_label = serializers.CharField(source='school.label', read_only=True)
+    manager = StudentDetailSerializer(read_only=True)
+
+    class Meta:
         model = Peer
-        fields = "__all__" 
+        fields = [
+            'public_id', 'label', 'study_label', 'school_label',
+            'year', 'cover', 'description', 'manager',
+        ]
+
 
 class PeerPositionSerializer(AbstractSerializer): 
     pass
@@ -188,4 +222,19 @@ class PeerPositionSerializer(AbstractSerializer):
     # class Meta:
     #     model = PeerPosition
     #     fields = "__all__"
+
+
+class PeerSearchSerializer(AbstractSerializer):
+    study_label = serializers.SerializerMethodField()
+    school_label = serializers.SerializerMethodField()
+
+    def get_study_label(self, obj):
+        return obj.study.label if obj.study else None
+
+    def get_school_label(self, obj):
+        return obj.school.label if obj.school else None
+
+    class Meta:
+        model = Peer
+        fields = ['public_id', 'label', 'study_label', 'school_label', 'year', 'cover']
 

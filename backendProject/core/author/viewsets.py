@@ -6,8 +6,9 @@ from core.center.models import(
 from core.author.serializers import (
     UserSerializer, ServiceSerializer,
     PeerSerializer, PeerPositionSerializer,
-    StudentSerializer, ProfessorSerializer,
-    PersonnelSerializer 
+    StudentBaseSerializer, StudentUpdateSerializer, 
+    StudentDetailSerializer, ProfessorSerializer, 
+    PersonnelSerializer, PeerSearchSerializer,
 )
 from core.author.models import (
     User, Service, Peer,
@@ -16,13 +17,16 @@ from core.author.models import (
     )
 from core.auth.permissions import UserPermission
 from rest_framework import filters
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 import logging
+from rest_framework.exceptions import NotFound
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin, CreateModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -57,79 +61,170 @@ class UserViewSet(AbstractViewSet):
     
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
- 
+
+    def update(self, request, *args, **kwargs):
+        """
+        Mise à jour d'un utilisateur avec gestion du changement de statut
+        """
+        instance = self.get_object()
+        old_status = instance.status_choice
+        
+        # Mise à jour normale de l'utilisateur
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Si le statut change, supprimer l'ancien profil
+        new_status = serializer.validated_data.get('status_choice', old_status)
+        if new_status != old_status:
+            self._delete_old_profile(instance, old_status)
+            
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def _delete_old_profile(self, user, old_status):
+        """
+        Supprime l'ancien profil de l'utilisateur selon son statut
+        """
+        if old_status == 'etudiant' and hasattr(user, 'student'):
+            user.student.delete()
+        elif old_status == 'professeur' and hasattr(user, 'professor'):
+            user.professor.delete()
+        elif old_status == 'personnel' and hasattr(user, 'personnel'):
+            user.personnel.delete()
+
 class StudentViewSet(AbstractViewSet):
     """
-    ViewSet for handling Student-related operations.
-    Supports CRUD operations on Student objects.
+    ViewSet pour gérer les étudiants selon différents contextes
     """
     http_method_names = ("get", "post", "put", "patch", "delete")
     permission_classes = (IsAuthenticated, UserPermission)
-    serializer_class = StudentSerializer
+
+    def get_serializer_class(self):
+        """
+        Sélectionne le sérialiseur approprié selon le contexte
+        """
+        if self.basename == "user-student":
+            if self.action in ['create', 'update', 'partial_update']:
+                return StudentUpdateSerializer
+            return StudentDetailSerializer
+        
+        if self.basename in ["peer-student", "school-student", "study-student"]:
+            return StudentDetailSerializer
+            
+        return StudentDetailSerializer
 
     def get_queryset(self):
         """
-        Get the list of items for this view.
-        If a user_pk is provided, return students for that user.
-        Otherwise, return all students.
+        Filtre le queryset selon le contexte de la route
         """
-        # user_pk = self.kwargs.get("user__pk")
-        # if user_pk:
-        #     user = get_object_or_404(User, public_id=user_pk)
-        #     return Student.objects.filter(user=user)
-        return Student.objects.all()
-    
+        queryset = Student.objects.select_related('user', 'study', 'school', 'peer')
+
+        # Filtrage par utilisateur (user/{pk}/student/)
+        if self.basename == "user-student":
+            return queryset.filter(user__public_id=self.kwargs.get("user__pk"))
+
+        # Filtrage par promotion (peer/{pk}/student/)
+        if self.basename == "peer-student":
+            return queryset.filter(peer__public_id=self.kwargs.get("peer__pk"))
+
+        # Filtrage par école (school/{pk}/student/)
+        if self.basename == "school-student":
+            return queryset.filter(school__public_id=self.kwargs.get("school__pk"))
+
+        # Filtrage par filière (study/{pk}/student/)
+        if self.basename == "study-student":
+            return queryset.filter(study__public_id=self.kwargs.get("study__pk"))
+
+        return queryset
+
     def get_object(self):
+        """
+        Récupère l'objet selon le contexte
+        """
+        if self.basename == "user-student":
+            return get_object_or_404(
+                Student.objects.select_related('user', 'study', 'school'),
+                user__public_id=self.kwargs.get('user__pk')
+            )
+        
         obj = Student.objects.get_object_by_public_id(self.kwargs.get("pk"))
         self.check_object_permissions(self.request, obj)
         return obj
 
     def create(self, request, *args, **kwargs):
         """
-        Create a new Student object.
+        Création d'un profil étudiant
         """
-        user_pk = self.kwargs.get("user__pk")
-        user = get_object_or_404(User, public_id=user_pk)
-        
-        if hasattr(user, 'student'):
-            return Response({"detail": "A student profile already exists for this user."}, 
-                            status=status.HTTP_400_BAD_REQUEST)
+        if self.basename == "user-student":
+            try:
+                user = User.objects.get_object_by_public_id(self.kwargs.get('user__pk'))
+                
+                if hasattr(user, 'student'):
+                    return Response(
+                        {"detail": "Un profil étudiant existe déjà pour cet utilisateur."}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=user)
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                serializer = self.get_serializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                student = serializer.save(user=user)
+                
+                # Retourner avec le sérialiseur détaillé
+                return Response(
+                    StudentDetailSerializer(student).data,
+                    status=status.HTTP_201_CREATED
+                )
+            
+            except User.DoesNotExist:
+                return Response(
+                    {"detail": "Utilisateur non trouvé."}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            except Exception as e:
+                logger.error(f"Erreur lors de la création du profil étudiant: {str(e)}")
+                return Response(
+                    {"detail": str(e)}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """
-        Update an existing Student object.
+        Mise à jour d'un profil étudiant
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+            
         return Response(serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
         """
-        Partially update a Student object.
+        Mise à jour partielle d'un profil étudiant
         """
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         """
-        Soft delete a Student object by resetting its fields.
+        Suppression douce d'un profil étudiant
         """
         instance = self.get_object()
         for field in instance._meta.fields:
             if field.name not in ['id', 'user']:
                 setattr(instance, field.name, field.get_default())
         instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        return Response(
+            StudentDetailSerializer(instance).data,
+            status=status.HTTP_200_OK
+        )
 
 class ProfessorViewSet(AbstractViewSet):
     """
@@ -144,11 +239,21 @@ class ProfessorViewSet(AbstractViewSet):
         """
         Get the list of items for this view.
         """
-        user_pk = self.kwargs.get("user__pk")
-        if user_pk:
-            user = get_object_or_404(User, public_id=user_pk)
-            return Professor.objects.filter(user=user)
-        return Professor.objects.all()
+        queryset = Professor.objects.select_related('user').prefetch_related('school', 'study')
+
+        # Filtrage par utilisateur
+        if self.basename == "user-professor":
+            return queryset.filter(user__public_id=self.kwargs.get("user__pk"))
+
+        # Filtrage par école
+        if self.basename == "school-professor":
+            return queryset.filter(school__public_id=self.kwargs.get("school__pk"))
+
+        # Filtrage par filière
+        if self.basename == "study-professor":
+            return queryset.filter(study__public_id=self.kwargs.get("study__pk"))
+
+        return queryset
 
     def get_object(self):
         obj = Professor.objects.get_object_by_public_id(self.kwargs.get("pk"))
@@ -294,17 +399,17 @@ class ServiceViewSet(AbstractViewSet):
         follow base on user_pk else,
         return all.
         """
-        user_pk = self.kwargs.get("user__pk")#here, user_pk is user_public_id
+        queryset = Service.objects.select_related('school', 'manager')
+        
+        user_pk = self.kwargs.get("user__pk")
         school_pk = self.kwargs.get("school__pk")
+        
         if user_pk:
-            try:
-                user = User.objects.get(public_id=user_pk)
-                return Service.objects.filter(manager=user)
-            except User.DoesNotExist:
-                return []
+            return queryset.filter(manager__public_id=user_pk)
         if school_pk:
-               return Service.objects.filter(school__public_id=school_pk)
-        return Service.objects.all()
+            return queryset.filter(school__public_id=school_pk)
+            
+        return queryset
 
     def get_object(self):
         obj = Service.objects.get_object_by_public_id(self.kwargs["pk"])
@@ -314,20 +419,63 @@ class ServiceViewSet(AbstractViewSet):
         return obj
     
 class PeerViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
-    permission_classes = (UserPermission,)
-    serializer_class = PeerSerializer
-    filterset_fields = ["created"]
+    """
+    ViewSet pour gérer les promotions (Peer)
+    """
+    http_method_names = ("post", "get", "patch")
+    permission_classes = (IsAuthenticated,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['label']
 
-    #only Peer i managed
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PeerSearchSerializer
+        return PeerSerializer
+
     def get_queryset(self):
-        return Peer.objects.all()
+        queryset = Peer.objects.select_related(
+            'study', 
+            'school', 
+            'manager'
+        ).prefetch_related(
+            'students',
+            'students__user'
+        )
+        
+        label = self.request.query_params.get('label')
+        if label:
+            queryset = queryset.filter(label__icontains=label)
+        return queryset
 
     def get_object(self):
-        obj = Peer.objects.get_object_by_public_id(self.kwargs["pk"])
-        self.check_object_permissions(self.request, obj)
-        return obj
-    
+        try:
+            obj = Peer.objects.get_object_by_public_id(self.kwargs["pk"])
+            self.check_object_permissions(self.request, obj)
+            return obj
+        except Peer.DoesNotExist:
+            raise NotFound("Cette promotion n'existe pas.")
+
+    @action(detail=True, methods=['get'])
+    def students(self, request, pk=None):
+        """
+        Endpoint pour récupérer les étudiants d'une promotion
+        GET /peer/{public_id}/students/
+        """
+        peer = self.get_object()
+        students = peer.students.select_related(
+            'user', 
+            'study', 
+            'school'
+        ).all()
+        
+        serializer = StudentDetailSerializer(
+            students, 
+            many=True,
+            context={'request': request}  # Important pour les URLs des avatars
+        )
+        
+        return Response(serializer.data)
+
 class PeerPositionViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
     permission_classes = (UserPermission,)

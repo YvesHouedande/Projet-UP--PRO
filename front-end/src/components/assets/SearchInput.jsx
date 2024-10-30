@@ -1,37 +1,3 @@
-// import React, {useRef, useState } from 'react'
-// import { IoMdSearch } from "react-icons/io";
-
-
-// export default function SearchInput() {
-//     const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-//     const inputRef = useRef(null);
-
-//     const handleIconClick = () => {
-//     setIsSearchOpen(!isSearchOpen);
-//     if (!isSearchOpen) {
-//       inputRef.current.focus();
-//     }
-//   };
-
-//   return (
-//     <div className="relative flex items-center md:w-full border-green-400 border-solid border-2 rounded-full transition-all duration-300 ease-in-out">
-//         <IoMdSearch
-//         className="text-black ml-3 cursor-pointer"
-//         size={30}
-//         onClick={handleIconClick}
-//         />
-//         <input
-//         type="text"
-//         ref={inputRef}
-//         className={`text-black px-4 py-2 focus:ring-0 border-none bg-transparent transition-opacity duration-500 ease-in-out ${isSearchOpen ? 'opacity-100 w-48' : 'opacity-0 w-0'} md:w-full md:opacity-100`}
-//         placeholder="Recherche..."
-//         />
-//     </div>
-//   )
-// }
-
-
 import React, { useRef, useState, useEffect } from 'react';
 import { IoMdSearch } from 'react-icons/io';
 import { MdClose } from 'react-icons/md';
@@ -65,26 +31,35 @@ export default function SearchInput() {
     if (searchType && query) {
       try {
         let response;
-        if (searchType === 'users') {
-          response = await axiosService.get(`/user/?search=${query}`);
-        } else if (searchType === 'publications') {
-          response = await axiosService.get(`/general_post/?search=${query}`);
-        } else if (searchType === 'events') {
-          response = await axiosService.get(`/event/?search=${query}`);
+        switch (searchType) {
+          case 'users':
+            response = await axiosService.get(`/user/?search=${query}`);
+            break;
+          case 'publications':
+            response = await axiosService.get(`/general_post/?search=${query}`);
+            break;
+          case 'events':
+            response = await axiosService.get(`/event/?search=${query}`);
+            break;
+          case 'promotions':
+            // Recherche directe par label
+            response = await axiosService.get(`/peer/?search=${query}`);
+            break;
+          default:
+            break;
         }
         
         if (response && response.data) {
-          setResults(response.data.results);  // Mise à jour des résultats avec les données reçues
+          setResults(response.data.results || []);
         }
       } catch (error) {
         console.error(`Error fetching ${searchType} with query ${query}:`, error);
-        setResults([]);  // Réinitialiser les résultats en cas d'erreur
+        setResults([]);
       }
     } else {
-      setResults([]);  // Réinitialiser les résultats si pas de type de recherche ou de query
+      setResults([]);
     }
   };
-
 
   // Handle input change for search query
   const handleInputChange = (e) => {

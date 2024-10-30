@@ -1,9 +1,8 @@
 from rest_framework_nested import routers
 from core.author.viewsets import (
     UserViewSet, ServiceViewSet,
-    PeerViewSet, PeerPositionViewSet,
-    StudentViewSet, ProfessorViewSet,
-    PersonnelViewSet,
+    PeerViewSet, StudentViewSet, 
+    ProfessorViewSet, PersonnelViewSet,
 )
 from core.content.viewsets import (
     GeneralPostViewSet, CommentViewset, 
@@ -61,8 +60,8 @@ router.register(r"personnel", PersonnelViewSet, basename="personnel")
 ################ peer->data ################ 
 router.register(r"peer", PeerViewSet, basename="peer")
 peer = routers.NestedSimpleRouter(router, r"peer", lookup="peer")
-peer.register(r"position", PeerPositionViewSet, basename="peer-position")
-peer.register(r"student", StudentViewSet, basename="peer-student")
+# peer.register(r"position", PeerPositionViewSet, basename="peer-position")
+peer.register(r"student", PeerViewSet, basename="peer-student") 
 
 
 ################service->data ################ 

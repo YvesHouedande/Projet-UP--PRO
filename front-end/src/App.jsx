@@ -5,6 +5,7 @@ import Profile from './pages/Profile';
 import LoginForm from './components/authentication/LoginForm';
 import RegisterForm from './components/authentication/RegisterForm';
 import TimeLinePage from './pages/TimeLinePage';
+import PeerPage from './pages/PeerPage';
 
 function App() { 
   return (
@@ -12,25 +13,32 @@ function App() {
       <Route
         path='/login'
         element={<LoginForm/>}
-      ></Route>
+      />
+
       <Route
         path='/timeline'
         element={<TimeLinePage/>}
-      ></Route>
+      />
+
       <Route
         path='/register'
         element={<RegisterForm/>}
-      ></Route>
+      />
+
       <Route
         path='/'
         element={<Home/>}
-      >
-      </Route>
+      />
+      
       <Route
         path="/profile/:profileId/"
         element={<Profile/>}
-      >
-      </Route>
+      />
+      
+      <Route
+        path="/peer/:peerId"
+        element={<PeerPage />}
+      />
     </Routes>
     // <Home></Home>
   );
