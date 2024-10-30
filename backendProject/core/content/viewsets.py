@@ -111,41 +111,6 @@ class CommentViewset(AbstractViewSet):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-# class EventViewSet(AbstractViewSet):
-#     """
-#         -   *AbstractViewSet*: base for filtering
-#         -   Have to include *search_fields* field for filtering
-#     """
-#     http_method_names = ("post", "get",  "delete")
-#     permission_classes = (UserPermission,)
-#     filter_backends = [filters.SearchFilter]
-#     serializer_class = EventSerializer
-#     search_fields = ['label', 'service__label', "description"]  
-
-#     def get_queryset(self):
-#         service_pk = self.kwargs.get("service__pk")
-#         user_pk = self.kwargs.get("user__pk")  # Correction de la clé ici
-#         if user_pk:
-#             try:
-#                 user = User.objects.get(public_id=user_pk)
-#             except User.DoesNotExist:
-#                 return Event.objects.none()
-#             return Event.objects.filter(service__manager=user)
-
-#         if service_pk :
-#             return Event.objects.filter(service__public_id=service_pk)
-#         return Event.objects.all()
-
-#     def get_object(self):
-#         obj = Event.objects.get_object_by_public_id(self.kwargs["pk"])
-#         self.check_object_permissions(self.request, obj)
-#         return obj
-    
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create(serializer)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 from rest_framework.exceptions import NotFound

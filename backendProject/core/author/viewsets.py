@@ -458,8 +458,7 @@ class PeerViewSet(AbstractViewSet):
     @action(detail=True, methods=['get'])
     def students(self, request, pk=None):
         """
-        Endpoint pour récupérer les étudiants d'une promotion
-        GET /peer/{public_id}/students/
+        Endpoint pour récupérer les étudiants d'une promotion avec pagination
         """
         peer = self.get_object()
         students = peer.students.select_related(
@@ -467,14 +466,15 @@ class PeerViewSet(AbstractViewSet):
             'study', 
             'school'
         ).all()
-        
+
+        page = self.paginate_queryset(students)
         serializer = StudentDetailSerializer(
-            students, 
+            page, 
             many=True,
-            context={'request': request}  # Important pour les URLs des avatars
+            context={'request': request}
         )
         
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
 class PeerPositionViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
