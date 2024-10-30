@@ -26,7 +26,7 @@ export default function InfoInpDisplay({ user, inpInfo }) {
       </div>
       <div>
         <p className="text-sm font-medium text-gray-500">Année du bac</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.bac_year ? new Date(inpInfo.bac_year).getFullYear() : 'Non spécifié'}</p>
+        <p className="mt-1 text-sm text-gray-900">{inpInfo.bac_year || 'Non spécifié'}</p>
       </div>
     </div>
   );

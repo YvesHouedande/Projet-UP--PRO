@@ -107,6 +107,16 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
     ["master1", "Master1"], ["master2", "Master2"],
   ];
 
+  // Générer les années pour le sélecteur
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= currentYear - 10; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -164,15 +174,23 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         </select>
       </div>
       <div>
-        <label htmlFor="bac_year" className="block text-sm font-medium text-gray-700">Année du bac</label>
-        <input 
-          type="date" 
-          id="bac_year" 
-          name="bac_year" 
-          value={formData.bac_year || ''} 
-          onChange={handleChange} 
+        <label htmlFor="bac_year" className="block text-sm font-medium text-gray-700">
+          Année du bac
+        </label>
+        <select
+          id="bac_year"
+          name="bac_year"
+          value={formData.bac_year || ''}
+          onChange={handleChange}
           className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
+        >
+          <option value="">Sélectionnez une année</option>
+          {generateYearOptions().map(year => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
       </div>
     </>
   );

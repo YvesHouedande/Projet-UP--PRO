@@ -12,7 +12,7 @@ SEED_CONFIG = {
         {'label': 'RT', 'school': 'FST'}
     ],
     'PROMOTIONS': {
-        'YEARS': [2021, 2022, 2023],
+        'YEARS': [2021, 2022, 2023, 2024],
         'STUDENTS_PER_PROMOTION': 15
     },
     'STAFF': {

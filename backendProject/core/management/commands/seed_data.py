@@ -6,13 +6,18 @@ from seeds.generators import (
     generate_professor, 
     generate_personnel
 )
-from core.author.models import Peer
+from core.author.models import Peer, Student
 from core.center.models import School, Study
 
 class Command(BaseCommand):
     help = 'Remplit la base de données avec des données de test'
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '--all',
+            action='store_true',
+            help='Génère toutes les données'
+        )
         parser.add_argument(
             '--schools',
             action='store_true',
@@ -26,41 +31,31 @@ class Command(BaseCommand):
         parser.add_argument(
             '--promotions',
             action='store_true',
-            help='Génère uniquement les promotions'
-        )
-        parser.add_argument(
-            '--students',
-            action='store_true',
-            help='Génère uniquement les étudiants'
+            help='Génère uniquement les promotions et leurs étudiants'
         )
         parser.add_argument(
             '--staff',
             action='store_true',
             help='Génère uniquement le personnel'
         )
-        parser.add_argument(
-            '--all',
-            action='store_true',
-            help='Génère toutes les données'
-        )
 
     def handle(self, *args, **options):
         try:
-            if options['all'] or options['schools']:
+            if options['all']:
                 self._create_schools()
-            
-            if options['all'] or options['studies']:
                 self._create_studies()
-            
-            if options['all'] or options['promotions']:
-                self._create_promotions()
-            
-            if options['all'] or options['students']:
-                self._create_students()
-            
-            if options['all'] or options['staff']:
+                self._create_promotions_and_students()
                 self._create_staff()
-                
+            else:
+                if options['schools']:
+                    self._create_schools()
+                if options['studies']:
+                    self._create_studies()
+                if options['promotions']:
+                    self._create_promotions_and_students()
+                if options['staff']:
+                    self._create_staff()
+            
             self.stdout.write(self.style.SUCCESS('Génération des données terminée!'))
             
         except Exception as e:
@@ -83,39 +78,78 @@ class Command(BaseCommand):
                 defaults={'school': school}
             )
 
-    def _create_promotions(self):
-        self.stdout.write('Création des promotions...')
+    def _create_promotions_and_students(self):
+        self.stdout.write('Création des promotions et des étudiants...')
+        
+        # Supprimer d'abord toutes les promotions existantes
+        self.stdout.write('Suppression des anciennes promotions...')
+        Peer.objects.all().delete()
+        
+        # Supprimer tous les étudiants existants
+        self.stdout.write('Suppression des anciens étudiants...')
+        Student.objects.all().delete()
+        
         for study in Study.objects.all():
+            self.stdout.write(f"\nCréation des promotions pour {study.label}...")
+            
             for year in SEED_CONFIG['PROMOTIONS']['YEARS']:
-                Peer.objects.get_or_create(
-                    study=study,
-                    year=date(year, 1, 1),
-                    school=study.school,
-                    defaults={
-                        'label': f"Promotion {study.label} {year}",
-                        'description': f"Promotion {study.label} de l'année {year}"
-                    }
-                )
-
-    def _create_students(self):
-        self.stdout.write('Création des étudiants...')
-        for peer in Peer.objects.all():
-            # Créer d'abord le délégué
-            manager = generate_student(peer.school, peer.study, peer)
-            
-            # Mettre à jour la promotion avec le délégué
-            peer.manager = manager
-            peer.save()
-            
-            # Créer les autres étudiants
-            for _ in range(SEED_CONFIG['PROMOTIONS']['STUDENTS_PER_PROMOTION'] - 1):
-                generate_student(peer.school, peer.study, peer)
+                # Générer un label unique pour la promotion
+                promotion_label = f"{study.label}{str(year)[-2:]}"
+                
+                try:
+                    # Créer d'abord un étudiant qui sera le délégué
+                    manager = generate_student(
+                        school=study.school,
+                        study=study,
+                        peer=None,
+                        is_manager=True
+                    )
+                    
+                    # Créer la promotion avec le délégué
+                    peer = Peer.objects.create(
+                        study=study,
+                        year=date(year, 1, 1),
+                        school=study.school,
+                        label=promotion_label,
+                        description=f"Promotion {study.label} de l'année {year}",
+                        manager=manager
+                    )
+                    
+                    # Mettre à jour le délégué avec sa promotion
+                    manager.peer = peer
+                    manager.save()
+                    
+                    self.stdout.write(self.style.SUCCESS(
+                        f"Promotion créée : {peer.label} (Manager: {manager.user.email})"
+                    ))
+                    
+                    # Créer les autres étudiants de la promotion
+                    for _ in range(SEED_CONFIG['PROMOTIONS']['STUDENTS_PER_PROMOTION'] - 1):
+                        student = generate_student(
+                            school=study.school,
+                            study=study,
+                            peer=peer
+                        )
+                        self.stdout.write(f"Étudiant créé : {student.user.email}")
+                        
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(
+                        f"Erreur lors de la création de la promotion {promotion_label}: {str(e)}"
+                    ))
+                    # Si une erreur survient, on nettoie les données partiellement créées
+                    if 'manager' in locals():
+                        manager.delete()
+                    continue
 
     def _create_staff(self):
         self.stdout.write('Création du personnel...')
         for school in School.objects.all():
+            # Professeurs
             for _ in range(SEED_CONFIG['STAFF']['PROFESSORS_PER_SCHOOL']):
-                generate_professor(school)
+                professor = generate_professor(school)
+                self.stdout.write(f"Professeur créé : {professor.user.email}")
             
+            # Personnel administratif
             for _ in range(SEED_CONFIG['STAFF']['PERSONNEL_PER_SCHOOL']):
-                generate_personnel(school) 
+                personnel = generate_personnel(school)
+                self.stdout.write(f"Personnel créé : {personnel.user.email}") 

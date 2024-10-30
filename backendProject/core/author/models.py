@@ -15,6 +15,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 
@@ -148,7 +149,15 @@ class Student(AbstractModel):
     school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, related_name="students", verbose_name="Ecole")
     level_choices = models.CharField(choices=LEVEL_CHOICES, max_length=10, null=True, verbose_name="Niveau")
     peer = models.ForeignKey("Peer", on_delete=models.PROTECT, null=True, blank=True, related_name="students", verbose_name="Promotion")
-    bac_year = models.DateField(null=True, blank=True, verbose_name="Année du bac")
+    bac_year = models.IntegerField(
+        verbose_name="Année du bac",
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(1990),  # année minimum acceptable
+            MaxValueValidator(2030)   # année maximum acceptable
+        ]
+    )
     class Meta:
         verbose_name="Etudiant"
         abstract = False
@@ -190,7 +199,13 @@ class Peer(AbstractModel):
     study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
     school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, verbose_name="Ecole", null=True, blank=True)
     description = models.TextField()
-    manager = models.OneToOneField("Student", on_delete=models.PROTECT, related_name="peer_managed", verbose_name='Gerant')
+    manager = models.ForeignKey(
+        'Student',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_peer'
+    )
     year = models.DateField(verbose_name="année")
     cover = models.ImageField(null=True, blank=True, upload_to="Peer/")
     follows = models.ManyToManyField("User", related_name="P_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
