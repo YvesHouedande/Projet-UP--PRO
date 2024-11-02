@@ -9,6 +9,7 @@ from core.author.serializers import (
     StudentBaseSerializer, StudentUpdateSerializer, 
     StudentDetailSerializer, ProfessorSerializer, 
     PersonnelSerializer, PeerSearchSerializer,
+    PeerDelegationSerializer
 )
 from core.author.models import (
     User, Service, Peer,
@@ -27,6 +28,7 @@ import logging
 from rest_framework.exceptions import NotFound
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin, CreateModelMixin
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -99,44 +101,54 @@ class StudentViewSet(AbstractViewSet):
     """
     http_method_names = ("get", "post", "put", "patch", "delete")
     permission_classes = (IsAuthenticated, UserPermission)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__first_name', 'user__last_name']
 
     def get_serializer_class(self):
-        """
-        Sélectionne le sérialiseur approprié selon le contexte
-        """
-        if self.basename == "user-student":
-            if self.action in ['create', 'update', 'partial_update']:
-                return StudentUpdateSerializer
-            return StudentDetailSerializer
-        
-        if self.basename in ["peer-student", "school-student", "study-student"]:
-            return StudentDetailSerializer
-            
+        if self.action in ['create', 'update', 'partial_update']:
+            return StudentUpdateSerializer
         return StudentDetailSerializer
 
     def get_queryset(self):
-        """
-        Filtre le queryset selon le contexte de la route
-        """
-        queryset = Student.objects.select_related('user', 'study', 'school', 'peer')
+        queryset = Student.objects.select_related(
+            'user', 
+            'study', 
+            'school', 
+            'peer'
+        )
 
-        # Filtrage par utilisateur (user/{pk}/student/)
-        if self.basename == "user-student":
-            return queryset.filter(user__public_id=self.kwargs.get("user__pk"))
+        # Filtrage par promotion
+        peer_id = self.request.query_params.get('peer')
+        if peer_id:
+            queryset = queryset.filter(peer__public_id=peer_id)
 
-        # Filtrage par promotion (peer/{pk}/student/)
-        if self.basename == "peer-student":
-            return queryset.filter(peer__public_id=self.kwargs.get("peer__pk"))
+            # Appliquer la recherche si présente
+            search = self.request.query_params.get('search', '').strip()
+            if search:
+                # Diviser les termes de recherche
+                search_terms = search.split()
+                q_objects = Q()
+                
+                for term in search_terms:
+                    q_objects |= (
+                        Q(user__first_name__icontains=term) |
+                        Q(user__last_name__icontains=term)
+                    )
+                
+                queryset = queryset.filter(q_objects)
 
-        # Filtrage par école (school/{pk}/student/)
-        if self.basename == "school-student":
-            return queryset.filter(school__public_id=self.kwargs.get("school__pk"))
+        print("SQL Query:", str(queryset.query))  # Pour déboguer
+        return queryset.distinct()
 
-        # Filtrage par filière (study/{pk}/student/)
-        if self.basename == "study-student":
-            return queryset.filter(study__public_id=self.kwargs.get("study__pk"))
-
-        return queryset
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        
+        # Debug log pour voir le nombre de résultats
+        print("Nombre total de résultats:", queryset.count())
+        
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     def get_object(self):
         """
@@ -433,7 +445,7 @@ class PeerViewSet(AbstractViewSet):
         return PeerSerializer
 
     def get_queryset(self):
-        queryset = Peer.objects.select_related(
+        return Peer.objects.select_related(
             'study', 
             'school', 
             'manager'
@@ -441,11 +453,6 @@ class PeerViewSet(AbstractViewSet):
             'students',
             'students__user'
         )
-        
-        label = self.request.query_params.get('label')
-        if label:
-            queryset = queryset.filter(label__icontains=label)
-        return queryset
 
     def get_object(self):
         try:
@@ -455,26 +462,79 @@ class PeerViewSet(AbstractViewSet):
         except Peer.DoesNotExist:
             raise NotFound("Cette promotion n'existe pas.")
 
-    @action(detail=True, methods=['get'])
-    def students(self, request, pk=None):
+    @action(detail=True, methods=['post'], url_path='delegate-manager')
+    def delegate_manager(self, request, *args, **kwargs):
         """
-        Endpoint pour récupérer les étudiants d'une promotion avec pagination
+        Déléguer le rôle de manager à un autre étudiant de la promotion
         """
         peer = self.get_object()
-        students = peer.students.select_related(
-            'user', 
-            'study', 
-            'school'
-        ).all()
+        
+        # Vérifier que l'utilisateur est le manager actuel
+        try:
+            if request.user.student != peer.manager:
+                return Response(
+                    {"detail": "Seul le délégué actuel peut transférer son rôle"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except:
+            return Response(
+                {"detail": "Vous n'êtes pas étudiant"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        page = self.paginate_queryset(students)
-        serializer = StudentDetailSerializer(
-            page, 
-            many=True,
+        serializer = PeerDelegationSerializer(
+            peer,
+            data=request.data,
             context={'request': request}
         )
         
-        return self.get_paginated_response(serializer.data)
+        if serializer.is_valid():
+            new_manager = serializer.validated_data['new_manager']
+            
+            # Effectuer le transfert
+            peer.manager = new_manager
+            peer.save()
+            
+            # Retourner les données mises à jour
+            return Response(
+                PeerSerializer(
+                    peer,
+                    context={'request': request}
+                ).data
+            )
+            
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=True, methods=['get'])
+    def students(self, request, pk=None):
+        """
+        Endpoint pour l'affichage initial des étudiants d'une promotion
+        """
+        try:
+            peer = self.get_object()
+            students = Student.objects.filter(peer=peer).select_related(
+                'user', 
+                'study', 
+                'school'
+            )
+            
+            page = self.paginate_queryset(students)
+            serializer = StudentDetailSerializer(
+                page, 
+                many=True,
+                context={'request': request}
+            )
+            
+            return self.get_paginated_response(serializer.data)
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des étudiants: {str(e)}")
+            return Response(
+                {"detail": "Une erreur s'est produite."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class PeerPositionViewSet(AbstractViewSet):
     http_method_names = ("post", "get")

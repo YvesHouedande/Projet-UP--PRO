@@ -195,12 +195,45 @@ class PeerSerializer(AbstractSerializer):
     study_label = serializers.CharField(source='study.label', read_only=True)
     school_label = serializers.CharField(source='school.label', read_only=True)
     manager = StudentDetailSerializer(read_only=True)
+    can_delegate = serializers.SerializerMethodField()
+    available_students = serializers.SerializerMethodField()
+
+    def get_can_delegate(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        try:
+            student = request.user.student
+            return student == obj.manager
+        except:
+            return False
+
+    def get_available_students(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return []
+        
+        # Ne retourner la liste que si l'utilisateur est le manager
+        try:
+            if request.user.student != obj.manager:
+                return []
+        except:
+            return []
+
+        # Récupérer tous les étudiants de la promotion sauf le manager
+        students = obj.students.exclude(pk=obj.manager.pk)
+        return StudentDetailSerializer(
+            students, 
+            many=True,
+            context=self.context
+        ).data
 
     class Meta:
         model = Peer
         fields = [
             'public_id', 'label', 'study_label', 'school_label',
             'year', 'cover', 'description', 'manager',
+            'can_delegate', 'available_students'
         ]
 
 
@@ -237,4 +270,31 @@ class PeerSearchSerializer(AbstractSerializer):
     class Meta:
         model = Peer
         fields = ['public_id', 'label', 'study_label', 'school_label', 'year', 'cover']
+
+
+class PeerDelegationSerializer(AbstractSerializer):
+    """Sérialiseur pour la délégation du rôle de manager"""
+    new_manager = serializers.SlugRelatedField(
+        queryset=Student.objects.all(),
+        slug_field="public_id",
+        required=True
+    )
+
+    def validate_new_manager(self, value):
+        peer = self.instance
+        # Vérifier que l'étudiant est dans la promotion
+        if value.peer != peer:
+            raise serializers.ValidationError(
+                "L'étudiant doit être membre de la promotion"
+            )
+        # Vérifier que ce n'est pas déjà le manager
+        if value == peer.manager:
+            raise serializers.ValidationError(
+                "Cet étudiant est déjà le délégué de la promotion"
+            )
+        return value
+
+    class Meta:
+        model = Peer
+        fields = ['new_manager']
 

@@ -1,0 +1,163 @@
+[33mcommit 3d1111b61150ea034f0039a875e993578e054137[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Wed Oct 30 14:25:55 2024 +0000
+
+    feat(clear_data
+
+[33mcommit 4856978f9b377bb3a6563c489b9dfa654faacf7c[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Wed Oct 30 13:22:56 2024 +0000
+
+    feat(peerScroll), folder(seed, management)
+
+[33mcommit 1bde2bcc8958e4ea7e35312a613b4334bbeb7de3[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Wed Oct 30 12:05:28 2024 +0000
+
+    feat(peer okay)
+
+[33mcommit 18144b99d8bb596c0bcea1931c9a664e69cce8cb[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Tue Oct 29 12:12:27 2024 +0000
+
+    fixed( Ui react)
+
+[33mcommit 3916aebcb83342767172d09019549ef079eefe21[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Tue Oct 29 11:40:32 2024 +0000
+
+    fix(inputInfo): corriger la logique de validation
+    
+    feat(UI): ajouter le champ 'fieldNumber' dans l'interface utilisateur
+
+[33mcommit dec3f86e1d49c7877b4d2f5400bfc25b2d558652[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Mon Oct 14 14:55:42 2024 +0000
+
+    inp user info logic done
+
+[33mcommit d946e0441bd5ee210defe95a93c4003c3b670015[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sun Sep 22 22:30:14 2024 +0000
+
+    without socket
+
+[33mcommit 5684ba8ee90a4ce6ba09e2c63838dd51a05d9305[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sun Aug 25 09:14:45 2024 +0000
+
+    docker and cache clean integration
+
+[33mcommit 45c13bf31393372a8ecab507bb0138fe3c95b919[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Thu Aug 22 10:43:02 2024 +0000
+
+    okay
+
+[33mcommit 23a80e3a0a1da803c9b906798884b43b717ee02c[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Fri Aug 9 18:00:25 2024 +0000
+
+    post set
+
+[33mcommit 2c095ddab4406a20b417bef0cae2e86718e7b2d8[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Fri Jul 12 16:51:58 2024 +0000
+
+    hook inte
+
+[33mcommit cb4509a2e613abbf506612a80a20c1fcf8133b52[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Wed Apr 17 00:00:20 2024 +0000
+
+    search done
+
+[33mcommit 602f52e8ce68c5cde5c79a923232d85837b37a43[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sun Apr 14 09:47:30 2024 +0000
+
+    beta finish
+
+[33mcommit ff713d5e50dc1a3060a05b856d571290a3b00475[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sat Apr 6 22:12:45 2024 +0000
+
+    user-service
+
+[33mcommit 6dc5e9a9b90ca068be94728593c895ba839688a5[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sat Apr 6 19:31:47 2024 +0000
+
+    all Data-Model except User context data
+
+[33mcommit 115eb5816fc5ae63d47d075103dd0308041db85d[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Tue Apr 2 03:40:03 2024 +0000
+
+    user-own-post-data-factorise
+
+[33mcommit 555f005c2ca225786a5ca4d987901885b8fb8bab[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Tue Apr 2 02:54:18 2024 +0000
+
+    user-own-post-data
+
+[33mcommit 4a053a667576fa2ddec2828821f5088de3ead98a[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Mon Mar 25 15:10:51 2024 +0000
+
+    api * display-order
+
+[33mcommit 418f0fa8cc8825980449f0a00c1badd5b15deeb8[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Mon Mar 25 14:54:55 2024 +0000
+
+    api all dispaly ok
+
+[33mcommit 5fae856de1c714edca552fe01d0f00cfbfe9dcbe[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sun Mar 17 03:17:23 2024 +0000
+
+    all content ok
+
+[33mcommit 92bb86e5b9c5fd79c441d99d6013f30795c850fd[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sat Mar 16 03:54:04 2024 +0000
+
+    setup for all post type
+
+[33mcommit ea0a7c6ca0996d4bfec61205609e331e5c4732da[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Fri Mar 15 20:29:26 2024 +0000
+
+    like unlike on post
+
+[33mcommit f79b90d941b63da4d28e2286fd8c350f32768bed[m
+Author: YvesHouedande <59183861+YvesHouedande@users.noreply.github.com>
+Date:   Thu Mar 14 00:49:13 2024 +0000
+
+    Create README.md
+
+[33mcommit ad383ef745c2ccb0b55deb3a8776c4a3475d5a5a[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Tue Mar 12 18:57:19 2024 +0000
+
+    PostUserComment: like_post-GET
+
+[33mcommit 2c5f6e9cf8d8fd8c5174904c4e7736a517c3842d[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Tue Mar 12 16:20:58 2024 +0000
+
+    postUserviewset working:data api
+
+[33mcommit 6cd40ed7431a73f4f880b6a3a62acea39d231a49[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sun Mar 3 18:01:35 2024 +0000
+
+    clean tables
+
+[33mcommit c7d11f95d6bebbc06dc509fbb20847f6d2761164[m
+Author: YvesHouedande <yveshouedandedocteur@gmail.com>
+Date:   Sat Feb 17 16:31:19 2024 +0000
+
+    api-setup
