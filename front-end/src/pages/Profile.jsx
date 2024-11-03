@@ -8,12 +8,14 @@ import { useParams } from 'react-router';
 import useSWR from 'swr';
 import { fetcher } from '../helpers/axios';
 import Loading from '../components/assets/Loading';
+import NavBox from '../components/assets/NavBox';
+import { HiUser, HiAcademicCap, HiNewspaper, HiCalendar } from 'react-icons/hi';
 
 const tabs = [
-  { id: 'info', label: 'Info' },
-  { id: 'infoINP', label: 'Info INP' },
-  { id: 'publications', label: 'Publications' },
-  { id: 'events', label: 'Événements' },
+  { id: 'info', label: 'Info', icon: HiUser },
+  { id: 'infoINP', label: 'Info INP', icon: HiAcademicCap },
+  { id: 'publications', label: 'Publications', icon: HiNewspaper },
+  { id: 'events', label: 'Événements', icon: HiCalendar },
 ];
 
 export default function UserProfile() {
@@ -42,26 +44,77 @@ export default function UserProfile() {
 
   return (
     <Layout>
-      <div className="content flex flex-col lg:flex-row justify-center mx-auto space-x-3 lg:py-10 p-5">
-        {/* Main Content Area */}
-        <div className="main-content lg:w-3/4 p-5">
-          {/* Tabs */}
-          <div className="tabs flex border-b border-gray-300 mb-4">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                className={`tab-item p-2 border-b-2 ${activeTab === tab.id ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-500'} transition-colors duration-300`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
+      <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+        {/* Header Profile */}
+        <div className="bg-gradient-to-b from-green-500 to-green-400 p-4 md:p-6 shadow-lg">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6">
+            <div className="relative">
+              <img 
+                src={user.avatar} 
+                alt={`${user.first_name} ${user.last_name}`}
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+              />
+              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-orange-400 rounded-full border-2 border-white" />
+            </div>
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl font-bold text-white">
+                {user.first_name} {user.last_name}
+              </h1>
+              <p className="text-white/80 mb-2">{user.email}</p>
+              <span className="inline-block px-3 py-1 bg-orange-400 text-white rounded-full text-sm">
+                {user.status_choice}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex">
+          {/* Navigation Desktop */}
+          <div className="hidden lg:block w-64 min-h-screen sticky top-0 p-4">
+            <NavBox className="bg-white rounded-2xl border-2 border-green-200 
+                             shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)]" />
           </div>
 
-          {/* Tab Content */}
-          <div className="tab-content">
-            {renderTabContent()}
+          {/* Contenu principal */}
+          <div className="flex-1 w-full">
+            {/* Navigation des onglets */}
+            <div className="sticky top-0 bg-white shadow-md z-10 overflow-x-auto hide-scrollbar">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex">
+                  {tabs.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-4 md:px-6 py-4 whitespace-nowrap
+                        ${activeTab === tab.id 
+                          ? 'border-b-4 border-green-500 text-green-600 font-bold'
+                          : 'text-gray-500 hover:text-green-500'
+                        }`}
+                    >
+                      <tab.icon className="text-xl" />
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Contenu des onglets */}
+            <div className="max-w-7xl mx-auto p-4 lg:p-8">
+              <div className="bg-white rounded-2xl border-2 border-green-200 
+                          shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)] 
+                          transition-all duration-200 overflow-hidden">
+                <div className="p-4 md:p-6 overflow-x-auto">
+                  {renderTabContent()}
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Navigation Mobile */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+          <NavBox />
         </div>
       </div>
     </Layout>

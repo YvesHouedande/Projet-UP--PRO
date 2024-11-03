@@ -1,13 +1,17 @@
 import React from 'react'
 
-export default function NavboxOption({Icon, title, counter}) {
+export default function NavboxOption({ title, Icon, onClick, active }) {
   return (
-    <div className="flex w-full sm:w-full sm:justify-between p-2 space-x-2 my-2 bg-white rounded-md cursor-pointer transition duration-300 ease-in-out transform hover:bg-orange-400 hover:text-white">
-      <div className='flex  items-center '>      
-        <Icon className="h-6 w-6 shrink-0" />
-        <p className="hidden font-medium ml-3 sm:block ">{title}</p>
-      </div>
-      {counter && <p className='rounded-full border border-green-500 py-1 px-1'>{counter}</p>}
+    <div 
+      className={`flex items-center p-2 rounded-lg cursor-pointer transition-all
+        ${active 
+          ? 'bg-green-800 text-white' 
+          : 'text-green-800 hover:bg-gray-100'
+        }`}
+      onClick={onClick}
+    >
+      <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-green-800'}`} />
+      <span className="ml-3 hidden md:block">{title}</span>
     </div>
-  )
+  );
 }

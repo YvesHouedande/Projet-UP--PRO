@@ -1,76 +1,48 @@
 import React from 'react';
 
-const InfoItem = ({ label, value }) => (
-  <div className="info-item">
-    <h3 className="text-lg font-medium mb-2">{label}</h3>
+const InfoCard = ({ label, value }) => (
+  <div className="bg-white p-4 rounded-xl border-2 border-green-200 
+                  shadow-[3px_3px_0px_0px_rgba(34,197,94,0.2)]">
+    <p className="text-sm font-medium text-green-600 mb-1">{label}</p>
     <p className="text-gray-800">{value || "Non spécifié"}</p>
   </div>
 );
 
 export default function InfoInpDisplay({ user, inpInfo }) {
-
-
   const renderStudentInfo = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <p className="text-sm font-medium text-gray-500">École</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.school?.name || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Filière</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.study?.name || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Niveau</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.level_choices_display || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Année du bac</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.bac_year || 'Non spécifié'}</p>
-      </div>
+      <InfoCard label="École" value={inpInfo.school?.name} />
+      <InfoCard label="Filière" value={inpInfo.study?.name} />
+      <InfoCard label="Niveau" value={inpInfo.level_choices_display} />
+      <InfoCard label="Année du bac" value={inpInfo.bac_year} />
     </div>
   );
 
   const renderProfessorInfo = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <p className="text-sm font-medium text-gray-500">Matière</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.subject || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Écoles</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.school.length > 0 ? inpInfo.school.map(s => s.name).join(', ') : 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Filières</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.study.length > 0 ? inpInfo.study.map(s => s.name).join(', ') : 'Non spécifié'}</p>
-      </div>
+      <InfoCard label="Matière" value={inpInfo.subject} />
+      <InfoCard 
+        label="Écoles" 
+        value={inpInfo.school.length > 0 ? inpInfo.school.map(s => s.name).join(', ') : null} 
+      />
+      <InfoCard 
+        label="Filières" 
+        value={inpInfo.study.length > 0 ? inpInfo.study.map(s => s.name).join(', ') : null} 
+      />
     </div>
   );
 
   const renderPersonnelInfo = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <p className="text-sm font-medium text-gray-500">Poste</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.job || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Administration</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.administration || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">École</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.school?.name || 'Non spécifié'}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">Filière</p>
-        <p className="mt-1 text-sm text-gray-900">{inpInfo.study?.name || 'Non spécifié'}</p>
-      </div>
+      <InfoCard label="Poste" value={inpInfo.job} />
+      <InfoCard label="Administration" value={inpInfo.administration} />
+      <InfoCard label="École" value={inpInfo.school?.name} />
+      <InfoCard label="Filière" value={inpInfo.study?.name} />
     </div>
   );
 
   return (
-    <div>
+    <div className="space-y-6">
       {user.status_choice === 'etudiant' && renderStudentInfo()}
       {user.status_choice === 'professeur' && renderProfessorInfo()}
       {user.status_choice === 'personnel' && renderPersonnelInfo()}

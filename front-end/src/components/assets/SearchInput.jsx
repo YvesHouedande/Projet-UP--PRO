@@ -81,107 +81,104 @@ export default function SearchInput() {
     };
   }, []);
 
+  // Mapping des types de recherche en français
+  const searchTypes = {
+    'users': 'Utilisateurs',
+    'schools': 'Écoles',
+    'publications': 'Publications',
+    'events': 'Événements',
+    'promotions': 'Promotions'
+  };
+
   return (
-    <div
-      ref={containerRef}
-      className="relative flex items-center border-green-400 border-solid border-2 rounded-full transition-all duration-300 ease-in-out md:w-full"
-    >
-      <IoMdSearch
-        className="text-black ml-3 cursor-pointer"
-        size={30}
-        onClick={handleIconClick}
-      />
-      <input
-        type="text"
-        ref={inputRef}
-        className={`text-black px-4 py-2 focus:ring-0 border-none bg-transparent transition-all duration-300 ease-in-out ${isSearchOpen ? 'w-full opacity-100' : 'w-0 opacity-0'} md:w-full md:opacity-100`}
-        placeholder="Recherche..."
-        value={query}
-        onChange={handleInputChange}
-        onClick={() => setIsSearchOpen(true)} // Open search box when input is clicked
-      />
+    <div ref={containerRef} className="relative">
+      {/* Barre de recherche sans bordure bleue au focus */}
+      <div className="flex items-center bg-white rounded-xl border-2 border-gray-200 
+                      hover:border-green-400 focus-within:border-green-400 
+                      focus-within:ring-4 focus-within:ring-green-50 
+                      transition-all duration-300">
+        <IoMdSearch
+          className="ml-3 text-gray-400 group-hover:text-green-500"
+          size={20}
+          onClick={handleIconClick}
+        />
+        <input
+          type="text"
+          ref={inputRef}
+          className="w-full px-3 py-2.5 bg-transparent text-sm text-gray-600 
+                     placeholder-gray-400 focus:outline-none border-none
+                     focus:ring-0 focus:ring-offset-0"
+          placeholder={`Rechercher ${searchType ? searchTypes[searchType].toLowerCase() : '...'}`}
+          value={query}
+          onChange={handleInputChange}
+          onClick={() => setIsSearchOpen(true)}
+        />
+        {query && (
+          <button
+            onClick={() => {
+              setQuery('');
+              setResults([]);
+              inputRef.current.focus();
+            }}
+            className="p-2 hover:text-green-500 transition-colors mr-1"
+          >
+            <MdClose size={18} />
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
       {isSearchOpen && (
-        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 z-10">
-          {/* Titre des résultats et bouton de fermeture */}
+        <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl 
+                        border-2 border-gray-200 shadow-lg overflow-hidden
+                        transform origin-top transition-all duration-300">
+          {/* En-tête du dropdown */}
           {query && (
-            <div className="flex justify-between items-center px-4 py-2 bg-gray-100 border-b">
-              <span className="text-black font-semibold">Résultats de recherche</span>
-              <button
-                className="text-gray-500"
-                onClick={() => {
-                  setQuery('');
-                  setResults([]);
-                  inputRef.current.focus();
-                }}
-              >
-                <MdClose size={20} />
-              </button>
+            <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r 
+                           from-gray-50 to-white border-b">
+              <span className="text-sm font-medium text-gray-700">
+                Résultats de recherche
+              </span>
+              <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                {results.length} résultat(s)
+              </span>
             </div>
           )}
 
-          {query ? (
-            <div className="flex flex-col p-2">
-              {/* Show search results */}
+          {/* Options de recherche ou résultats */}
+          <div className="p-2">
+            {!query ? (
+              <div className="space-y-1">
+                {Object.entries(searchTypes).map(([type, label]) => (
+                  <label key={type} 
+                         className={`flex items-center p-2.5 rounded-xl cursor-pointer
+                                   transition-all duration-300 
+                                   ${searchType === type 
+                                     ? 'bg-green-50 border-2 border-green-400' 
+                                     : 'hover:bg-gray-50 border-2 border-transparent'
+                                   }`}>
+                    <input
+                      type="radio"
+                      name="searchType"
+                      value={type}
+                      checked={searchType === type}
+                      onChange={() => handleSearchTypeChange(type)}
+                      className="w-4 h-4 text-green-600 border-gray-300 
+                               focus:ring-green-500 focus:ring-offset-0"
+                    />
+                    <span className={`ml-3 text-sm font-medium transition-colors
+                                    ${searchType === type ? 'text-green-700' : 'text-gray-600'}`}>
+                      {label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            ) : (
               <SearchResults searchType={searchType} results={results} />
-            </div>
-          ) : (
-            <div className="flex flex-col p-2">
-              {/* Show search type options */}
-              <label className="flex items-center cursor-pointer text-black">
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="users"
-                  checked={searchType === 'users'}
-                  onChange={() => handleSearchTypeChange('users')}
-                />
-                <span className="ml-2">Utilisateurs</span>
-              </label>
-              <label className="flex items-center cursor-pointer mt-1 text-black">
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="schools"
-                  checked={searchType === 'schools'}
-                  onChange={() => handleSearchTypeChange('schools')}
-                />
-                <span className="ml-2">Écoles</span>
-              </label>
-              <label className="flex items-center cursor-pointer mt-1 text-black">
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="publications"
-                  checked={searchType === 'publications'}
-                  onChange={() => handleSearchTypeChange('publications')}
-                />
-                <span className="ml-2">Publications</span>
-              </label>
-              <label className="flex items-center cursor-pointer mt-1 text-black">
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="events"
-                  checked={searchType === 'events'}
-                  onChange={() => handleSearchTypeChange('events')}
-                />
-                <span className="ml-2">Événements</span>
-              </label>
-              <label className="flex items-center cursor-pointer mt-1 text-black">
-                <input
-                  type="radio"
-                  name="searchType"
-                  value="promotions"
-                  checked={searchType === 'promotions'}
-                  onChange={() => handleSearchTypeChange('promotions')}
-                />
-                <span className="ml-2">Promotions</span>
-              </label>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
-
     </div>
   );
 }

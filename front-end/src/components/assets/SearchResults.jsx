@@ -2,124 +2,128 @@ import React from 'react';
 import { getStateTime } from '../../hooks/utils';
 import { useNavigate } from 'react-router-dom';
 
+const CardWrapper = ({ children, onClick, className = "" }) => (
+  <div 
+    onClick={onClick}
+    className={`p-5 bg-white rounded-2xl border-2 border-green-200 
+                shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)] 
+                hover:shadow-[7px_7px_0px_0px_rgba(34,197,94,0.2)] 
+                transition-all duration-200 ease-in-out cursor-pointer mb-4
+                ${className}`}
+  >
+    {children}
+  </div>
+);
+
+const Button = ({ children, onClick, className = "" }) => (
+  <button 
+    onClick={onClick}
+    className={`mt-3 px-4 py-2 bg-green-500 text-white rounded-xl
+                hover:bg-green-600 transition-colors duration-200
+                font-medium ${className}`}
+  >
+    {children}
+  </button>
+);
+
 const UserCard = ({ user }) => {
   const navigate = useNavigate();
 
-  const handleNavigateToProfile = () => {
-        navigate(`/profile/${user.public_id}/`);
-    };
-
-    return (
-        <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2 text-black">
-            <div className="flex items-center">
-                <img 
-                    src={user.avatar} 
-                    alt={`${user.first_name} ${user.last_name}`} 
-                    className="w-16 h-16 object-cover rounded-full mr-4" 
-                />
-                <div>
-                    <h3 className="font-bold text-lg">
-                        {user.first_name} {user.last_name}
-                    </h3>
-                    <p className="text-gray-600">{user.status_choice}</p>
-                    <button 
-                        className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg"
-                        onClick={handleNavigateToProfile}
-                    >
-                        Voir Profil
-                    </button>
-                </div>
-            </div>
+  return (
+    <CardWrapper onClick={() => navigate(`/profile/${user.public_id}/`)}>
+      <div className="flex items-center">
+        <img 
+          src={user.avatar} 
+          alt={`${user.first_name} ${user.last_name}`} 
+          className="w-16 h-16 object-cover rounded-full border-2 border-orange-200" 
+        />
+        <div className="ml-4 flex-1">
+          <h3 className="font-bold text-lg text-green-700">
+            {user.first_name} {user.last_name}
+          </h3>
+          <span className="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">
+            {user.status_choice}
+          </span>
         </div>
-    );
+      </div>
+    </CardWrapper>
+  );
 };
-
-const SchoolCard = ({ school }) => (
-  <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2">
-    <h3 className="font-bold text-lg">{school.name}</h3>
-    <p className="text-gray-600">{school.description}</p>
-    <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg">Voir École</button>
-  </div>
-);
-
-const PublicationCard = ({ publication }) => (
-  <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2">
-    <h3 className="font-bold text-lg">{publication.title}</h3>
-    <p className="text-gray-600">Par {publication.author}</p>
-    <p>{publication.content}</p>
-    <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg">Lire Plus</button>
-  </div>
-);
 
 const EventCard = ({ event }) => {
   const { status, formattedDate } = getStateTime(event.moment);
-
-  // Choisir une couleur en fonction de l'état de l'événement
-  const statusColor = status === "passé" ? "bg-red-500" : status === "en cours" ? "bg-yellow-500" : "bg-green-500";
+  const statusStyles = {
+    passé: "bg-red-100 text-red-600",
+    "en cours": "bg-orange-100 text-orange-600",
+    "à venir": "bg-green-100 text-green-600"
+  };
 
   return (
-    <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2 text-black">
-      <h3 className="font-bold text-lg">{event.label}</h3>
-      <p className="text-gray-600">Service: {event.service_label}</p>
-      
-      <div className="flex items-center">
-        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${statusColor}`}></span>
-        <p>Moment: {formattedDate} ({status})</p>
+    <CardWrapper>
+      <h3 className="font-bold text-lg text-green-700 mb-2">{event.label}</h3>
+      <div className="space-y-2">
+        <div className="flex items-center">
+          <span className={`px-3 py-1 rounded-full text-sm ${statusStyles[status]}`}>
+            {status}
+          </span>
+          <span className="ml-2 text-gray-600 text-sm">{formattedDate}</span>
+        </div>
+        <p className="text-gray-600">
+          <span className="font-medium">Service:</span> {event.service_label}
+        </p>
+        <p className="text-gray-600">
+          <span className="font-medium">Lieu:</span> {event.place}
+        </p>
       </div>
-      
-      <p>Lieu: {event.place}</p>
-      <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg">Voir Événement</button>
-    </div>
+    </CardWrapper>
   );
 };
 
 const PeerCard = ({ peer }) => {
   const navigate = useNavigate();
 
-  const handleNavigateToPeer = () => {
-    navigate(`/peer/${peer.public_id}`);
-  };
-
   return (
-    <div className="p-4 border border-gray-300 rounded-lg shadow-lg mb-2 text-black hover:bg-gray-50">
+    <CardWrapper onClick={() => navigate(`/peer/${peer.public_id}`)}>
       <div className="flex items-center">
         {peer.cover && (
           <img 
             src={peer.cover} 
             alt={peer.label}
-            className="w-16 h-16 object-cover rounded-lg mr-4" 
+            className="w-20 h-20 object-cover rounded-xl border-2 border-green-200" 
           />
         )}
-        <div className="flex-1">
-          <h3 className="font-bold text-lg">{peer.label}</h3>
-          <div className="text-gray-600">
-            <p>Filière: {peer.study_label}</p>
-            <p>École: {peer.school_label}</p>
-            <p>Année: {new Date(peer.year).getFullYear()}</p>
+        <div className="ml-4 flex-1">
+          <h3 className="font-bold text-lg text-green-700 mb-1">{peer.label}</h3>
+          <div className="space-y-1">
+            <span className="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm mr-2">
+              {peer.study_label}
+            </span>
+            <span className="inline-block px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">
+              {new Date(peer.year).getFullYear()}
+            </span>
           </div>
-          <button 
-            className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            onClick={handleNavigateToPeer}
-          >
-            Voir la promotion
-          </button>
+          <p className="text-gray-600 mt-1 text-sm">{peer.school_label}</p>
         </div>
       </div>
-    </div>
+    </CardWrapper>
   );
 };
 
 const SearchResults = ({ searchType, results }) => {
-  if (!results.length) return (
-    <p className="text-gray-600 p-4 text-center">
-      Aucun résultat trouvé.
-      {searchType === 'promotions' && (
-        <span className="block text-sm mt-2">
-          Recherchez par le nom de la promotion (ex: STIC22)
-        </span>
-      )}
-    </p>
-  );
+  if (!results.length) {
+    return (
+      <div className="p-8 text-center bg-white rounded-2xl border-2 border-green-200">
+        <p className="text-gray-600 font-medium">
+          Aucun résultat trouvé
+          {searchType === 'promotions' && (
+            <span className="block text-sm mt-2 text-orange-600">
+              Conseil: Recherchez par le nom de la promotion (ex: STIC22)
+            </span>
+          )}
+        </p>
+      </div>
+    );
+  }
 
   switch (searchType) {
     case 'users':

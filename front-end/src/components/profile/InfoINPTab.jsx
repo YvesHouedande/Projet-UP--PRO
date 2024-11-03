@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { MdEdit } from 'react-icons/md';
+import { HiPencilAlt } from 'react-icons/hi';
 import axiosService, { fetcher } from '../../helpers/axios';
 import Loading from '../assets/Loading';
 import { getUser } from '../../hooks/user.actions';
@@ -26,34 +26,50 @@ export default function InfoINPTab({ user }) {
     fetcher
   );
 
-  if (error) return <div className="text-red-500">Erreur lors du chargement des informations INP</div>;
+  if (error) return (
+    <div className="p-6 text-center">
+      <p className="text-red-500 bg-red-50 p-4 rounded-xl border-2 border-red-200">
+        Erreur lors du chargement des informations INP
+      </p>
+    </div>
+  );
+  
   if (!inpInfoResponse) return <Loading />;
 
   const inpInfo = inpInfoResponse.results[0] || null;
   const isNewProfile = !inpInfo;
 
-  const handleEdit = () => setIsEditing(true);
-  const handleCloseEdit = () => setIsEditing(false);
-
   return (
-    <div className="info-inp-tab p-6 bg-white rounded-lg shadow-md border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">Informations INP</h2>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-green-700">Informations INP</h2>
         {canEdit && !isEditing && (
           <button 
-            className="flex items-center text-blue-500 hover:underline"
-            onClick={handleEdit}
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-600 
+                     rounded-xl hover:bg-orange-200 transition-colors duration-200
+                     border-2 border-orange-200 shadow-[3px_3px_0px_0px_rgba(251,146,60,0.3)]"
           >
-            <MdEdit size={20} className="mr-2" />
-            {isNewProfile ? "Créer le profil" : "Modifier les informations"}
+            <HiPencilAlt className="text-xl" />
+            {isNewProfile ? "Créer le profil" : "Modifier"}
           </button>
         )}
       </div>
+
       {isEditing ? (
-        <UpdateINPInfo user={user} inpInfo={inpInfo} handleCloseEdit={handleCloseEdit} mutate={mutate} />
+        <UpdateINPInfo 
+          user={user} 
+          inpInfo={inpInfo} 
+          handleCloseEdit={() => setIsEditing(false)} 
+          mutate={mutate} 
+        />
       ) : (
         isNewProfile ? (
-          <p>Aucun profil INP n'a été créé pour cet utilisateur.</p>
+          <div className="text-center p-8 bg-gray-50 rounded-xl border-2 border-gray-200">
+            <p className="text-gray-600">
+              Aucun profil INP n'a été créé pour cet utilisateur.
+            </p>
+          </div>
         ) : (
           <InfoInpDisplay user={user} inpInfo={inpInfo} />
         )

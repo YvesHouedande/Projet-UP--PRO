@@ -13,65 +13,122 @@ import CreateSimplePost from '../posts/CreateSimplePost';
 
 
 export default function Feed({refresh}) {
-  const [IsRichPostOpen, setIsRichPostOpen] = useState(false);
   const [IsEventOpen, setIsEventOpen] = useState(false);
-  const [IsCreateImagePostOpen, setIsCreateImagePostOpen] = useState(false);
   const [IsCreateSimplePostOpen, setIsCreateSimplePostOpen] = useState(false);
-
-  
+  const [IsRichPostOpen, setIsRichPostOpen] = useState(false);
+  const [IsCreateImagePostOpen, setIsCreateImagePostOpen] = useState(false);
 
   return (
-    <div className=''>
-      <div className="feed border border-gray-300 rounded-md p-4 w-auto ">
-        <p>Faire Un Post...</p>
-        <hr className="my-2" />
-        <div className="actions flex justify-between space-x-4">
-          <FaImage className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsCreateImagePostOpen(true)} /> 
-          <TfiWrite className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsRichPostOpen(true)} />
-          <FaCalendarAlt className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsEventOpen(true)}/>
-          {/* <AiTwotoneAudio className="w-8 h-8 hover:cursor-pointer" />
-          <MdOutlineVideoLibrary className="w-8 h-8 hover:cursor-pointer" /> */}
-          <CiText className="w-8 h-8 hover:cursor-pointer" onClick={() => setIsCreateSimplePostOpen(true)}/>
+    <div className='w-full'>
+      <div className="feed border-2 border-gray-300 rounded-2xl bg-white shadow-lg 
+                      transform hover:-translate-y-1 transition-all duration-300">
+        {/* Zone de saisie */}
+        <div className="p-3 border-b-2 border-gray-200">
+          <div 
+            onClick={() => setIsCreateSimplePostOpen(true)}
+            className="w-full px-4 py-2.5 bg-gradient-to-r from-gray-50 to-gray-100
+                       rounded-xl text-sm text-gray-600 cursor-pointer 
+                       hover:shadow-inner transition-all duration-300
+                       border-2 border-gray-200 hover:border-green-400"
+          >
+            Que voulez-vous partager ?
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="px-3 py-2">
+          <div className="grid grid-cols-4 gap-2">
+            {/* Post simple */}
+            <button 
+              onClick={() => setIsCreateSimplePostOpen(true)}
+              className="flex flex-col items-center p-2 rounded-xl
+                         bg-gradient-to-r from-gray-50 to-gray-100
+                         hover:from-green-50 hover:to-green-100
+                         border-2 border-gray-200 hover:border-green-400
+                         transform hover:scale-105 transition-all duration-300
+                         group"
+            >
+              <CiText className="w-6 h-6 text-gray-600 group-hover:text-green-600" />
+              <span className="text-xs font-medium text-gray-600 mt-1 group-hover:text-green-600">
+                Texte
+              </span>
+            </button>
+
+            {/* Similaire pour les autres boutons */}
+            <button 
+              onClick={() => setIsCreateImagePostOpen(true)}
+              className="flex flex-col items-center p-2 rounded-xl
+                         bg-gradient-to-r from-gray-50 to-gray-100
+                         hover:from-green-50 hover:to-green-100
+                         border-2 border-gray-200 hover:border-green-400
+                         transform hover:scale-105 transition-all duration-300
+                         group"
+            >
+              <FaImage className="w-6 h-6 text-gray-600 group-hover:text-green-600" />
+              <span className="text-xs font-medium text-gray-600 mt-1 group-hover:text-green-600">
+                Photo
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setIsRichPostOpen(true)}
+              className="flex flex-col items-center p-2 rounded-xl
+                         bg-gradient-to-r from-gray-50 to-gray-100
+                         hover:from-green-50 hover:to-green-100
+                         border-2 border-gray-200 hover:border-green-400
+                         transform hover:scale-105 transition-all duration-300
+                         group"
+            >
+              <TfiWrite className="w-6 h-6 text-gray-600 group-hover:text-green-600" />
+              <span className="text-xs font-medium text-gray-600 mt-1 group-hover:text-green-600">
+                Article
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setIsEventOpen(true)}
+              className="flex flex-col items-center p-2 rounded-xl
+                         bg-gradient-to-r from-gray-50 to-gray-100
+                         hover:from-green-50 hover:to-green-100
+                         border-2 border-gray-200 hover:border-green-400
+                         transform hover:scale-105 transition-all duration-300
+                         group"
+            >
+              <FaCalendarAlt className="w-6 h-6 text-gray-600 group-hover:text-green-600" />
+              <span className="text-xs font-medium text-gray-600 mt-1 group-hover:text-green-600">
+                Événement
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {IsEventOpen && (<CreateEvent show={IsEventOpen} onClose={() => setIsEventOpen(false)} />)}
-      {IsCreateSimplePostOpen && (<CreateSimplePost show={IsCreateSimplePostOpen} onClose={() => setIsCreateSimplePostOpen(false)} />)}
-      {IsRichPostOpen && (<RichPost show={IsRichPostOpen} onClose={() => setIsRichPostOpen(false)} />)}
-      {IsCreateImagePostOpen && ( <CreateImagePost refresh={refresh} show={IsCreateImagePostOpen} onClose={() => setIsCreateImagePostOpen(false)}/> )}
-       
-   </div>
+      {/* Modals */}
+      {IsEventOpen && (
+        <CreateEvent 
+          show={IsEventOpen} 
+          onClose={() => setIsEventOpen(false)} 
+        />
+      )}
+      {IsCreateSimplePostOpen && (
+        <CreateSimplePost 
+          show={IsCreateSimplePostOpen} 
+          onClose={() => setIsCreateSimplePostOpen(false)} 
+        />
+      )}
+      {IsRichPostOpen && (
+        <RichPost 
+          show={IsRichPostOpen} 
+          onClose={() => setIsRichPostOpen(false)} 
+        />
+      )}
+      {IsCreateImagePostOpen && (
+        <CreateImagePost 
+          refresh={refresh} 
+          show={IsCreateImagePostOpen} 
+          onClose={() => setIsCreateImagePostOpen(false)}
+        />
+      )}
+    </div>
   );
 }
-
-    // <>
-    //   <Navbar />
-    //   <div className="content flex justify-center jus mx-auto space-x-3 lg:py-10 p-5">
-    //     {/* Sidebar - hidden on small screens, sticky on larger screens */}
-    //     <div className="SiberBar w-max sticky top-10">
-    //       <UserBox 
-    //         name={user.username}
-    //         lastPub={"25 fevrier 2025#"}
-    //         role={"TS INFO2#"}
-    //         school={"ESI#"}
-    //         AvatarImg={user.avatar}
-    //       />
-    //       <NavBox />
-    //     </div>
-        
-    //     {/* Main Content Area */}
-    //     <div className="main lg:w-2/6 overflow-hidden shrink-0 mx-auto">
-    //       <Feed />
-    //       {/* Map through the posts and render each post */}
-    //       {data.results?.map(post => (
-    //         <Post key={post.public_id} post={post} />
-    //       ))}
-    //     </div>
-
-    //     {/* Right Sidebar - hidden on small screens */}
-    //     <div className="rightBar hidden md:block">
-    //       <SuggestionBox />
-    //       <MeetBox />
-    //     </div>
-    //   </div>
-    // </>

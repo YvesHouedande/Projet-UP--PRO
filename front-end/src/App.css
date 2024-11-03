@@ -25,8 +25,17 @@
 /*  */
 /* src/styles/styles.css */
 
-.hide-scrollbar {
-  overflow: hidden;
+/* .hide-scrollbar { */
+  /* overflow: hidden; */
   /* Assure que le défilement est possible */
+/* } */
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
