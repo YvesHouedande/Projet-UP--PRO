@@ -471,63 +471,7 @@ class PeerViewSet(AbstractViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-    @action(detail=True, methods=['post'])
-    def join_request(self, request, pk=None):
-        """Demande à rejoindre une promo"""
-        peer = self.get_object()
-        student = request.user.student
 
-        if student.peer:
-            return Response(
-                {"detail": "Vous êtes déjà dans une promotion"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if peer.study != student.study:
-            return Response(
-                {"detail": "Cette promotion ne correspond pas à votre filière"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Créer la demande d'adhésion
-        PeerRequest.objects.create(
-            peer=peer,
-            student=student
-        )
-
-        return Response({"detail": "Demande envoyée avec succès"})
-
-    @action(detail=True, methods=['post'])
-    def handle_request(self, request, pk=None):
-        """Gérer une demande d'adhésion (accepter/refuser)"""
-        peer = self.get_object()
-        
-        if request.user.student != peer.manager:
-            return Response(
-                {"detail": "Seul le délégué peut gérer les demandes"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        request_id = request.data.get('request_id')
-        action = request.data.get('action')  # 'accept' ou 'reject'
-
-        try:
-            peer_request = PeerRequest.objects.get(id=request_id, peer=peer)
-            
-            if action == 'accept':
-                peer.add_member(peer_request.student)
-                peer_request.status = 'accepted'
-            else:
-                peer_request.status = 'rejected'
-            
-            peer_request.save()
-            return Response({"detail": "Demande traitée avec succès"})
-
-        except PeerRequest.DoesNotExist:
-            return Response(
-                {"detail": "Demande non trouvée"},
-                status=status.HTTP_404_NOT_FOUND
-            )
 
     @action(detail=True, methods=['post'], url_path='delegate-manager')
     def delegate_manager(self, request, *args, **kwargs):
@@ -633,23 +577,7 @@ class PeerViewSet(AbstractViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-class PeerPositionViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
-    permission_classes = (UserPermission,)
-    serializer_class = PeerPositionSerializer
-    filterset_fields = ["-created"]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['position', 'student__first_name', 'student__last_name']  
 
-    def get_queryset(self):
-        peer_pk = self.kwargs.get("peer__pk")
-        if peer_pk:
-            return PeerPosition.objects.filter(peer__public_id=peer_pk)
-
-    def get_object(self):
-        obj = PeerPosition.objects.get_object_by_public_id(self.kwargs["pk"])
-        self.check_object_permissions(self.request, obj)
-        return obj
     
 
 

@@ -1,11 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import axiosService from '../../helpers/axios';
+import AsyncSelect from 'react-select/async';
+
+const customStyles = {
+  control: (provided) => ({
+    ...provided,
+    borderColor: 'rgba(34, 197, 94, 0.5)', // Couleur de la bordure
+    boxShadow: 'none',
+    '&:hover': {
+      borderColor: 'rgba(34, 197, 94, 0.7)', // Couleur de la bordure au survol
+    },
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? 'rgba(34, 197, 94, 0.2)' : 'white',
+    color: state.isSelected ? 'green' : 'black',
+    '&:hover': {
+      backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    },
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: 'black',
+  }),
+};
 
 export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }) {
   const [formData, setFormData] = useState({});
   const [schools, setSchools] = useState([]);
   const [allStudies, setAllStudies] = useState([]);
   const [availableStudies, setAvailableStudies] = useState([]);
+  const [peers, setPeers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewProfile, setIsNewProfile] = useState(true);
   const [error, setError] = useState(null);
@@ -23,19 +48,22 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [schoolsResponse, studiesResponse] = await Promise.all([
+        const [schoolsResponse, studiesResponse, peersResponse] = await Promise.all([
           axiosService.get('/school/'),
           axiosService.get('/study/'),
+          axiosService.get('/peer/'),
         ]);
         
         setSchools(schoolsResponse.data.results || []);
         setAllStudies(studiesResponse.data.results || []);
+        setPeers(peersResponse.data.results || []);
 
         if (inpInfo) {
           setFormData({
             ...inpInfo,
             school: inpInfo.school?.id,
-            study: inpInfo.study?.id
+            study: inpInfo.study?.id,
+            peer: inpInfo.peer?.id,
           });
           setIsNewProfile(false);
         } else {
@@ -115,6 +143,48 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
     return years;
   };
 
+  const loadOptions = async (inputValue) => {
+    try {
+      const response = await axiosService.get(`/peer/?search=${inputValue}`);
+      return response.data.results.map(peer => ({
+        value: peer.public_id,
+        label: peer.label,
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des promotions:', error);
+      return [];
+    }
+  };
+
+  const handlePeerChange = (selectedOption) => {
+    setFormData(prevState => ({
+      ...prevState,
+      peer: selectedOption ? selectedOption.value : '',
+      peerLabel: selectedOption ? selectedOption.label : '',
+    }));
+  };
+
+  const loadSchoolOptions = async (inputValue) => {
+    try {
+      const response = await axiosService.get(`/school/?search=${inputValue}`);
+      return response.data.results.map(school => ({
+        value: school.public_id,
+        label: school.label,
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des écoles:', error);
+      return [];
+    }
+  };
+
+  const handleSchoolChange = (selectedOption) => {
+    setFormData(prevState => ({
+      ...prevState,
+      school: selectedOption ? selectedOption.value : '',
+      schoolLabel: selectedOption ? selectedOption.label : '',
+    }));
+  };
+
   if (isLoading) {
     return <div className="text-center text-green-600">Chargement...</div>;
   }
@@ -122,20 +192,16 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
   const renderStudentFields = () => (
     <>
       <div>
-        <label htmlFor="school" className="block text-sm font-medium text-green-700">École *</label>
-        <select 
-          id="school" 
-          name="school" 
-          value={formData.school || ''} 
-          onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
-          required
-        >
-          <option value="">Sélectionnez une école</option>
-          {schools.map(school => (
-            <option key={school.public_id} value={school.public_id}>{school.label}</option>
-          ))}
-        </select>
+        <label htmlFor="school-select" className="block text-sm font-medium text-green-700">École</label>
+        <AsyncSelect
+          id="school-select"
+          cacheOptions
+          loadOptions={loadSchoolOptions}
+          defaultOptions
+          onChange={handleSchoolChange}
+          value={formData.school ? { value: formData.school, label: formData.schoolLabel } : null}
+          styles={customStyles}
+        />
       </div>
       <div>
         <label htmlFor="study" className="block text-sm font-medium text-green-700">Filière</label>
@@ -155,6 +221,17 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         {!formData.school && (
           <p className="mt-1 text-sm text-gray-500">Veuillez d'abord sélectionner une école pour voir les filières disponibles.</p>
         )}
+      </div>
+      <div>
+        <label htmlFor="peer-select" className="block text-sm font-medium text-green-700">Promotion</label>
+        <AsyncSelect
+          id="peer-select"
+          cacheOptions
+          loadOptions={loadOptions}
+          defaultOptions
+          onChange={handlePeerChange}
+          value={formData.peer ? { value: formData.peer, label: formData.peerLabel } : null}
+        />
       </div>
       <div>
         <label htmlFor="level_choices" className="block text-sm font-medium text-green-700">Niveau</label>

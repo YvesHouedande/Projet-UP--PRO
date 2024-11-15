@@ -3,11 +3,14 @@ from .models import Study, School
 from .serializers import SchoolSerializer, StudySerializer
 from core.auth.permissions import UserPermission
 from django.http.response import Http404
+from rest_framework import filters
 
 class SchoolViewSet(AbstractViewSet):
     http_method_names = ("post", "get", )
     serializer_class = SchoolSerializer
     permission_classes = (UserPermission, )
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['label']
 
     def get_queryset(self):
         return School.objects.all()

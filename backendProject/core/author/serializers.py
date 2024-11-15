@@ -45,11 +45,12 @@ class StudentBaseSerializer(AbstractSerializer):
 
 class StudentUpdateSerializer(StudentBaseSerializer):
     """Serializer pour la création et mise à jour"""
+    peer = serializers.SlugRelatedField(queryset=Peer.objects.all(), slug_field="public_id", required=False, allow_null=True)
     level_choices_display = serializers.SerializerMethodField()
 
     class Meta(StudentBaseSerializer.Meta):
         fields = StudentBaseSerializer.Meta.fields + [
-            "level_choices_display", "created", "updated"
+            "peer", "level_choices_display", "created", "updated"
         ]
 
     def get_level_choices_display(self, obj):
@@ -78,7 +79,7 @@ class StudentDetailSerializer(StudentBaseSerializer):
 
     class Meta(StudentBaseSerializer.Meta):
         fields = StudentBaseSerializer.Meta.fields + [
-            'first_name', 'last_name', 'email', 
+            'first_name', 'last_name', 'email', "peer",
             'avatar', 'number', 'level_choices_display'
         ]
 
@@ -103,6 +104,10 @@ class StudentDetailSerializer(StudentBaseSerializer):
             "id": instance.school.public_id,
             "name": instance.school.label
         }
+        representation['peer'] = {
+            "id": instance.peer.public_id,
+            "label": instance.peer.label
+        } if instance.peer else None
         return representation
 
 
@@ -210,7 +215,7 @@ class PeerSerializer(AbstractSerializer):
         model = Peer
         fields = [
             'public_id', 'label', 'study_label', 'school_label',
-            'year', 'cover', 'manager',
+            'year', 'cover', 'manager', 
             'can_delegate', 'students_count'
         ]
 

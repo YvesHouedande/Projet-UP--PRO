@@ -15,6 +15,7 @@ export default function InfoInpDisplay({ user, inpInfo }) {
       <InfoCard label="Filière" value={inpInfo.study?.name} />
       <InfoCard label="Niveau" value={inpInfo.level_choices_display} />
       <InfoCard label="Année du bac" value={inpInfo.bac_year} />
+      <InfoCard label="Promotion" value={inpInfo.peer?.label} />
     </div>
   );
 
