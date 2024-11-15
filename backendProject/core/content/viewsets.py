@@ -30,6 +30,10 @@ class GeneralPostViewSet(AbstractViewSet):
     queryset = GeneralPost.objects.all()
 
     def get_queryset(self):
+        user_id = self.kwargs.get("user__pk") 
+        if user_id:
+            return GeneralPost.objects.filter(author__public_id=user_id).order_by('-created')
+        
         peer_id = self.kwargs.get("peer__pk")
         if peer_id:
             return GeneralPost.objects.filter(peer_posts__public_id=peer_id).order_by('-created')

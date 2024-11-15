@@ -21,7 +21,7 @@ export default function StudentCard({ student }) {
             </span>
           </div>
           <div className="mt-1 text-sm text-gray-600">
-            {student.study.name} - {student.school.name}
+            {student.study?.label || "Filière non spécifiée"} - {student.school?.label || "École non spécifiée"}
           </div>
           {student.number && (
             <p className="mt-1 text-sm text-gray-500">
