@@ -63,6 +63,17 @@ export default function PeerPage() {
     }
   }, [peerId, activeTab]);
 
+  // Utiliser useEffect pour la recherche
+  useEffect(() => {
+    if (activeTab === 'members') {
+      const delayDebounceFn = setTimeout(() => {
+        fetchStudents(searchTerm, true);
+      }, 300); // Délai de 300ms pour éviter trop de requêtes
+
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [searchTerm, activeTab]);
+
   // Fonction pour charger les étudiants
   const fetchStudents = async (searchValue = '', reset = false) => {
     if (loading) return;
