@@ -60,8 +60,9 @@ router.register(r"personnel", PersonnelViewSet, basename="personnel")
 ################ peer->data ################ 
 router.register(r"peer", PeerViewSet, basename="peer")
 peer = routers.NestedSimpleRouter(router, r"peer", lookup="peer")
+peer.register(r"posts", GeneralPostViewSet, basename="peer-posts")
 # peer.register(r"position", PeerPositionViewSet, basename="peer-position")
-peer.register(r"student", StudentViewSet, basename="peer-student") 
+peer.register(r"student", StudentViewSet, basename="peer-students") 
 
 ################service->data ################ 
 router.register(r"service", ServiceViewSet, basename="service")#service viewset

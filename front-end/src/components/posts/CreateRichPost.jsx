@@ -1,137 +1,220 @@
-import React, { useState } from 'react';
-import { Button, Modal, Label, Textarea, TextInput } from 'flowbite-react';
+import React, { useState, useContext } from 'react';
+import { CartoonModal, CartoonButton } from '../shared/Modal';
 import EmojiPicker from 'emoji-picker-react';
-import axiosService from '../../helpers/axios';
 import { getUser } from '../../hooks/user.actions';
-import { mutate } from 'swr';
-import { useContext } from 'react';
 import { Context } from '../../pages/Layout';
+import { usePosts } from '../../hooks/posts.actions';
 
+export default function RichPost({ show, onClose, onPostCreated, peerId, serviceId, source = 'etudiant' }) {
+    const { showInfo, setShowInfo } = useContext(Context);
+    const { createPost } = usePosts(source, peerId, serviceId);
+    const user = getUser();
 
-export default function RichPost({ show, onClose }) {
-    const { showInfo, setShowInfo } = useContext(Context)
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [form, setForm] = useState({
         title: "",
         content_type: "RICH POST",
         content: "",
         image: null,
+        imagePreview: null
     });
-
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-    const user = getUser();
-
-    const handleEmojiClick = (emojiObject) => {
-        setForm({ ...form, content: form.content + emojiObject.emoji });
-    };
 
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setForm({ ...form, image: file });
+            setForm({
+                ...form,
+                image: file,
+                imagePreview: URL.createObjectURL(file)
+            });
         }
     };
 
-    const handleSubmit = (event) => {
+    const handleEmojiClick = (emojiObject) => {
+        setForm(prev => ({
+            ...prev,
+            content: prev.content + emojiObject.emoji
+        }));
+        setShowEmojiPicker(false);
+    };
+
+    const handleSubmit = async (event) => {
         event.preventDefault();
+        if (!form.title || !form.content) return;
 
-        if (!form.title) {
-            alert('Le titre est requis.');
-            return;
-        }
-
+        setIsSubmitting(true);
         const formData = new FormData();
         formData.append('author', user.public_id);
         formData.append('title', form.title);
         formData.append('content_type', form.content_type);
         formData.append('content', form.content);
+        formData.append('source', source);
         if (form.image) {
             formData.append('image', form.image);
         }
 
-        axiosService
-            .post('/general_post/', formData)
-            .then(() => {
-                console.log('Post created 🚀');
-                setForm({
-                    title: "",
-                    content: "",
-                    image: null,
-                });
-                mutate('/general_post');
-                onClose();
-            })
-            .catch((error) => {
-                setShowInfo({
-                ...showInfo,
-                showMessage: true,
-                message: error.response.data.error,
-                type:'inp_mail'
-                })
+        try {
+            await createPost(formData);
+            if (onPostCreated) {
+                onPostCreated();
+            }
+            setForm({
+                title: "",
+                content: "",
+                content_type: "RICH POST",
+                image: null,
+                imagePreview: null
             });
+            onClose();
+        } catch (error) {
+            setShowInfo({
+                showMessage: true,
+                message: error.response?.data?.error || "Une erreur est survenue",
+                type: 'error'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
-        <Modal dismissible show={show} onClose={onClose}>
-            <Modal.Header>Poster une Publication</Modal.Header>
-            <Modal.Body>
-                <div className='my-4'>
-                    <div className="mb-2 block">
-                        <Label htmlFor="title" value="Titre de votre publication..." />
+        <CartoonModal 
+            show={show} 
+            onClose={onClose}
+            title="Créer un article"
+        >
+            <CartoonModal.Body>
+                <div className="space-y-6">
+                    {/* Titre */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Titre de l'article
+                        </label>
+                        <input
+                            type="text"
+                            value={form.title}
+                            onChange={(e) => setForm({ ...form, title: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+                                     focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                     bg-gray-50"
+                            placeholder="Donnez un titre à votre article..."
+                        />
                     </div>
-                    <TextInput 
-                        id="title" 
-                        type="text" 
-                        sizing="sm" 
-                        value={form.title} 
-                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    />
-                </div>
-                <div className='my-4'>
-                    <div className="mb-2 block">
-                        <Label htmlFor="imageUpload" value="Télécharger une image..." />
+
+                    {/* Image */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Image (optionnel)
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                                id="image-upload"
+                            />
+                            <label
+                                htmlFor="image-upload"
+                                className="flex flex-col items-center justify-center w-full h-32
+                                         border-2 border-dashed border-gray-300 rounded-xl
+                                         bg-gray-50 hover:bg-gray-100 cursor-pointer
+                                         transition-colors duration-200"
+                            >
+                                {form.imagePreview ? (
+                                    <img
+                                        src={form.imagePreview}
+                                        alt="Preview"
+                                        className="h-full w-full object-contain rounded-xl"
+                                    />
+                                ) : (
+                                    <div className="text-center">
+                                        <p className="text-sm text-gray-600">
+                                            Cliquez pour ajouter une image
+                                        </p>
+                                    </div>
+                                )}
+                            </label>
+                        </div>
                     </div>
-                    <input 
-                        id="imageUpload" 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleImageUpload} 
-                        className="mb-2"
-                    />
-                </div>
-                <div className="relative my-4">
-                    <div className="mb-2 block">
-                        <Label htmlFor="content" value="Plus d'informations sur le post ..." />
-                    </div>
-                    <Textarea 
-                        id="content" 
-                        placeholder="Description" 
-                        required 
-                        rows={4} 
-                        value={form.content}
-                        onChange={(e) => setForm({ ...form, content: e.target.value })}
-                    />
-                    <div className="mt-2 flex items-center relative">
-                        <Button 
-                            color="gray" 
-                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                            className="mr-2"
-                        >
-                            😊
-                        </Button>
-                        {showEmojiPicker && (
-                            <div className="absolute top-12 z-50">
-                                <EmojiPicker onEmojiClick={handleEmojiClick} />
+
+                    {/* Contenu */}
+                    <div className="relative">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Contenu de l'article
+                        </label>
+                        <div className="relative">
+                            <textarea
+                                value={form.content}
+                                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                                rows={6}
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+                                         focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                         bg-gray-50 resize-none"
+                                placeholder="Rédigez votre article..."
+                            />
+                            <div className="absolute bottom-3 right-3">
+                                <CartoonButton
+                                    variant="secondary"
+                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                    className="!p-2"
+                                >
+                                    😊
+                                </CartoonButton>
+                                {showEmojiPicker && (
+                                    <div className="absolute bottom-full right-0 mb-2 z-50">
+                                        <div 
+                                            onClick={e => e.stopPropagation()}
+                                            className="bg-white rounded-lg shadow-lg"
+                                        >
+                                            <EmojiPicker 
+                                                onEmojiClick={handleEmojiClick}
+                                                width={300}
+                                                height={400}
+                                                lazyLoadEmojis={false}
+                                                searchDisabled={false}
+                                                skinTonesDisabled={true}
+                                                emojiStyle="native"
+                                                previewConfig={{
+                                                    showPreview: false
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
-            </Modal.Body>
-            <Modal.Footer className="flex justify-between">
-                <Button onClick={onClose}>Fermer</Button>
-                <Button onClick={handleSubmit}>Envoyer</Button>                
-            </Modal.Footer>
-        </Modal>
+            </CartoonModal.Body>
+
+            <CartoonModal.Footer>
+                <CartoonButton 
+                    variant="secondary" 
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                >
+                    Annuler
+                </CartoonButton>
+                <CartoonButton 
+                    variant="primary"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !form.title || !form.content}
+                >
+                    {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            </svg>
+                            <span>Publication en cours...</span>
+                        </div>
+                    ) : (
+                        'Publier'
+                    )}
+                </CartoonButton>
+            </CartoonModal.Footer>
+        </CartoonModal>
     );
 }

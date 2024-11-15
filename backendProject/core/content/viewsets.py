@@ -7,6 +7,7 @@ from core.auth.permissions import UserPermission
 from core.abstract.viewsets import AbstractViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.core.cache import cache
+from core.author.models import Peer 
 
 from core.content.serializers import (
     EventSerializer, CommentSerializer
@@ -23,19 +24,27 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters
 
 class GeneralPostViewSet(AbstractViewSet):
-    http_method_names = ("post", "get", "patch") 
-    permission_classes = [IsAuthenticated, UserPermission]
+    http_method_names = ("post", "get", "patch", "delete") 
+    permission_classes = (IsAuthenticated, UserPermission)
     serializer_class = GeneralPostSerializer
+    queryset = GeneralPost.objects.all()
 
     def get_queryset(self):
-        user_pk = self.kwargs.get("user__pk")  # Correction de la clé ici
-        if user_pk:
-            try:
-                user = User.objects.get(public_id=user_pk)
-            except User.DoesNotExist:
-                return GeneralPost.objects.none()
-            return GeneralPost.objects.filter(author=user)
-        return GeneralPost.objects.all()
+        peer_id = self.kwargs.get("peer__pk")
+        if peer_id:
+            return GeneralPost.objects.filter(peer_posts__public_id=peer_id).order_by('-created')
+        
+        service_id = self.kwargs.get("service__pk")
+        if service_id:
+            return GeneralPost.objects.filter(service_posts__public_id=service_id).order_by('-created')
+        
+        return GeneralPost.objects.filter(source='etudiant').order_by('-created')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['peer_id'] = self.kwargs.get("peer__pk")
+        context['service_id'] = self.kwargs.get("service__pk")
+        return context
 
     def get_object(self):
         obj = GeneralPost.objects.get_object_by_public_id(self.kwargs["pk"])
@@ -62,12 +71,38 @@ class GeneralPostViewSet(AbstractViewSet):
         return Response(serializer.data)
    
     def create(self, request, *args, **kwargs):
+        peer_id = self.kwargs.get("peer__pk")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        if peer_id:
+            try:
+                peer = Peer.objects.get(public_id=peer_id)
+                # Vérifier si l'utilisateur est le délégué
+                if peer.manager and peer.manager.user == request.user:
+                    # Créer le post via la méthode du modèle Peer
+                    post = peer.create_post(
+                        author=request.user,
+                        title=serializer.validated_data.get('title'),
+                        content=serializer.validated_data.get('content'),
+                        content_type=serializer.validated_data.get('content_type'),
+                        image=serializer.validated_data.get('image')
+                    )
+                    return Response(
+                        self.get_serializer(post).data, 
+                        status=status.HTTP_201_CREATED
+                    )
+            except Peer.DoesNotExist:
+                return Response(
+                    {"error": "Promotion non trouvée"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Si ce n'est pas un post de promotion, création normale
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(methods=["get"], detail=True)
+    @action(methods=["post"], detail=True)
     def like(self, request, *args, **kwargs):
         post = self.get_object()
         user = self.request.user
@@ -76,8 +111,8 @@ class GeneralPostViewSet(AbstractViewSet):
         serializer = self.serializer_class(post, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(methods=["get"], detail=True)
-    def remove_like(self, request, *args, **kwargs):
+    @action(methods=["delete"], detail=True)
+    def unlike(self, request, *args, **kwargs):
         post = self.get_object()
         user = self.request.user
 
@@ -168,4 +203,19 @@ class EventViewSet(AbstractViewSet):
         # Suppression de l'événement
         event.delete()
         return Response({"detail": "Événement supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
+
+    def perform_create(self, serializer):
+        peer_id = self.kwargs.get("peer_pk")
+        service_id = self.kwargs.get("service_pk")
+        
+        # Préparer les données supplémentaires selon le contexte
+        additional_data = {}
+        if peer_id:
+            additional_data['source'] = 'promotion'
+        elif service_id:
+            additional_data['source'] = 'service'
+        else:
+            additional_data['source'] = 'etudiant'
+            
+        serializer.save(**additional_data)
 

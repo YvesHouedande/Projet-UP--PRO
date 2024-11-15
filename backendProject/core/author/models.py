@@ -1,5 +1,3 @@
-from operator import mod
-from pyexpat import model
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -16,6 +14,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 
 
@@ -145,10 +144,16 @@ class Student(AbstractModel):
         ("master2", "Master2"),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, related_name="students", verbose_name="Filière")
-    school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, related_name="students", verbose_name="Ecole")
+    study = models.ForeignKey("core_center.Study", on_delete=models.SET_NULL, null=True, blank=True)
+    school = models.ForeignKey("core_center.School", on_delete=models.CASCADE)
     level_choices = models.CharField(choices=LEVEL_CHOICES, max_length=10, null=True, verbose_name="Niveau")
-    peer = models.ForeignKey("Peer", on_delete=models.PROTECT, null=True, blank=True, related_name="students", verbose_name="Promotion")
+    peer = models.ForeignKey(
+        "Peer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="students"
+    )
     bac_year = models.IntegerField(
         verbose_name="Année du bac",
         null=True,
@@ -180,7 +185,7 @@ class Professor(AbstractModel):
         abstract = False
 
     def __str__(self) -> str:
-        return f"{self.email}"
+        return f"{self.user.email}"
     
 
 class Personnel(AbstractModel):
@@ -195,57 +200,103 @@ class Personnel(AbstractModel):
         abstract = False
 
 class Peer(AbstractModel):
-    label = models.CharField(max_length=255, verbose_name="Nom de la Promo", unique=True)
-    study = models.ForeignKey("core_center.Study", on_delete=models.PROTECT, verbose_name="Filière")
-    school = models.ForeignKey("core_center.School", on_delete=models.PROTECT, verbose_name="Ecole", null=True, blank=True)
-    description = models.TextField()
-    manager = models.ForeignKey(
-        'Student',
-        on_delete=models.SET_NULL,
-        null=True,
+    label = models.CharField(max_length=255, unique=True)
+    study = models.ForeignKey("core_center.Study", on_delete=models.CASCADE)
+    school = models.ForeignKey("core_center.School", on_delete=models.CASCADE)
+    year = models.IntegerField()
+    cover = models.ImageField(upload_to='peer/', null=True, blank=True)
+    manager = models.OneToOneField(
+        "Student", 
+        on_delete=models.SET_NULL, 
+        null=True, 
         blank=True,
-        related_name='managed_peer'
+        related_name="managed_peer"
     )
-    year = models.DateField(verbose_name="année")
-    cover = models.ImageField(null=True, blank=True, upload_to="Peer/")
-    follows = models.ManyToManyField("User", related_name="P_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
+    posts = models.ManyToManyField(
+        'core_content.GeneralPost',
+        related_name='peer_posts',
+        blank=True
+    )
 
     def clean(self):
         # Vérifier si une promotion existe déjà pour cette filière cette année
         current_year = timezone.now().year
         if Peer.objects.filter(
             study=self.study,
-            year__year=current_year
+            year=current_year
         ).exists() and not self.pk:
             raise ValidationError("Une promotion existe déjà pour cette filière cette année")
 
     def save(self, *args, **kwargs):
         if not self.pk:  # Nouveau Peer
-            current_year = timezone.now().year
-            # Générer le label automatiquement
-            self.label = f"{self.study.label}{str(current_year)[2:]}"
-            # Définir l'année automatiquement
-            self.year = timezone.datetime(current_year, 1, 1)
+            # Ne pas convertir year en datetime
+            if not self.label:
+                self.label = f"{self.study.label}{str(self.year)[2:]}"
         super().save(*args, **kwargs)
+
+    @classmethod
+    def exists_for_student(cls, student):
+        """Vérifie si une promo existe pour la filière/année de l'étudiant"""
+        current_year = timezone.now().year
+        return cls.objects.filter(
+            study=student.study,
+            year__year=current_year
+        ).exists()
+
+    @classmethod
+    def get_for_student(cls, student):
+        """Récupère la promo correspondante à l'étudiant"""
+        current_year = timezone.now().year
+        return cls.objects.filter(
+            study=student.study,
+            year__year=current_year
+        ).first()
+
+    def add_member(self, student):
+        """Ajoute un étudiant à la promo"""
+        if student.study == self.study:
+            student.peer = self
+            student.save()
+            return True
+        return False
+
+    def remove_member(self, student):
+        """Retire un étudiant de la promo"""
+        if student.peer == self and student != self.manager:
+            student.peer = None
+            student.save()
+            return True
+        return False
+
+    def create_post(self, author, **kwargs):
+        """Créer un post au nom de la promo"""
+        from core.content.models import GeneralPost
+        post = GeneralPost.objects.create(
+            author=author,
+            source='promotion',  # Utilisation du choix existant
+            **kwargs
+        )
+        self.posts.add(post)
+        return post
 
     class Meta:
         verbose_name = "Promotion"
         unique_together = ('study', 'year')
 
-    def add_student(self,  student:Student=None):
-        student.peer = self
-
     def __str__(self) -> str:
         return f"{self.label}"
     
 class Service(AbstractModel):
-    label = models.CharField(max_length=255, verbose_name="Service") 
-    cover = models.ImageField(null=True, blank=True, upload_to="Service/", verbose_name="Image de couverture")
-    manager = models.ForeignKey("core_author.User", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Gerant")
-    follows = models.ManyToManyField("core_author.User", blank=True, related_name="services_followed", verbose_name="Abonnes")
+    label = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    school = models.ForeignKey("core_center.School", null=True, blank=True, on_delete=models.CASCADE)
-    follows = models.ManyToManyField("User", related_name="S_followed_by", symmetrical=False, verbose_name="Abonnés", blank=True)
+    school = models.ForeignKey("core_center.School", on_delete=models.CASCADE)
+    manager = models.ForeignKey("core_author.User", on_delete=models.SET_NULL, null=True, blank=True)
+    cover = models.ImageField(upload_to='service/', null=True, blank=True)
+    posts = models.ManyToManyField(
+        'core_content.GeneralPost',
+        related_name='service_posts',
+        blank=True
+    )
 
     def __str__(self) -> str:
         return f"{self.label}"
@@ -257,15 +308,5 @@ class Service(AbstractModel):
         verbose_name = "Service"
         abstract = False
 
-class PeerPosition(AbstractModel):
-    peer = models.ForeignKey("Peer", on_delete=models.PROTECT)
-    student = models.OneToOneField("Student", on_delete=models.PROTECT)
-    position = models.CharField(max_length=255, unique=True, null=True, blank=True)
-   
-    class Meta:
-        verbose_name = "Rôle-Promo"
-        abstract = False
 
-    def __str__(self) -> str:
-        return f"peer: {self.peer.label}, student: {self.student.get_email()}, positon:{self.position}"
     

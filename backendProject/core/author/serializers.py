@@ -4,18 +4,13 @@ from rest_framework.exceptions import NotFound
 
 from core.abstract.serializers import AbstractSerializer
 from core.author.models import(
-     User, Service, Peer,
-     PeerPosition, Student,
+     User, Service, Peer,Student,
      Professor, Personnel
      )
 from core.center.models import School, Study
 
 
 class UserSerializer(AbstractSerializer):
-    # posts_count = serializers.SerializerMethodField()
-    
-    # def get_posts_count(self, instance):
-    #     return instance.posts.count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -31,7 +26,7 @@ class UserSerializer(AbstractSerializer):
         fields = [
             'public_id', 'first_name', 'last_name', 
             'email', 'avatar', 'status_choice', 'number',
-            # 'posts_count',
+            "created", "updated",
         ]
 
 
@@ -196,7 +191,7 @@ class PeerSerializer(AbstractSerializer):
     school_label = serializers.CharField(source='school.label', read_only=True)
     manager = StudentDetailSerializer(read_only=True)
     can_delegate = serializers.SerializerMethodField()
-    available_students = serializers.SerializerMethodField()
+    students_count = serializers.SerializerMethodField()
 
     def get_can_delegate(self, obj):
         request = self.context.get('request')
@@ -207,33 +202,16 @@ class PeerSerializer(AbstractSerializer):
             return student == obj.manager
         except:
             return False
-
-    def get_available_students(self, obj):
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return []
         
-        # Ne retourner la liste que si l'utilisateur est le manager
-        try:
-            if request.user.student != obj.manager:
-                return []
-        except:
-            return []
-
-        # Récupérer tous les étudiants de la promotion sauf le manager
-        students = obj.students.exclude(pk=obj.manager.pk)
-        return StudentDetailSerializer(
-            students, 
-            many=True,
-            context=self.context
-        ).data
+    def get_students_count(self, obj):
+        return obj.students.count()
 
     class Meta:
         model = Peer
         fields = [
             'public_id', 'label', 'study_label', 'school_label',
-            'year', 'cover', 'description', 'manager',
-            'can_delegate', 'available_students'
+            'year', 'cover', 'manager',
+            'can_delegate', 'students_count'
         ]
 
 

@@ -25,12 +25,12 @@ class GeneralPost(AbstractModel, AbstractPostCommon):
     def is_popular(self):
         return self.likes.count() > settings.POPULARITY_THRESHOLD
     
-    def get_source(self, pk):
-        if self.source == "service":
-            return Service.objects.get(pk=pk) or None
-        elif self.source == "peer":
-            return Peer.objects.get(pk=pk) or None
-        return self.author
+    # def get_source(self, pk):
+    #     if self.source == "service":
+    #         return Service.objects.get(pk=pk) or None
+    #     elif self.source == "peer":
+    #         return Peer.objects.get(pk=pk) or None
+    #     return self.author
 
     
 class Event(AbstractModel):

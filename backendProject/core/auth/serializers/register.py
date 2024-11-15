@@ -20,18 +20,14 @@ class RegisterSerializer(UserSerializer):
         # List of all the fields that can be included in a request or a response
         fields = [
             "public_id",
-            # "id",
-            # "username",
             "name",
             "first_name",
             "last_name",
             "bio",
             "avatar",
             "email",
-            # "is_active",
             "created",
             "updated",
-            "posts_count",
             "is_superuser",
             "status_choice",
             "from_inp",

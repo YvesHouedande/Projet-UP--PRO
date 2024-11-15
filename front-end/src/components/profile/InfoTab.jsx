@@ -9,7 +9,7 @@ const InfoItem = ({ label, value }) => (
                   hover:shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)]
                   transition-all duration-200">
     <h3 className="text-sm font-medium text-green-600 mb-1">{label}</h3>
-    <p className="text-gray-800 font-medium">{value || "Non spécifié"}</p>
+    <p className="text-gray-800 font-medium">{value ?? "Non spécifié"}</p>
   </div>
 );
 
@@ -46,25 +46,24 @@ export default function InfoTab({ user, mutate }) {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InfoItem label="Contact" value={"+225 "+user?.number} />
-          <InfoItem label="Publications" value={user?.posts_count} />
+          <InfoItem label="Contact" value={user?.number ? `+225 ${user.number}` : null} />
           <InfoItem label="Email INP" value={user?.inp_mail} />
           <InfoItem label="De INP" value={user?.from_inp ? "Oui" : "Non"} />
           <InfoItem 
             label="Créé le" 
-            value={new Date(user?.created).toLocaleDateString('fr-FR', {
+            value={user?.created ? new Date(user.created).toLocaleDateString('fr-FR', {
               day: 'numeric',
               month: 'long',
               year: 'numeric'
-            })} 
+            }) : null} 
           />
           <InfoItem 
             label="Mis à jour le" 
-            value={new Date(user?.updated).toLocaleDateString('fr-FR', {
+            value={user?.updated ? new Date(user.updated).toLocaleDateString('fr-FR', {
               day: 'numeric',
               month: 'long',
               year: 'numeric'
-            })} 
+            }) : null} 
           />
         </div>
       )}

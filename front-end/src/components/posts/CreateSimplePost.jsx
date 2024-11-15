@@ -1,97 +1,126 @@
-import React, { useState } from 'react';
-import { Button, Modal, Label, Textarea, TextInput } from 'flowbite-react';
+import React, { useState, useContext } from 'react';
+import { CartoonModal, CartoonButton } from '../shared/Modal';
 import EmojiPicker from 'emoji-picker-react';
-import axiosService from '../../helpers/axios';
 import { getUser } from '../../hooks/user.actions';
-import { mutate } from 'swr';
-import { useContext } from 'react';
 import { Context } from '../../pages/Layout';
+import { usePosts } from '../../hooks/posts.actions';
 
-
-export default function CreateSimplePost({ show, onClose }) {
-    // for mail validation
-    const { showInfo, setShowInfo } = useContext(Context)
+export default function CreateSimplePost({ show, onClose, onPostCreated, peerId, serviceId, source = 'etudiant' }) {
+    const { showInfo, setShowInfo } = useContext(Context);
+    const { createPost } = usePosts(source, peerId, serviceId);
+    const user = getUser();
 
     const [form, setForm] = useState({
-        title: "",
         content_type: "SIMPLE POST",
         content: "",
+        source: source
     });
 
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-    const user = getUser();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleEmojiClick = (emojiObject) => {
-        setForm({ ...form, content: form.content + emojiObject.emoji });
+        setForm(prev => ({
+            ...prev,
+            content: prev.content + emojiObject.emoji
+        }));
+        setShowEmojiPicker(false);
     };
 
-
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
+        if (!form.content.trim()) return;
 
+        setIsSubmitting(true);
         const formData = new FormData();
         formData.append('author', user.public_id);
-        formData.append('title', form.title);
         formData.append('content_type', form.content_type);
         formData.append('content', form.content);
-        axiosService
-            .post('/general_post/', formData)
-            .then(() => {
-                console.log('Post created 🚀');
-                setForm({
-                    content: "",
-                });
-                mutate('/general_post');
-                onClose();
-            })
-            .catch((error) => {
-                setShowInfo({
-                ...showInfo,
+        formData.append('source', source);
+
+        try {
+            await createPost(formData);
+            if (onPostCreated) {
+                onPostCreated();
+            }
+            setForm({ ...form, content: "" });
+            onClose();
+        } catch (error) {
+            setShowInfo({
                 showMessage: true,
-                message: error.response.data.error,
-                type:'inp_mail'
-                })
+                message: error.response?.data?.error || "Une erreur est survenue",
+                type: 'error'
             });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
-        <Modal dismissible show={show} onClose={onClose}>
-            <Modal.Header>Poster une publication</Modal.Header>
-            <Modal.Body>
-                <div className="relative my-4">
-                    <div className="mb-2 block">
-                        <Label htmlFor="content" value="Plus d'informations sur le post ..." />
-                    </div>
-                    <Textarea 
-                        id="content" 
-                        placeholder="Description" 
-                        required 
-                        rows={4} 
+        <CartoonModal 
+            show={show} 
+            onClose={onClose}
+            title="Nouvelle publication"
+        >
+            <CartoonModal.Body>
+                <div className="relative">
+                    <textarea
                         value={form.content}
                         onChange={(e) => setForm({ ...form, content: e.target.value })}
+                        rows={4}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+                                 focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                 bg-gray-50 resize-none"
+                        placeholder="Que souhaitez-vous partager ?"
                     />
-                    <div className="mt-2 flex items-center relative">
-                        <Button 
-                            color="gray" 
+                    <div className="absolute bottom-3 right-3">
+                        <CartoonButton
+                            variant="secondary"
                             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                            className="mr-2"
+                            className="!p-2"
                         >
                             😊
-                        </Button>
+                        </CartoonButton>
                         {showEmojiPicker && (
-                            <div className="absolute top-12 z-50">
-                                <EmojiPicker onEmojiClick={handleEmojiClick} />
+                            <div className="absolute bottom-full right-0 mb-2 z-50">
+                                <div 
+                                    onClick={e => e.stopPropagation()}
+                                    className="bg-white rounded-lg shadow-lg"
+                                >
+                                    <EmojiPicker 
+                                        onEmojiClick={handleEmojiClick}
+                                        width={300}
+                                        height={400}
+                                        lazyLoadEmojis={false}
+                                        searchDisabled={false}
+                                        skinTonesDisabled={true}
+                                        emojiStyle="native"
+                                        previewConfig={{
+                                            showPreview: false
+                                        }}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
                 </div>
-            </Modal.Body>
-            <Modal.Footer className="flex justify-between">
-                <Button onClick={onClose}>Fermer</Button>
-                <Button onClick={handleSubmit}>Envoyer</Button>                
-            </Modal.Footer>
-        </Modal>
+            </CartoonModal.Body>
+
+            <CartoonModal.Footer>
+                <CartoonButton 
+                    variant="secondary" 
+                    onClick={onClose}
+                >
+                    Annuler
+                </CartoonButton>
+                <CartoonButton 
+                    variant="primary"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                >
+                    Publier
+                </CartoonButton>
+            </CartoonModal.Footer>
+        </CartoonModal>
     );
 }

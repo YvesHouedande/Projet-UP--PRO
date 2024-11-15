@@ -85,7 +85,6 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
       const dataToSend = {
         ...formData,
         user: user.public_id,
-        // school: formData.school
       };
       if (isNewProfile) {
         response = await axiosService.post(`/user/${user.public_id}/${endpoint}/`, dataToSend);
@@ -107,7 +106,6 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
     ["master1", "Master1"], ["master2", "Master2"],
   ];
 
-  // Générer les années pour le sélecteur
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
@@ -118,19 +116,19 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
   };
 
   if (isLoading) {
-    return <div>Chargement...</div>;
+    return <div className="text-center text-green-600">Chargement...</div>;
   }
 
   const renderStudentFields = () => (
     <>
       <div>
-        <label htmlFor="school" className="block text-sm font-medium text-gray-700">École *</label>
+        <label htmlFor="school" className="block text-sm font-medium text-green-700">École *</label>
         <select 
           id="school" 
           name="school" 
           value={formData.school || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
           required
         >
           <option value="">Sélectionnez une école</option>
@@ -140,13 +138,13 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         </select>
       </div>
       <div>
-        <label htmlFor="study" className="block text-sm font-medium text-gray-700">Filière</label>
+        <label htmlFor="study" className="block text-sm font-medium text-green-700">Filière</label>
         <select 
           id="study" 
           name="study" 
           value={formData.study || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
           disabled={!formData.school}
         >
           <option value="">Sélectionnez une filière</option>
@@ -159,13 +157,13 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         )}
       </div>
       <div>
-        <label htmlFor="level_choices" className="block text-sm font-medium text-gray-700">Niveau</label>
+        <label htmlFor="level_choices" className="block text-sm font-medium text-green-700">Niveau</label>
         <select 
           id="level_choices" 
           name="level_choices" 
           value={formData.level_choices || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         >
           <option value="">Sélectionnez un niveau</option>
           {LEVEL_CHOICES.map(([value, label]) => (
@@ -174,7 +172,7 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         </select>
       </div>
       <div>
-        <label htmlFor="bac_year" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="bac_year" className="block text-sm font-medium text-green-700">
           Année du bac
         </label>
         <select
@@ -182,7 +180,7 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
           name="bac_year"
           value={formData.bac_year || ''}
           onChange={handleChange}
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         >
           <option value="">Sélectionnez une année</option>
           {generateYearOptions().map(year => (
@@ -198,18 +196,18 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
   const renderProfessorFields = () => (
     <>
       <div>
-        <label htmlFor="subject" className="block text-sm font-medium text-gray-700">Matière</label>
+        <label htmlFor="subject" className="block text-sm font-medium text-green-700">Matière</label>
         <input 
           type="text" 
           id="subject" 
           name="subject" 
           value={formData.subject || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         />
       </div>
       <div>
-        <label htmlFor="school" className="block text-sm font-medium text-gray-700">École(s)</label>
+        <label htmlFor="school" className="block text-sm font-medium text-green-700">École(s)</label>
         <select 
           id="school" 
           name="school" 
@@ -219,7 +217,7 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
             setFormData(prev => ({ ...prev, school: selectedOptions }));
           }}
           multiple
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         >
           {schools.map(school => (
             <option key={school.public_id} value={school.public_id}>{school.label}</option>
@@ -227,7 +225,7 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         </select>
       </div>
       <div>
-        <label htmlFor="study" className="block text-sm font-medium text-gray-700">Filière(s)</label>
+        <label htmlFor="study" className="block text-sm font-medium text-green-700">Filière(s)</label>
         <select 
           id="study" 
           name="study" 
@@ -237,7 +235,7 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
             setFormData(prev => ({ ...prev, study: selectedOptions }));
           }}
           multiple
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         >
           {allStudies.map(study => (
             <option key={study.public_id} value={study.public_id}>{study.label}</option>
@@ -250,35 +248,35 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
   const renderPersonnelFields = () => (
     <>
       <div>
-        <label htmlFor="job" className="block text-sm font-medium text-gray-700">Poste</label>
+        <label htmlFor="job" className="block text-sm font-medium text-green-700">Poste</label>
         <input 
           type="text" 
           id="job" 
           name="job" 
           value={formData.job || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         />
       </div>
       <div>
-        <label htmlFor="administration" className="block text-sm font-medium text-gray-700">Administration</label>
+        <label htmlFor="administration" className="block text-sm font-medium text-green-700">Administration</label>
         <input 
           type="text" 
           id="administration" 
           name="administration" 
           value={formData.administration || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         />
       </div>
       <div>
-        <label htmlFor="school" className="block text-sm font-medium text-gray-700">École</label>
+        <label htmlFor="school" className="block text-sm font-medium text-green-700">École</label>
         <select 
           id="school" 
           name="school" 
           value={formData.school || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         >
           <option value="">Sélectionnez une école</option>
           {schools.map(school => (
@@ -287,13 +285,13 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
         </select>
       </div>
       <div>
-        <label htmlFor="study" className="block text-sm font-medium text-gray-700">Filière</label>
+        <label htmlFor="study" className="block text-sm font-medium text-green-700">Filière</label>
         <select 
           id="study" 
           name="study" 
           value={formData.study || ''} 
           onChange={handleChange} 
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full py-2 px-3 border-2 border-green-300 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
         >
           <option value="">Sélectionnez une filière</option>
           {availableStudies.map(study => (
@@ -305,7 +303,7 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
   );
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-white rounded-xl shadow-lg">
       {user.status_choice === 'etudiant' && renderStudentFields()}
       {user.status_choice === 'professeur' && renderProfessorFields()}
       {user.status_choice === 'personnel' && renderPersonnelFields()}
@@ -313,14 +311,14 @@ export default function UpdateINPInfo({ user, inpInfo, handleCloseEdit, mutate }
       <div className="col-span-2 flex justify-end space-x-2 mt-4">
         <button 
           type="submit" 
-          className="inline-flex justify-center py-2 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex justify-center py-2 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
           {isNewProfile ? "Créer le profil" : "Mettre à jour"}
         </button>
         <button 
           type="button" 
           onClick={handleCloseEdit} 
-          className="inline-flex justify-center py-2 px-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex justify-center py-2 px-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
           Annuler
         </button>

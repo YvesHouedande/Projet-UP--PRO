@@ -6,29 +6,28 @@ from core.center.models import(
 from core.author.serializers import (
     UserSerializer, ServiceSerializer,
     PeerSerializer, PeerPositionSerializer,
-    StudentBaseSerializer, StudentUpdateSerializer, 
+    StudentUpdateSerializer, 
     StudentDetailSerializer, ProfessorSerializer, 
     PersonnelSerializer, PeerSearchSerializer,
     PeerDelegationSerializer
 )
 from core.author.models import (
-    User, Service, Peer,
-    PeerPosition, Student,
+    User, Service, Peer, Student,
     Professor, Personnel
     )
+
+from core.content.models import GeneralPost
 from core.auth.permissions import UserPermission
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 import logging
 from rest_framework.exceptions import NotFound
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin, CreateModelMixin
 from django.db.models import Q
+from core.content.serializers import GeneralPostSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +116,9 @@ class StudentViewSet(AbstractViewSet):
             'peer'
         )
 
-        # Filtrage par promotion
+        if self.basename == "user-student":
+            return queryset.filter(user__public_id=self.kwargs.get("user__pk"))
+    
         peer_id = self.request.query_params.get('peer')
         if peer_id:
             queryset = queryset.filter(peer__public_id=peer_id)
@@ -137,14 +138,10 @@ class StudentViewSet(AbstractViewSet):
                 
                 queryset = queryset.filter(q_objects)
 
-        print("SQL Query:", str(queryset.query))  # Pour déboguer
         return queryset.distinct()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        
-        # Debug log pour voir le nombre de résultats
-        print("Nombre total de résultats:", queryset.count())
         
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
@@ -154,11 +151,6 @@ class StudentViewSet(AbstractViewSet):
         """
         Récupère l'objet selon le contexte
         """
-        if self.basename == "user-student":
-            return get_object_or_404(
-                Student.objects.select_related('user', 'study', 'school'),
-                user__public_id=self.kwargs.get('user__pk')
-            )
         
         obj = Student.objects.get_object_by_public_id(self.kwargs.get("pk"))
         self.check_object_permissions(self.request, obj)
@@ -462,6 +454,81 @@ class PeerViewSet(AbstractViewSet):
         except Peer.DoesNotExist:
             raise NotFound("Cette promotion n'existe pas.")
 
+    @action(detail=False, methods=['get'])
+    def check_existence(self, request):
+        """Vérifie si une promo existe pour l'étudiant connecté"""
+        try:
+            student = request.user.student
+            peer = Peer.get_for_student(student)
+            
+            return Response({
+                'exists': bool(peer),
+                'peer': PeerSerializer(peer).data if peer else None
+            })
+        except:
+            return Response(
+                {"detail": "Vous n'êtes pas étudiant"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    @action(detail=True, methods=['post'])
+    def join_request(self, request, pk=None):
+        """Demande à rejoindre une promo"""
+        peer = self.get_object()
+        student = request.user.student
+
+        if student.peer:
+            return Response(
+                {"detail": "Vous êtes déjà dans une promotion"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if peer.study != student.study:
+            return Response(
+                {"detail": "Cette promotion ne correspond pas à votre filière"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Créer la demande d'adhésion
+        PeerRequest.objects.create(
+            peer=peer,
+            student=student
+        )
+
+        return Response({"detail": "Demande envoyée avec succès"})
+
+    @action(detail=True, methods=['post'])
+    def handle_request(self, request, pk=None):
+        """Gérer une demande d'adhésion (accepter/refuser)"""
+        peer = self.get_object()
+        
+        if request.user.student != peer.manager:
+            return Response(
+                {"detail": "Seul le délégué peut gérer les demandes"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        request_id = request.data.get('request_id')
+        action = request.data.get('action')  # 'accept' ou 'reject'
+
+        try:
+            peer_request = PeerRequest.objects.get(id=request_id, peer=peer)
+            
+            if action == 'accept':
+                peer.add_member(peer_request.student)
+                peer_request.status = 'accepted'
+            else:
+                peer_request.status = 'rejected'
+            
+            peer_request.save()
+            return Response({"detail": "Demande traitée avec succès"})
+
+        except PeerRequest.DoesNotExist:
+            return Response(
+                {"detail": "Demande non trouvée"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
     @action(detail=True, methods=['post'], url_path='delegate-manager')
     def delegate_manager(self, request, *args, **kwargs):
         """
@@ -535,6 +602,36 @@ class PeerViewSet(AbstractViewSet):
                 {"detail": "Une erreur s'est produite."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(detail=True, methods=['get'])
+    def posts(self, request, pk=None):
+        """Récupérer les posts de la promo avec pagination"""
+        peer = self.get_object()
+        
+        # Vérifier que l'utilisateur a accès aux posts
+        if not (request.user.student.peer == peer or request.user.student == peer.manager):
+            return Response(
+                {"detail": "Vous n'avez pas accès aux publications de cette promo"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Filtrer les posts de la promo
+        posts = GeneralPost.objects.filter(
+            source='promotion',
+            peer_posts=peer
+        ).select_related(
+            'author'  # Optimisation des requêtes
+        ).prefetch_related(
+            'likes'   # Optimisation des requêtes
+        ).order_by('-created')
+
+        page = self.paginate_queryset(posts)
+        serializer = GeneralPostSerializer(
+            page, 
+            many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
 
 class PeerPositionViewSet(AbstractViewSet):
     http_method_names = ("post", "get")
