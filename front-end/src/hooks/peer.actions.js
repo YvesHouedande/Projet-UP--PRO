@@ -2,22 +2,15 @@ import useSWR from 'swr';
 import { fetcher } from '../helpers/axios';
 import axiosService from '../helpers/axios';
 
-export function usePosts(source = 'etudiant', peerId = null, serviceId = null) {
-  let url = '/general_post/';
-  if (peerId) {
-    url = `/peer/${peerId}/general_post/`;
-  } else if (serviceId) {
-    url = `/service/${serviceId}/general_post/`;
-  } else {
-    url = `/general_post/`;
-  }
-
+export function usePeerPosts(peerId) {
+  const url = `/peer/${peerId}/posts/`;
+  
   const { data, error, isLoading, mutate } = useSWR(url, fetcher);
 
-  const createPost = async (formData) => {
+  const createPeerPost = async (formData) => {
     try {
-      // Créer le post
-      const response = await axiosService.post(url, formData);
+      // Créer le post via l'endpoint spécifique
+      const response = await axiosService.post(`/peer/${peerId}/create-post/`, formData);
       
       // Mettre à jour le cache SWR avec le nouveau post
       const updatedData = {
@@ -37,6 +30,6 @@ export function usePosts(source = 'etudiant', peerId = null, serviceId = null) {
     error,
     isLoading,
     mutate,
-    createPost
+    createPeerPost
   };
 } 

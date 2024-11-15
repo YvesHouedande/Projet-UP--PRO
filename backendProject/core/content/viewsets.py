@@ -42,7 +42,7 @@ class GeneralPostViewSet(AbstractViewSet):
         if service_id:
             return GeneralPost.objects.filter(service_posts__public_id=service_id).order_by('-created')
         
-        return GeneralPost.objects.filter(source='etudiant').order_by('-created')
+        return GeneralPost.objects.all().order_by('-created')
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

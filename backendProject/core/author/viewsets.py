@@ -453,6 +453,27 @@ class PeerViewSet(AbstractViewSet):
             return obj
         except Peer.DoesNotExist:
             raise NotFound("Cette promotion n'existe pas.")
+        
+    # @action(detail=True, methods=['post'], url_path='create-post')
+    # def create_post(self, request, pk=None):
+    #     """
+    #     Permet au manager de créer une publication pour la promotion
+    #     """
+    #     peer = self.get_object()
+
+    #     # Vérifier que l'utilisateur est le manager actuel
+    #     if request.user.student != peer.manager:
+    #         return Response(
+    #             {"detail": "Seul le délégué actuel peut créer des publications pour la promotion"},
+    #             status=status.HTTP_403_FORBIDDEN
+    #         )
+
+    #     # Créer la publication
+    #     serializer = GeneralPostSerializer(data=request.data, context={'request': request})
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save(peer_posts=peer, source='promotion')
+
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def check_existence(self, request):

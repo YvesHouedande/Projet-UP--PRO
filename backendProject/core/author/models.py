@@ -252,21 +252,21 @@ class Peer(AbstractModel):
             year__year=current_year
         ).first()
 
-    def add_member(self, student):
-        """Ajoute un étudiant à la promo"""
-        if student.study == self.study:
-            student.peer = self
-            student.save()
-            return True
-        return False
+    # def add_member(self, student):
+    #     """Ajoute un étudiant à la promo"""
+    #     if student.study == self.study:
+    #         student.peer = self
+    #         student.save()
+    #         return True
+    #     return False
 
-    def remove_member(self, student):
-        """Retire un étudiant de la promo"""
-        if student.peer == self and student != self.manager:
-            student.peer = None
-            student.save()
-            return True
-        return False
+    # def remove_member(self, student):
+    #     """Retire un étudiant de la promo"""
+    #     if student.peer == self and student != self.manager:
+    #         student.peer = None
+    #         student.save()
+    #         return True
+    #     return False
 
     def create_post(self, author, **kwargs):
         """Créer un post au nom de la promo"""

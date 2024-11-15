@@ -11,6 +11,11 @@ import PostCard from '../components/post/PostCard';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { MdOutlineSwapHoriz } from "react-icons/md";
 import { HiUserGroup, HiNewspaper, HiUsers } from "react-icons/hi";
+import { usePeerPosts } from '../hooks/peer.actions';
+import Feed from '../components/assets/Feed';
+import { Button, Modal, Label, TextInput, Textarea } from 'flowbite-react';
+import EmojiPicker from 'emoji-picker-react';
+
 
 export default function PeerPage() {
   const { peerId } = useParams();
@@ -23,6 +28,11 @@ export default function PeerPage() {
   const [nextPostsUrl, setNextPostsUrl] = useState(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const currentUser = getUser();
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const { data: peerData, error: peerError, isLoading: peerLoading, mutate } = 
     useSWR(peerId ? `/peer/${peerId}/` : null, fetcher);
@@ -114,7 +124,7 @@ export default function PeerPage() {
     setLoadingPosts(true);
 
     try {
-      const url = reset ? `/peer/${peerId}/posts/` : nextPostsUrl;
+      const url = reset ? `/peer/${peerId}/general_post/` : nextPostsUrl;
       const response = await axiosService.get(url);
 
       if (reset) {
@@ -130,6 +140,81 @@ export default function PeerPage() {
     } finally {
       setLoadingPosts(false);
     }
+  };
+
+  // Utiliser le hook personnalisé pour les posts de la promo
+  const { 
+    posts: peerPosts, 
+    error: peerPostsError, 
+    isLoading: peerPostsLoading, 
+    mutate: peerPostsMutate, 
+    createPeerPost 
+  } = usePeerPosts(peerId);
+
+  const handleNewPost = () => {
+    peerPostsMutate();
+  };
+
+  // Fonction de mise à jour d'un post
+  const handleSave = async () => {
+    try {
+      let postToSave = {};
+
+      // N'inclure que les champs non nuls qui existaient déjà
+      if (selectedPost.title !== null) {
+        postToSave.title = selectedPost.title;
+      }
+      if (selectedPost.content !== null) {
+        postToSave.content = selectedPost.content;
+      }
+      if (selectedPost.imageFile) {
+        const formData = new FormData();
+        if (postToSave.title) formData.append('title', postToSave.title);
+        if (postToSave.content) formData.append('content', postToSave.content);
+        formData.append('image', selectedPost.imageFile);
+        postToSave = formData;
+      }
+
+      const response = await axiosService.patch(
+        `/general_post/${selectedPost.public_id}/`,
+        postToSave
+      );
+
+      // Mettre à jour la liste des posts
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.public_id === response.data.public_id ? response.data : post
+        )
+      );
+
+      setIsModalOpen(false);
+      setSelectedPost(null);
+      setNotification({ type: 'success', message: 'Publication mise à jour avec succès' });
+    } catch (err) {
+      console.error("Erreur lors de la sauvegarde", err);
+      setNotification({ type: 'error', message: 'Erreur lors de la mise à jour' });
+    }
+  };
+
+  // Fonction de suppression
+  const handleDelete = async (postId) => {
+    try {
+      await axiosService.delete(`/general_post/${postId}/`);
+      setPosts(posts.filter(post => post.public_id !== postId));
+      setNotification({ type: 'success', message: 'Publication supprimée avec succès' });
+    } catch (err) {
+      console.error("Erreur lors de la suppression", err);
+      setNotification({ type: 'error', message: 'Erreur lors de la suppression' });
+    }
+    setIsConfirmDeleteOpen(false);
+  };
+
+  // Gestion des emojis
+  const handleEmojiClick = (emoji) => {
+    setSelectedPost({ 
+      ...selectedPost, 
+      content: (selectedPost.content || '') + emoji.emoji 
+    });
   };
 
   const renderTabContent = () => {
@@ -167,26 +252,218 @@ export default function PeerPage() {
       case 'posts':
         return (
           <div className="space-y-6">
-            <InfiniteScroll
-              dataLength={posts.length}
-              next={() => fetchPosts()}
-              hasMore={nextPostsUrl !== null}
-              loader={<Loading />}
-              endMessage={
-                <p className="text-center text-gray-500 py-4">
-                  {posts.length === 0 
-                    ? "Aucune publication dans cette promotion"
-                    : "Plus de publications à afficher"
-                  }
-                </p>
-              }
-            >
-              <div className="space-y-6">
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
+            {/* Feed pour le délégué */}
+            {isManager && (
+              <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 
+                           shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
+                <Feed
+                  onPostCreated={() => fetchPosts(true)}
+                  source="promotion"
+                  peerId={peerId}
+                />
               </div>
-            </InfiniteScroll>
+            )}
+
+            {/* Liste des publications */}
+            <div className="min-h-[50vh]">
+              <InfiniteScroll
+                dataLength={posts.length}
+                next={fetchPosts}
+                hasMore={nextPostsUrl !== null}
+                loader={
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500" />
+                  </div>
+                }
+                endMessage={
+                  <p className="text-center my-4 p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+                    Plus de publications disponibles
+                  </p>
+                }
+              >
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {posts.map((post) => (
+                    <div
+                      key={post.public_id}
+                      className="bg-gradient-to-r from-green-100 to-blue-100 rounded-lg border border-gray-200 
+                                shadow-lg hover:shadow-xl transition-shadow duration-500 transform hover:scale-105"
+                    >
+                      {post.image && (
+                        <img
+                          src={post.image}
+                          alt="Publication"
+                          className="w-full h-48 object-cover rounded-t-lg"
+                        />
+                      )}
+                      <div className="p-4">
+                        {post.title && (
+                          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                            {truncateText(post.title, 50)}
+                          </h3>
+                        )}
+                        {post.content && (
+                          <p className="text-gray-600 mb-4">
+                            {truncateText(post.content, 120)}
+                          </p>
+                        )}
+                        
+                        {isManager && (
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              onClick={() => { setSelectedPost(post); setIsModalOpen(true); }}
+                              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg
+                                       hover:bg-blue-600 transition-colors duration-200
+                                       border border-blue-500"
+                            >
+                              Modifier
+                            </button>
+                            <button
+                              onClick={() => { setSelectedPost(post); setIsConfirmDeleteOpen(true); }}
+                              className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg
+                                       hover:bg-red-600 transition-colors duration-200
+                                       border border-red-500"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </InfiniteScroll>
+            </div>
+
+            {/* Modal de mise à jour */}
+            {selectedPost && isModalOpen && (
+              <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Modal.Header className="border-b-2 border-green-200 bg-green-50">
+                  <h3 className="text-xl font-bold text-green-700">
+                    Modifier la publication
+                  </h3>
+                </Modal.Header>
+                <Modal.Body className="bg-green-50">
+                  <div className="space-y-4">
+                    {/* Titre (si existant) */}
+                    {selectedPost.title !== null && (
+                      <div>
+                        <Label htmlFor="title" value="Titre" />
+                        <TextInput
+                          id="title"
+                          value={selectedPost.title}
+                          onChange={(e) => setSelectedPost({
+                            ...selectedPost,
+                            title: e.target.value
+                          })}
+                        />
+                      </div>
+                    )}
+
+                    {/* Contenu (si existant) */}
+                    {selectedPost.content !== null && (
+                      <div className="relative">
+                        <Label htmlFor="content" value="Contenu" />
+                        <Textarea
+                          id="content"
+                          rows={4}
+                          value={selectedPost.content}
+                          onChange={(e) => setSelectedPost({
+                            ...selectedPost,
+                            content: e.target.value
+                          })}
+                        />
+                        <Button
+                          color="gray"
+                          size="sm"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className="mt-2"
+                        >
+                          😊
+                        </Button>
+                        {showEmojiPicker && (
+                          <div className="absolute bottom-full right-0 z-50">
+                            <EmojiPicker onEmojiClick={handleEmojiClick} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Image (si existante) */}
+                    {selectedPost.image !== null && (
+                      <div>
+                        <Label htmlFor="image" value="Image" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setSelectedPost({
+                            ...selectedPost,
+                            imageFile: e.target.files[0]
+                          })}
+                          className="w-full"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Modal.Body>
+                <Modal.Footer className="bg-green-50">
+                  <Button color="green" onClick={handleSave}>
+                    Enregistrer
+                  </Button>
+                  <Button color="gray" onClick={() => setIsModalOpen(false)}>
+                    Annuler
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            )}
+
+            {/* Modal de confirmation de suppression */}
+            {isConfirmDeleteOpen && (
+              <Modal show={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)}>
+                <Modal.Header className="border-b-2 border-red-200 bg-red-50">
+                  <h3 className="text-xl font-bold text-red-700">
+                    Confirmer la suppression
+                  </h3>
+                </Modal.Header>
+                <Modal.Body className="bg-red-50">
+                  <p>Êtes-vous sûr de vouloir supprimer cette publication ?</p>
+                </Modal.Body>
+                <Modal.Footer className="bg-red-50">
+                  <Button color="red" onClick={() => handleDelete(selectedPost.public_id)}>
+                    Supprimer
+                  </Button>
+                  <Button color="gray" onClick={() => setIsConfirmDeleteOpen(false)}>
+                    Annuler
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            )}
+
+            {/* Notifications */}
+            {notification && (
+              <Modal show={!!notification} onClose={() => setNotification(null)}>
+                <Modal.Header className={`border-b-2 ${
+                  notification.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
+                }`}>
+                  <h3 className={`text-xl font-bold ${
+                    notification.type === 'success' ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    {notification.type === 'success' ? 'Succès' : 'Erreur'}
+                  </h3>
+                </Modal.Header>
+                <Modal.Body className={
+                  notification.type === 'success' ? 'bg-green-50' : 'bg-red-50'
+                }>
+                  <p>{notification.message}</p>
+                </Modal.Body>
+                <Modal.Footer className={
+                  notification.type === 'success' ? 'bg-green-50' : 'bg-red-50'
+                }>
+                  <Button color="gray" onClick={() => setNotification(null)}>
+                    Fermer
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            )}
           </div>
         );
 
@@ -325,3 +602,9 @@ const TabButton = ({ children, active, onClick, icon }) => (
     {children}
   </button>
 );
+
+// Fonction utilitaire pour tronquer le texte
+const truncateText = (text, maxLength) => {
+  if (!text) return '';
+  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+};
