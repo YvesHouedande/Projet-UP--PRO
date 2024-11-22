@@ -7,7 +7,6 @@ import axiosService from '../helpers/axios';
 import Layout from './Layout';
 import Loading from '../components/assets/Loading';
 import StudentCard from '../components/StudentCard';
-import PostCard from '../components/post/PostCard';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { MdOutlineSwapHoriz } from "react-icons/md";
 import { HiUserGroup, HiNewspaper, HiUsers } from "react-icons/hi";

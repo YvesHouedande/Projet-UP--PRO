@@ -55,24 +55,6 @@ export default function NavBox() {
                     <span className="lg:flex-1">Profil</span>
                 </button>
 
-                {/* Notifications */}
-                <button
-                    onClick={() => navigate('/notifications')}
-                    className={`
-                        flex flex-col lg:flex-row items-center lg:items-center
-                        py-2 px-1 lg:p-3 lg:rounded-xl
-                        text-[10px] lg:text-sm font-medium
-                        transition-colors duration-300
-                        ${location.pathname === '/notifications'
-                            ? 'text-green-600 lg:bg-green-100 lg:text-green-700 lg:border-2 lg:border-green-400'
-                            : 'text-gray-600 hover:text-green-600 lg:bg-gray-100 lg:border-2 lg:border-gray-300 lg:hover:border-green-400'
-                        }
-                    `}
-                >
-                    <FaBell className="w-5 h-5 mb-1 lg:mb-0 lg:mr-2" />
-                    <span className="lg:flex-1">Notifications</span>
-                </button>
-
                 {/* Communauté */}
                 <button
                     onClick={() => navigate('/community')}
@@ -109,23 +91,6 @@ export default function NavBox() {
                     <span className="lg:flex-1">Événements</span>
                 </button>
 
-                {/* Sauvegardés */}
-                <button
-                    onClick={() => navigate('/saved')}
-                    className={`
-                        flex flex-col lg:flex-row items-center lg:items-center
-                        py-2 px-1 lg:p-3 lg:rounded-xl
-                        text-[10px] lg:text-sm font-medium
-                        transition-colors duration-300
-                        ${location.pathname === '/saved'
-                            ? 'text-green-600 lg:bg-green-100 lg:text-green-700 lg:border-2 lg:border-green-400'
-                            : 'text-gray-600 hover:text-green-600 lg:bg-gray-100 lg:border-2 lg:border-gray-300 lg:hover:border-green-400'
-                        }
-                    `}
-                >
-                    <FaBookmark className="w-5 h-5 mb-1 lg:mb-0 lg:mr-2" />
-                    <span className="lg:flex-1">Sauvegardés</span>
-                </button>
             </div>
         </div>
     );

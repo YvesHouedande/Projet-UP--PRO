@@ -6,6 +6,7 @@ import LoginForm from './components/authentication/LoginForm';
 import RegisterForm from './components/authentication/RegisterForm';
 import TimeLinePage from './pages/TimeLinePage';
 import PeerPage from './pages/PeerPage';
+import Community from './pages/Community';
 
 function App() { 
   return (
@@ -39,6 +40,9 @@ function App() {
         path="/peer/:peerId"
         element={<PeerPage />}
       />
+      <Route
+        path="/community"
+        element={<Community />} />
     </Routes>
     // <Home></Home>
   );
