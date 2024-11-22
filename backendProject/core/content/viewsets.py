@@ -62,7 +62,7 @@ class GeneralPostViewSet(AbstractViewSet):
         if post_objects is None:
             print('---------------------requête sur la base de données -----------------------')
             post_objects = self.filter_queryset(self.get_queryset())
-            cache.delete("post_objects")
+            # cache.delete("post_objects")
             # cache.set("post_objects", post_objects)
 
             
