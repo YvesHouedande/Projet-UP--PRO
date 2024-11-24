@@ -21,4 +21,5 @@ django-redis
 django-filter==21.1
 google-auth
 requests
+faker
 

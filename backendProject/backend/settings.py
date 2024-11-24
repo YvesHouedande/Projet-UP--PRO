@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'core.content',
     'core.center',
     'core.auth',
+    'core.request'
 ]
 
 MIDDLEWARE = [

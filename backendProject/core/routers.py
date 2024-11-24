@@ -18,6 +18,7 @@ from core.auth.viewsets import (
 from core.center.viewsets import (
     SchoolViewSet, StudyViewSet
     )
+from core.request.viewsets import RequestViewSet
 
 router = routers.SimpleRouter()
 ################################# auth ##########################
@@ -85,6 +86,7 @@ study.register(r"student", StudentViewSet, basename="study-student") # all stude
 study.register(r"professor", ProfessorViewSet, basename="study-professor")
 study.register(r"personnel", PersonnelViewSet, basename="study-personnel") 
 
+router.register(r"requests", RequestViewSet, basename="request")
 
 urlpatterns = [
     *router.urls, *general_post.urls,

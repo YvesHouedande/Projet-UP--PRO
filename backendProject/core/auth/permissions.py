@@ -15,7 +15,7 @@ class UserPermission(BasePermission):
                               "study-personnel", "peer-student", "user-service",
                               "user-post", 'user-event', 'event', "user-inp-info",
                               "user-student", "user-professor", "user-personnel",
-                              "peer-post"
+                              "peer-post", "request"
                               ]:
             return bool(request.user and request.user.is_authenticated)
         
@@ -23,8 +23,8 @@ class UserPermission(BasePermission):
         if view.basename in ["service"]:
             return bool(request.user and obj.manager==request.user)
         
-        # if view.basename in ["service-event"]:
-        #     return bool(request.user and obj.manager==request.user)
+        if view.basename in ["request"]:
+            return bool(request.user and (request.user.is_superuser or request.user == obj.requester))
         
         if view.basename in ["post-comment"]:
             if request.method in ["DELETE"]:
@@ -57,7 +57,7 @@ class UserPermission(BasePermission):
             "professor", "study-professor", "personnel", "study-personnel", "school-professor",
             "school-personnel", "school-service", "school-student", "peer-student", "user-service",
             "user-post", "user-event", 'event', "user-inp-info","peer-post",
-            "user-student", "user-professor", "user-personnel",
+            "user-student", "user-professor", "user-personnel", "request"
                             ]:
             if request.user.is_anonymous:
                 return request.method in SAFE_METHODS

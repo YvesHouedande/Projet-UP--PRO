@@ -9,6 +9,17 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV DEBIAN_FRONTEND noninteractive
 
+# Configurer pip pour utiliser des miroirs alternatifs
+RUN mkdir -p ~/.pip && \
+    echo "[global]" > ~/.pip/pip.conf && \
+    echo "index-url = https://mirrors.aliyun.com/pypi/simple/" >> ~/.pip/pip.conf && \
+    echo "trusted-host = mirrors.aliyun.com" >> ~/.pip/pip.conf
+
+# Ajoutez ces lignes pour utiliser des miroirs Debian alternatifs
+RUN echo "deb http://mirrors.aliyun.com/debian/ bookworm main non-free contrib" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security bookworm-security main non-free contrib" >> /etc/apt/sources.list
+
 # install psycopg2 dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -28,7 +39,7 @@ RUN pip install --upgrade pip \
 COPY . .
 
 # Expose port
-EXPOSE 8000  
+EXPOSE 8000
 
-# Start Django development server  
+# Start Django development server
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
