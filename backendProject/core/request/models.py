@@ -5,6 +5,7 @@ class Request(AbstractModel):
     TYPE_CHOICES = (
         ('promotion', 'Création de promotion'),
         ('service', 'Création de service'),
+        ('autre', 'Autre'),
     )
     
     STATUS_CHOICES = (
@@ -16,11 +17,7 @@ class Request(AbstractModel):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     name = models.CharField(max_length=255)
     description = models.TextField(help_text="Description et motivation de la demande")
-    details = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Informations techniques et contacts au format JSON"
-    )
+
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 

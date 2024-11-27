@@ -14,7 +14,6 @@ class RequestSerializer(AbstractSerializer):
             'type',
             'name',
             'description',
-            'details',
             'status',
             'requester',
             'handled_by',
