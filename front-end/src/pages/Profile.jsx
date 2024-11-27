@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import InfoTab from '../components/profile/InfoTab'; 
 import InfoINPTab from '../components/profile/InfoINPTab';
 import PublicationsTab from '../components/profile/PublicationsTab'; 
-import EventsTab from '../components/profile/EventsTab'; 
 import Layout from './Layout';
 import { useParams } from 'react-router';
 import useSWR from 'swr';
@@ -15,7 +14,6 @@ const tabs = [
   { id: 'info', label: 'Info', icon: HiUser },
   { id: 'infoINP', label: 'Info INP', icon: HiAcademicCap },
   { id: 'publications', label: 'Publications', icon: HiNewspaper },
-  { id: 'events', label: 'Événements', icon: HiCalendar },
 ];
 
 export default function UserProfile() {
@@ -35,8 +33,6 @@ export default function UserProfile() {
         return <InfoINPTab user={user} mutate={mutate} />;
       case 'publications':
         return <PublicationsTab user={user} />;
-      case 'events':
-        return <EventsTab user={user} />;
       default:
         return <InfoTab user={user} mutate={mutate} />;
     }
