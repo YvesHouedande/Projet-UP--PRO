@@ -86,7 +86,7 @@ study.register(r"student", StudentViewSet, basename="study-student") # all stude
 study.register(r"professor", ProfessorViewSet, basename="study-professor")
 study.register(r"personnel", PersonnelViewSet, basename="study-personnel") 
 
-router.register(r"requests", RequestViewSet, basename="request")
+router.register(r"request", RequestViewSet, basename="request")
 
 urlpatterns = [
     *router.urls, *general_post.urls,

@@ -171,8 +171,8 @@ const CreateRequestModal = ({ isOpen, onClose, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-lg my-20">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-2 overflow-y-auto">
+      <div className="bg-white rounded-2xl p-4 w-full max-w-lg my-14">
         <h2 className="text-2xl font-bold mb-4">Nouvelle Demande</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type de demande */}
@@ -296,6 +296,20 @@ const CreateRequestModal = ({ isOpen, onClose, onSubmit }) => {
   );
 };
 
+// Fonction pour obtenir le placeholder en fonction de l'onglet
+const getSearchPlaceholder = (tab) => {
+  switch (tab) {
+    case 'promotions':
+      return 'Rechercher des promotions par nom, année...';
+    case 'services':
+      return 'Rechercher des services par nom, description...';
+    case 'requests':
+      return 'Rechercher des demandes par nom, statut...';
+    default:
+      return 'Rechercher...';
+  }
+};
+
 export default function Community() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('promotions');
@@ -314,13 +328,27 @@ export default function Community() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, activeTab]);
 
-  // Fonction pour récupérer les items (promos ou services)
+  // Fonction pour récupérer les items (promos, services ou demandes)
   const fetchItems = async (reset = false) => {
     if (loading) return;
     setLoading(true);
 
     try {
-      const endpoint = activeTab === 'promotions' ? '/peer/' : '/service/';
+      let endpoint;
+      switch (activeTab) {
+        case 'promotions':
+          endpoint = '/peer/';
+          break;
+        case 'services':
+          endpoint = '/service/';
+          break;
+        case 'requests':
+          endpoint = '/request/';
+          break;
+        default:
+          endpoint = '/peer/';
+      }
+
       let url = endpoint;
       
       if (searchTerm) {
@@ -355,7 +383,9 @@ export default function Community() {
 
   // Utilisation de SWR pour la gestion des données
   const { data, error, mutate } = useSWR(
-    `/peer/${searchTerm ? `?search=${searchTerm}` : ''}`,
+    activeTab === 'requests' 
+      ? `/request/${searchTerm ? `?search=${searchTerm}` : ''}`
+      : `/peer/${searchTerm ? `?search=${searchTerm}` : ''}`,
     fetcher
   );
 
@@ -401,7 +431,7 @@ export default function Community() {
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder={`Rechercher des ${activeTab === 'promotions' ? 'promotions' : 'services'}...`}
+                      placeholder={getSearchPlaceholder(activeTab)}
                       className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200
                                focus:border-green-400 focus:ring-4 focus:ring-green-50
                                transition-all duration-300"

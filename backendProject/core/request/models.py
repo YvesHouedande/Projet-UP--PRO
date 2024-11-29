@@ -34,6 +34,7 @@ class Request(AbstractModel):
     handled_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        db_table = 'core_request_request'
         ordering = ['-created']
 
     def __str__(self):

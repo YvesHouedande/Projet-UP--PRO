@@ -11,7 +11,6 @@ class RequestViewSet(AbstractViewSet):
     http_method_names = ('post', 'get', 'put', 'delete')
     permission_classes = (UserPermission,)
     serializer_class = RequestSerializer
-    filterset_fields = ['type', 'status']
     search_fields = ['name', 'description']
     ordering_fields = ['created', 'handled_at', 'status']
     ordering = ['-created']
@@ -48,11 +47,11 @@ class RequestViewSet(AbstractViewSet):
         instance.handled_by = request.user
         instance.handled_at = timezone.now()
         
-        # Ajout du commentaire dans les détails
-        details = instance.details or {}
-        details['admin_comment'] = comment
-        details['handled_at'] = instance.handled_at.isoformat()
-        instance.details = details
+        # # Ajout du commentaire dans les détails
+        # details = instance.details or {}
+        # details['admin_comment'] = comment
+        # details['handled_at'] = instance.handled_at.isoformat()
+        # instance.details = details
         
         instance.save()
 

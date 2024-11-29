@@ -20,7 +20,7 @@ class RequestAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('public_id', 'name', 'type', 'description', 'details')
+            'fields': ('public_id', 'name', 'type', 'description')
         }),
         ('Statut', {
             'fields': ('status',)
