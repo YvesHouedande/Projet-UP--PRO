@@ -28,6 +28,8 @@ import logging
 from rest_framework.exceptions import NotFound
 from django.db.models import Q
 from core.content.serializers import GeneralPostSerializer
+from django_filters import rest_framework as django_filters
+from django.db.models import Count
 
 logger = logging.getLogger(__name__)
 
@@ -391,19 +393,23 @@ class PersonnelViewSet(AbstractViewSet):
         return Response(serializer.data)
 
 class ServiceViewSet(AbstractViewSet):
-    http_method_names = ("post", "get")
+    http_method_names = ("post", "get", "put", "delete")
     permission_classes = (UserPermission,)
     serializer_class = ServiceSerializer
-    filterset_fields = ["created"]
-    search_fields = ['label',] 
+    filter_backends = [filters.SearchFilter, django_filters.DjangoFilterBackend]
+    search_fields = [
+        'label',
+        'description',
+        'manager__first_name',
+        'manager__last_name'
+    ]
+    ordering_fields = ['created', 'label']
+    ordering = ['-created']
 
     def get_queryset(self):
-        """
-        only service i managed or i
-        follow base on user_pk else,
-        return all.
-        """
-        queryset = Service.objects.select_related('school', 'manager')
+        queryset = Service.objects.select_related(
+            'manager'
+        )
         
         user_pk = self.kwargs.get("user__pk")
         school_pk = self.kwargs.get("school__pk")
@@ -415,13 +421,31 @@ class ServiceViewSet(AbstractViewSet):
             
         return queryset
 
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """
+        Statistiques sur les services
+        """
+        if not request.user.is_superuser:
+            return Response(
+                {"detail": "Accès non autorisé"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        queryset = Service.objects.all()
+        stats = {
+            'total': queryset.count(),
+            'active': queryset.filter(is_active=True).count(),
+            'inactive': queryset.filter(is_active=False).count(),
+        }
+
+        return Response(stats)
+
     def get_object(self):
         obj = Service.objects.get_object_by_public_id(self.kwargs["pk"])
-
         self.check_object_permissions(self.request, obj)
-
         return obj
-    
+
 class PeerViewSet(AbstractViewSet):
     """
     ViewSet pour gérer les promotions (Peer)

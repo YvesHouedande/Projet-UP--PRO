@@ -6,12 +6,20 @@ from core.abstract.viewsets import AbstractViewSet
 from core.request.models import Request
 from core.request.serializers import RequestSerializer
 from core.auth.permissions import UserPermission
+from rest_framework import filters
+from django_filters import rest_framework as django_filters
 
 class RequestViewSet(AbstractViewSet):
     http_method_names = ('post', 'get', 'put', 'delete')
     permission_classes = (UserPermission,)
     serializer_class = RequestSerializer
+    filter_backends = [filters.SearchFilter, django_filters.DjangoFilterBackend]
     search_fields = ['name', 'description']
+    # filterset_fields = {
+    #     'type': ['exact'],
+    #     'status': ['exact'],
+    #     'created': ['gte', 'lte']
+    # }
     ordering_fields = ['created', 'handled_at', 'status']
     ordering = ['-created']
 
@@ -47,11 +55,6 @@ class RequestViewSet(AbstractViewSet):
         instance.handled_by = request.user
         instance.handled_at = timezone.now()
         
-        # # Ajout du commentaire dans les détails
-        # details = instance.details or {}
-        # details['admin_comment'] = comment
-        # details['handled_at'] = instance.handled_at.isoformat()
-        # instance.details = details
         
         instance.save()
 
