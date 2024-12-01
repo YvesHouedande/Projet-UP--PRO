@@ -289,7 +289,7 @@ class Peer(AbstractModel):
 class Service(AbstractModel):
     label = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    school = models.ForeignKey("core_center.School", on_delete=models.CASCADE)
+    school = models.ForeignKey("core_center.School", on_delete=models.CASCADE, null=True, blank=True)
     manager = models.ForeignKey("core_author.User", on_delete=models.SET_NULL, null=True, blank=True)
     cover = models.ImageField(upload_to='service/', null=True, blank=True)
     posts = models.ManyToManyField(

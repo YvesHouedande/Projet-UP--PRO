@@ -126,8 +126,14 @@ const ServiceCard = ({ service }) => {
   );
 };
 
-// Nouveau composant pour les demandes
-const RequestCard = ({ request }) => {
+// Fonction pour tronquer le texte
+const truncateText = (text, maxLength = 100) => {
+  if (text.length <= maxLength) return text;
+  return text.substr(0, maxLength) + '...';
+};
+
+// Modifier le composant RequestCard
+const RequestCard = ({ request, onViewDetails }) => {
   return (
     <div className="bg-white rounded-2xl border-2 border-gray-200 p-4">
       <div className="flex justify-between items-start mb-3">
@@ -141,9 +147,77 @@ const RequestCard = ({ request }) => {
            request.status === 'approved' ? 'Approuvée' : 'Rejetée'}
         </span>
       </div>
-      <p className="text-gray-600 text-sm mb-3">{request.description}</p>
-      <div className="text-sm text-gray-500">
-        Créée le {new Date(request.created).toLocaleDateString()}
+      <p className="text-gray-600 text-sm mb-3">{truncateText(request.description)}</p>
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">
+          Créée le {new Date(request.created).toLocaleDateString()}
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails(request);
+          }}
+          className="text-green-600 hover:text-green-700 text-sm font-medium"
+        >
+          Voir détails →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Nouveau composant pour le modal de détails
+const RequestDetailsModal = ({ request, isOpen, onClose }) => {
+  if (!isOpen || !request) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl my-8">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-2xl font-bold text-gray-800">{request.name}</h2>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+            request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+            request.status === 'approved' ? 'bg-green-100 text-green-800' :
+            'bg-red-100 text-red-800'
+          }`}>
+            {request.status === 'pending' ? 'En attente' :
+             request.status === 'approved' ? 'Approuvée' : 'Rejetée'}
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-medium mb-2">Description</h3>
+            <p className="text-gray-600 whitespace-pre-wrap">{request.description}</p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium mb-2">Informations de contact</h3>
+            <div className="space-y-2">
+              <p className="text-gray-600">
+                <span className="font-medium">Email : </span>
+                {request.details?.contact_info?.email}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-medium">Téléphone : </span>
+                {request.details?.contact_info?.phone}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-gray-500 text-sm">
+            Créée le {new Date(request.created).toLocaleDateString()}
+          </div>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+          >
+            Fermer
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -311,13 +385,13 @@ const getSearchPlaceholder = (tab) => {
 };
 
 export default function Community() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('promotions');
   const [searchTerm, setSearchTerm] = useState('');
   const [items, setItems] = useState([]);
   const [nextUrl, setNextUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
   // Fonction de recherche avec debounce
   useEffect(() => {
@@ -392,10 +466,13 @@ export default function Community() {
   // Fonction pour créer une nouvelle demande
   const handleCreateRequest = async (formData) => {
     try {
-      await axiosService.post('/requests/', formData);
+      await axiosService.post('/request/', formData);
       setIsCreateModalOpen(false);
       // Recharger les données
-      mutate();
+      fetchItems(true);
+      // Réinitialiser les items et recharger depuis le début
+      setItems([]);
+      setNextUrl(null);
     } catch (error) {
       console.error('Erreur lors de la création de la demande:', error);
     }
@@ -481,7 +558,11 @@ export default function Community() {
                     {items.map(item => {
                       if (activeTab === 'promotions') return <PromoCard key={item.public_id} promo={item} />;
                       if (activeTab === 'services') return <ServiceCard key={item.public_id} service={item} />;
-                      return <RequestCard key={item.public_id} request={item} />;
+                      return <RequestCard 
+                        key={item.public_id} 
+                        request={item} 
+                        onViewDetails={(request) => setSelectedRequest(request)}
+                      />;
                     })}
                   </div>
                 </InfiniteScroll>
@@ -503,6 +584,12 @@ export default function Community() {
                   isOpen={isCreateModalOpen}
                   onClose={() => setIsCreateModalOpen(false)}
                   onSubmit={handleCreateRequest}
+                />
+
+                <RequestDetailsModal
+                  isOpen={!!selectedRequest}
+                  request={selectedRequest}
+                  onClose={() => setSelectedRequest(null)}
                 />
               </div>
             </div>
