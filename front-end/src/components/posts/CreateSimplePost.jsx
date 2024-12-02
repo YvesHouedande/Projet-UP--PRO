@@ -5,7 +5,7 @@ import { getUser } from '../../hooks/user.actions';
 import { Context } from '../../pages/Layout';
 import { usePosts } from '../../hooks/posts.actions';
 
-export default function CreateSimplePost({ show, onClose, onPostCreated, peerId, serviceId, source = 'etudiant' }) {
+export default function CreateSimplePost({ show, onClose, onPostCreated, peerId, serviceId, source }) {
     const { showInfo, setShowInfo } = useContext(Context);
     const { createPost } = usePosts(source, peerId, serviceId);
     const user = getUser();

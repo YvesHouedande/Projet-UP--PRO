@@ -17,18 +17,8 @@ export default function Home() {
   const user = getUser();
   const [showLeftSidebar, setShowLeftSidebar] = useState(false);
 
-  // Déterminer la source en fonction du status_choice de l'utilisateur
   const getSourceFromStatus = () => {
-    switch(user.status_choice) {
-      case 'etudiant':
-        return 'etudiant';
-      case 'professeur':
-        return 'professeur';
-      case 'personnel':
-        return 'personnel';
-      default:
-        return 'autre';
-    }
+    return user.status_choice || 'etudiant';
   };
 
   const source = getSourceFromStatus();

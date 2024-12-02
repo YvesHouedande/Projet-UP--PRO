@@ -12,6 +12,7 @@ import axiosService from '../helpers/axios';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Button, Modal } from 'flowbite-react';
 import CreateEvent from '../components/events/CreateEvent';
+import PublicationsTab from '../components/profile/PublicationsTab';
 
 const TabButton = ({ children, active, onClick, icon }) => (
   <button
@@ -224,31 +225,24 @@ export default function ServicePage() {
       case 'posts':
         return (
           <div className="space-y-6">
-            {isManager && (
+            {/* Feed pour le délégué */}
+            {serviceData?.can_edit && (
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 
                            shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
                 <Feed
-                  onPostCreated={() => fetchPosts(true)}
+                  onPostCreated={() => mutate()}
                   source="service"
                   serviceId={serviceId}
-                  showEventButton={true}
                 />
               </div>
             )}
 
-            <InfiniteScroll
-              dataLength={posts.length}
-              next={() => fetchPosts(false)}
-              hasMore={!!nextPostsUrl}
-              loader={<Loading />}
-              endMessage={
-                <p className="text-center text-gray-500 my-4">
-                  Plus aucune publication à afficher
-                </p>
-              }
-            >
-              {/* ... Rendu des posts ... */}
-            </InfiniteScroll>
+            {/* Liste des publications */}
+            <PublicationsTab 
+              user={serviceData}
+              context="service"
+              serviceId={serviceId}
+            />
           </div>
         );
 

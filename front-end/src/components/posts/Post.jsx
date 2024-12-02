@@ -12,15 +12,30 @@ const SOURCE_CONFIG = {
     label: 'Étudiant',
     styles: 'bg-blue-100 text-blue-600'
   },
+  professeur: {
+    icon: <HiAcademicCap className="w-5 h-5" />,
+    label: 'Professeur',
+    styles: 'bg-purple-100 text-purple-600'
+  },
+  personnel: {
+    icon: <HiOfficeBuilding className="w-5 h-5" />,
+    label: 'Personnel',
+    styles: 'bg-green-100 text-green-600'
+  },
   service: {
     icon: <HiOfficeBuilding className="w-5 h-5" />,
     label: 'Service',
-    styles: 'bg-purple-100 text-purple-600'
+    styles: 'bg-orange-100 text-orange-600'
   },
   promotion: {
     icon: <HiUserGroup className="w-5 h-5" />,
     label: 'Promotion',
     styles: 'bg-green-100 text-green-600'
+  },
+  autre: {
+    icon: <HiUserGroup className="w-5 h-5" />,
+    label: 'Autre',
+    styles: 'bg-gray-100 text-gray-600'
   }
 };
 
@@ -79,7 +94,7 @@ export default function Post({ post, isOptimistic = false, user }) {
     }
   };
 
-  const sourceConfig = SOURCE_CONFIG[post.source] || SOURCE_CONFIG.etudiant;
+  const sourceConfig = SOURCE_CONFIG[post.source] || SOURCE_CONFIG.autre;
 
   const handleCommentClick = () => {
     if (commentsCount > 0) {

@@ -14,6 +14,7 @@ import { usePeerPosts } from '../hooks/peer.actions';
 import Feed from '../components/assets/Feed';
 import { Button, Modal, Label, TextInput, Textarea } from 'flowbite-react';
 import EmojiPicker from 'emoji-picker-react';
+import PublicationsTab from '../components/profile/PublicationsTab';
 
 
 export default function PeerPage() {

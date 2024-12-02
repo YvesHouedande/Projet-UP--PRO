@@ -80,28 +80,7 @@ class GeneralPostViewSet(AbstractViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        if peer_id:
-            try:
-                peer = Peer.objects.get(public_id=peer_id)
-                if peer.manager and peer.manager.user == request.user:
-                    post = peer.create_post(
-                        author=request.user,
-                        title=serializer.validated_data.get('title'),
-                        content=serializer.validated_data.get('content'),
-                        content_type=serializer.validated_data.get('content_type'),
-                        image=serializer.validated_data.get('image')
-                    )
-                    return Response(
-                        self.get_serializer(post).data, 
-                        status=status.HTTP_201_CREATED
-                    )
-            except Peer.DoesNotExist:
-                return Response(
-                    {"error": "Promotion non trouvée"}, 
-                    status=status.HTTP_404_NOT_FOUND
-                )
-        
-        elif service_id:
+        if service_id:
             try:
                 service = Service.objects.get(public_id=service_id)
                 if service.manager == request.user:
@@ -110,7 +89,8 @@ class GeneralPostViewSet(AbstractViewSet):
                         title=serializer.validated_data.get('title'),
                         content=serializer.validated_data.get('content'),
                         content_type=serializer.validated_data.get('content_type'),
-                        image=serializer.validated_data.get('image')
+                        image=serializer.validated_data.get('image'),
+                        source=serializer.validated_data.get('source')
                     )
                     return Response(
                         self.get_serializer(post).data, 
@@ -119,6 +99,28 @@ class GeneralPostViewSet(AbstractViewSet):
             except Service.DoesNotExist:
                 return Response(
                     {"error": "Service non trouvé"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        elif peer_id:
+            try:
+                peer = Peer.objects.get(public_id=peer_id)
+                if peer.manager and peer.manager.user == request.user:
+                    post = peer.create_post(
+                        author=request.user,
+                        title=serializer.validated_data.get('title'),
+                        content=serializer.validated_data.get('content'),
+                        content_type=serializer.validated_data.get('content_type'),
+                        image=serializer.validated_data.get('image'),
+                        source=serializer.validated_data.get('source')
+                    )
+                    return Response(
+                        self.get_serializer(post).data, 
+                        status=status.HTTP_201_CREATED
+                    )
+            except Peer.DoesNotExist:
+                return Response(
+                    {"error": "Promotion non trouvée"}, 
                     status=status.HTTP_404_NOT_FOUND
                 )
         
@@ -219,7 +221,7 @@ class EventViewSet(AbstractViewSet):
         try:
             event = self.get_object()
         except Event.DoesNotExist:
-            raise NotFound({"detail": "Événement non trouvé."})
+            raise NotFound({"detail": "Événement non trouv��."})
 
         # Vérification des permissions de l'utilisateur pour supprimer l'événement
         self.check_object_permissions(request, event)

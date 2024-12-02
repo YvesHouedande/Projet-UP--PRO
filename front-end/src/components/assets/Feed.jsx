@@ -9,7 +9,7 @@ import CreateImagePost from '../posts/CreateImagePost';
 import CreateSimplePost from '../posts/CreateSimplePost';
 
 
-export default function Feed({ onPostCreated, peerId, serviceId, source = 'etudiant' }) {
+export default function Feed({ onPostCreated, peerId, serviceId, source }) {
   const [IsEventOpen, setIsEventOpen] = useState(false);
   const [IsCreateSimplePostOpen, setIsCreateSimplePostOpen] = useState(false);
   const [IsRichPostOpen, setIsRichPostOpen] = useState(false);
@@ -35,6 +35,13 @@ export default function Feed({ onPostCreated, peerId, serviceId, source = 'etudi
     if (onPostCreated) {
       onPostCreated(newPost);
     }
+  };
+
+  // Déterminer la source en fonction du contexte
+  const getPostSource = () => {
+    if (serviceId) return 'service';
+    if (peerId) return 'promotion';
+    return source;
   };
 
   return (
@@ -100,7 +107,7 @@ export default function Feed({ onPostCreated, peerId, serviceId, source = 'etudi
           onPostCreated={handlePostCreated}
           peerId={peerId}
           serviceId={serviceId}
-          source={source}
+          source={getPostSource()}
         />
       )}
       {IsRichPostOpen && (
@@ -110,7 +117,7 @@ export default function Feed({ onPostCreated, peerId, serviceId, source = 'etudi
           onPostCreated={handlePostCreated}
           peerId={peerId}
           serviceId={serviceId}
-          source={source}
+          source={getPostSource()}
         />
       )}
       {IsCreateImagePostOpen && (
@@ -120,7 +127,7 @@ export default function Feed({ onPostCreated, peerId, serviceId, source = 'etudi
           onPostCreated={handlePostCreated}
           peerId={peerId}
           serviceId={serviceId}
-          source={source}
+          source={getPostSource()}
         />
       )}
       {IsEventOpen && source === 'service' && (

@@ -2,24 +2,31 @@ import useSWR from 'swr';
 import { fetcher } from '../helpers/axios';
 import axiosService from '../helpers/axios';
 
-export function usePosts(source = 'etudiant', peerId = null, serviceId = null) {
+export function usePosts(source, peerId = null, serviceId = null) {
   let url = '/general_post/';
-  if (peerId) {
-    url = `/peer/${peerId}/general_post/`;
-  } else if (serviceId) {
+  let postSource;
+  
+  if (serviceId) {
     url = `/service/${serviceId}/general_post/`;
+    postSource = 'service';
+  } else if (peerId) {
+    url = `/peer/${peerId}/general_post/`;
+    postSource = 'promotion';
   } else {
-    url = `/general_post/`;
+    postSource = source;
   }
 
   const { data, error, isLoading, mutate } = useSWR(url, fetcher);
 
   const createPost = async (formData) => {
     try {
-      // Créer le post
+      if (formData.has('source')) {
+        formData.delete('source');
+      }
+      formData.append('source', postSource);
+      
       const response = await axiosService.post(url, formData);
       
-      // Mettre à jour le cache SWR avec le nouveau post
       const updatedData = {
         ...data,
         results: [response.data, ...(data?.results || [])]
