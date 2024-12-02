@@ -5,7 +5,7 @@ from core.center.models import(
 )
 from core.author.serializers import (
     UserSerializer, ServiceSerializer,
-    PeerSerializer, PeerPositionSerializer,
+    PeerSerializer,
     StudentUpdateSerializer, 
     StudentDetailSerializer, ProfessorSerializer, 
     PersonnelSerializer, PeerSearchSerializer,

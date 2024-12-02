@@ -7,7 +7,7 @@ from core.auth.permissions import UserPermission
 from core.abstract.viewsets import AbstractViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.core.cache import cache
-from core.author.models import Peer 
+from core.author.models import Peer, Service
 
 from core.content.serializers import (
     EventSerializer, CommentSerializer
@@ -76,15 +76,14 @@ class GeneralPostViewSet(AbstractViewSet):
    
     def create(self, request, *args, **kwargs):
         peer_id = self.kwargs.get("peer__pk")
+        service_id = self.kwargs.get("service__pk")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         if peer_id:
             try:
                 peer = Peer.objects.get(public_id=peer_id)
-                # Vérifier si l'utilisateur est le délégué
                 if peer.manager and peer.manager.user == request.user:
-                    # Créer le post via la méthode du modèle Peer
                     post = peer.create_post(
                         author=request.user,
                         title=serializer.validated_data.get('title'),
@@ -102,7 +101,28 @@ class GeneralPostViewSet(AbstractViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
         
-        # Si ce n'est pas un post de promotion, création normale
+        elif service_id:
+            try:
+                service = Service.objects.get(public_id=service_id)
+                if service.manager == request.user:
+                    post = service.create_post(
+                        author=request.user,
+                        title=serializer.validated_data.get('title'),
+                        content=serializer.validated_data.get('content'),
+                        content_type=serializer.validated_data.get('content_type'),
+                        image=serializer.validated_data.get('image')
+                    )
+                    return Response(
+                        self.get_serializer(post).data, 
+                        status=status.HTTP_201_CREATED
+                    )
+            except Service.DoesNotExist:
+                return Response(
+                    {"error": "Service non trouvé"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Si ce n'est pas un post de promotion ou de service, création normale
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

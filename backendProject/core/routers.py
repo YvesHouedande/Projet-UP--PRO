@@ -40,7 +40,13 @@ router.register(r"event", EventViewSet, basename="event")
 general_post = routers.NestedSimpleRouter(router, r"general_post", lookup="post")
 general_post.register(r"comment", CommentViewset, basename="post-comment")
 
-#################################Author Management ##########################
+################################# Service Management ##########################
+router.register(r"service", ServiceViewSet, basename="service")
+service = routers.NestedSimpleRouter(router, r"service", lookup="service")
+service.register(r"general_post", GeneralPostViewSet, basename="service-post")
+service.register(r"event", EventViewSet, basename="service-event")
+
+################################# Author Management ##########################
 router.register(r"user", UserViewSet, basename="user")#all user
 user = routers.NestedSimpleRouter(router, r"user", lookup="user")
 user.register(r"service", ServiceViewSet, basename="user-service")
@@ -65,12 +71,7 @@ peer.register(r"general_post", GeneralPostViewSet, basename="peer-post")
 # peer.register(r"position", PeerPositionViewSet, basename="peer-position")
 peer.register(r"student", StudentViewSet, basename="peer-students") 
 
-################service->data ################ 
-router.register(r"service", ServiceViewSet, basename="service")#service viewset
-service = routers.NestedSimpleRouter(router, r"service", lookup="service")
-service.register(r"event", EventViewSet, basename="service-event")
-
-################################# Center Management later ##########################
+################################# Center Management ##########################
 ################ school->data ################  
 router.register(r"school", SchoolViewSet, basename="school")#
 school = routers.NestedSimpleRouter(router, r"school", lookup="school")

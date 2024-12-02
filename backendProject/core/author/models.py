@@ -308,5 +308,15 @@ class Service(AbstractModel):
         verbose_name = "Service"
         abstract = False
 
+    def create_post(self, author, **post_data):
+        """Crée un post associé au service"""
+        from core.content.models import GeneralPost
+        post = GeneralPost.objects.create(
+            author=author,
+            **post_data
+        )
+        post.service_posts.add(self)
+        return post
+
 
     
