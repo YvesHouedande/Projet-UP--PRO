@@ -7,6 +7,7 @@ import RegisterForm from './components/authentication/RegisterForm';
 import TimeLinePage from './pages/TimeLinePage';
 import PeerPage from './pages/PeerPage';
 import Community from './pages/Community';
+import ServicePage from './pages/ServicePage';
 
 function App() { 
   return (
@@ -43,6 +44,7 @@ function App() {
       <Route
         path="/community"
         element={<Community />} />
+      <Route path="/service/:serviceId" element={<ServicePage />} />
     </Routes>
     // <Home></Home>
   );

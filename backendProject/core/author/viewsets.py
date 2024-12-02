@@ -9,7 +9,7 @@ from core.author.serializers import (
     StudentUpdateSerializer, 
     StudentDetailSerializer, ProfessorSerializer, 
     PersonnelSerializer, PeerSearchSerializer,
-    PeerDelegationSerializer
+    PeerDelegationSerializer, ServiceDetailSerializer
 )
 from core.author.models import (
     User, Service, Peer, Student,
@@ -405,6 +405,11 @@ class ServiceViewSet(AbstractViewSet):
     ]
     ordering_fields = ['created', 'label']
     ordering = ['-created']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ServiceDetailSerializer
+        return ServiceSerializer
 
     def get_queryset(self):
         queryset = Service.objects.select_related(

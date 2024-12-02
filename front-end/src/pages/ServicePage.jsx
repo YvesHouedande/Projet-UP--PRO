@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { fetcher } from '../helpers/axios';
 import Layout from './Layout';
@@ -48,15 +48,16 @@ export default function ServicePage() {
   const [nextEventsUrl, setNextEventsUrl] = useState(null);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { data: serviceData, error: serviceError, isLoading: serviceLoading, mutate } = 
     useSWR(serviceId ? `/service/${serviceId}/` : null, fetcher);
 
   // Vérifier si l'utilisateur est le responsable du service
   const isManager = React.useMemo(() => {
-    if (!currentUser || !serviceData?.manager_details) return false;
-    return currentUser.public_id === serviceData.manager_details.id;
-  }, [currentUser, serviceData]);
+    if (!serviceData) return false;
+    return serviceData.can_edit;
+  }, [serviceData]);
 
   // Chargement initial des publications si l'onglet "Publications" est actif
   useEffect(() => {
@@ -158,6 +159,58 @@ export default function ServicePage() {
     }
   }, [serviceId, activeTab]);
 
+  const handleManagerClick = () => {
+    if (serviceData?.manager_details?.public_id) {
+      navigate(`/profile/${serviceData.manager_details.public_id}`);
+    }
+  };
+
+  const renderManagerCard = () => {
+    const manager = serviceData?.manager_details;
+    if (!manager) return null;
+
+    return (
+      <div 
+        onClick={handleManagerClick}
+        className="bg-white rounded-2xl border-2 border-gray-200 p-4 
+                  shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]
+                  hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]
+                  transition-all duration-200 cursor-pointer"
+      >
+        <div className="flex items-center space-x-4">
+          <div className="flex-shrink-0">
+            <img 
+              src={manager.avatar} 
+              alt="Avatar"
+              className="w-16 h-16 rounded-full object-cover border-2 border-green-200"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-800 truncate">
+              {manager.first_name} {manager.last_name}
+            </h3>
+            <p className="text-sm text-gray-500 truncate">
+              {manager.email}
+            </p>
+            <p className="text-sm text-gray-500">
+              N° {manager.number}
+            </p>
+            <div className="mt-1">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                {manager.status_choice}
+              </span>
+              {serviceData.can_edit && (
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  Responsable du service
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
@@ -171,10 +224,10 @@ export default function ServicePage() {
                   Informations
                 </h2>
                 <div className="space-y-3">
-                  {serviceData?.school && (
+                  {serviceData?.school_details && (
                     <div className="flex items-center gap-2 text-gray-600">
                       <HiLocationMarker className="text-green-500" />
-                      <span>École: {serviceData.school.name}</span>
+                      <span>École: {serviceData.school_details.name}</span>
                     </div>
                   )}
                   {serviceData?.description && (
@@ -183,36 +236,21 @@ export default function ServicePage() {
                       {serviceData.description}
                     </p>
                   )}
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <HiNewspaper className="text-green-500" />
+                    <span>{serviceData?.posts_count || 0} publications</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <HiCalendar className="text-green-500" />
+                    <span>{serviceData?.event_count || 0} événements</span>
+                  </div>
                 </div>
               </div>
 
-              {serviceData?.manager_details && (
-                <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">Responsable</h2>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <img 
-                        src={serviceData.manager_details.avatar} 
-                        alt="Avatar"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-green-200"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-gray-800">
-                        {serviceData.manager_details.first_name} {serviceData.manager_details.last_name}
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        {serviceData.manager_details.email}
-                      </p>
-                      {serviceData.can_edit && (
-                        <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
-                          Responsable du service
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Responsable</h2>
+                {renderManagerCard()}
+              </div>
             </div>
           </div>
         );
@@ -416,13 +454,25 @@ export default function ServicePage() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 space-y-6">
-        {/* En-tête avec titre et tabs */}
+        {/* En-tête avec titre et image de couverture */}
         <div className="bg-white rounded-2xl border-2 border-gray-200 
-                     shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
+                     shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)] overflow-hidden">
+          {serviceData?.cover && (
+            <div className="h-48 w-full">
+              <img 
+                src={serviceData.cover} 
+                alt={serviceData.label}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           <div className="p-6">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
               {serviceData?.label}
             </h1>
+            <div className="text-sm text-gray-500">
+              Créé le {new Date(serviceData?.created).toLocaleDateString()}
+            </div>
           </div>
           
           <div className="border-t-2 border-gray-200">

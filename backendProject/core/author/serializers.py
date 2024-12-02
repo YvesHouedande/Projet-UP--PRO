@@ -281,3 +281,59 @@ class PeerDelegationSerializer(AbstractSerializer):
         model = Peer
         fields = ['new_manager']
 
+
+class ServiceDetailSerializer(AbstractSerializer):
+    """Sérialiseur pour l'affichage détaillé d'un service"""
+    school_details = serializers.SerializerMethodField()
+    manager_details = serializers.SerializerMethodField()
+    event_count = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Service
+        fields = [
+            'public_id', 'label', 'description', 
+            'cover', 'school_details', 'manager_details',
+            'event_count', 'posts_count', 'can_edit',
+            'created', 'updated'
+        ]
+
+    def get_school_details(self, obj):
+        if obj.school:
+            return {
+                "id": obj.school.public_id,
+                "name": obj.school.label
+            }
+        return None
+
+    def get_manager_details(self, obj):
+        if not obj.manager:
+            return None
+            
+        user = obj.manager
+        request = self.context.get('request')
+        avatar_url = request.build_absolute_uri(user.avatar.url) if user.avatar else settings.DEFAULT_AVATAR_URL
+        
+        return {
+            'public_id': user.public_id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'avatar': avatar_url,
+            'status_choice': user.status_choice,
+            'number': user.number
+        }
+
+    def get_event_count(self, obj):
+        return obj.events.count()
+
+    def get_posts_count(self, obj):
+        return obj.posts.count()
+
+    def get_can_edit(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        return request.user == obj.manager
+

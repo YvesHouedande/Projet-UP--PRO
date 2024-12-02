@@ -94,9 +94,13 @@ const PromoCard = ({ promo }) => {
 const ServiceCard = ({ service }) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    navigate(`/service/${service.public_id}`);
+  };
+
   return (
     <div 
-      onClick={() => navigate(`/service/${service.public_id}`)}
+      onClick={handleClick}
       className="flex flex-col h-full bg-white rounded-2xl border-2 border-gray-200 
                 hover:border-green-300 overflow-hidden
                 shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)]
