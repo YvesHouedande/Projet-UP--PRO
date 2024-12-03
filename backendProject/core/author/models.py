@@ -268,13 +268,17 @@ class Peer(AbstractModel):
     #         return True
     #     return False
 
-    def create_post(self, author, **kwargs):
+    def create_post(self, author, title=None, content=None, content_type=None, image=None, source=None):
         """Créer un post au nom de la promo"""
         from core.content.models import GeneralPost
         post = GeneralPost.objects.create(
             author=author,
             source='promotion',  # Utilisation du choix existant
-            **kwargs
+            title=title,
+            content=content,
+            content_type=content_type,
+            image=image,
+            # source=source     
         )
         self.posts.add(post)
         return post
