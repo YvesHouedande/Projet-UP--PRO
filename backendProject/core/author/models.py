@@ -252,33 +252,17 @@ class Peer(AbstractModel):
             year__year=current_year
         ).first()
 
-    # def add_member(self, student):
-    #     """Ajoute un étudiant à la promo"""
-    #     if student.study == self.study:
-    #         student.peer = self
-    #         student.save()
-    #         return True
-    #     return False
-
-    # def remove_member(self, student):
-    #     """Retire un étudiant de la promo"""
-    #     if student.peer == self and student != self.manager:
-    #         student.peer = None
-    #         student.save()
-    #         return True
-    #     return False
 
     def create_post(self, author, title=None, content=None, content_type=None, image=None, source=None):
         """Créer un post au nom de la promo"""
         from core.content.models import GeneralPost
         post = GeneralPost.objects.create(
             author=author,
-            source='promotion',  # Utilisation du choix existant
+            source='promotion',
             title=title,
             content=content,
             content_type=content_type,
-            image=image,
-            # source=source     
+            image=image,  
         )
         self.posts.add(post)
         return post
