@@ -3,7 +3,7 @@ import { fetcher } from '../helpers/axios';
 import axiosService from '../helpers/axios';
 
 export function usePeerPosts(peerId) {
-  const url = `/peer/${peerId}/posts/`;
+  const url = `/peer/${peerId}/general_post/`;
   
   const { data, error, isLoading, mutate } = useSWR(url, fetcher);
 

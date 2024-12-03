@@ -77,7 +77,15 @@ class GeneralPostViewSet(AbstractViewSet):
     def create(self, request, *args, **kwargs):
         peer_id = self.kwargs.get("peer__pk")
         service_id = self.kwargs.get("service__pk")
-        serializer = self.get_serializer(data=request.data)
+        
+        # Forcer la source en fonction du contexte avant la validation
+        data = request.data.copy()
+        if service_id:
+            data['source'] = 'service'
+        elif peer_id:
+            data['source'] = 'promotion'
+        
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         
         if service_id:
@@ -90,7 +98,7 @@ class GeneralPostViewSet(AbstractViewSet):
                         content=serializer.validated_data.get('content'),
                         content_type=serializer.validated_data.get('content_type'),
                         image=serializer.validated_data.get('image'),
-                        source=serializer.validated_data.get('source')
+                        source='service'
                     )
                     return Response(
                         self.get_serializer(post).data, 
@@ -112,7 +120,7 @@ class GeneralPostViewSet(AbstractViewSet):
                         content=serializer.validated_data.get('content'),
                         content_type=serializer.validated_data.get('content_type'),
                         image=serializer.validated_data.get('image'),
-                        source=serializer.validated_data.get('source')
+                        source='promotion'
                     )
                     return Response(
                         self.get_serializer(post).data, 
@@ -221,7 +229,7 @@ class EventViewSet(AbstractViewSet):
         try:
             event = self.get_object()
         except Event.DoesNotExist:
-            raise NotFound({"detail": "Événement non trouv��."})
+            raise NotFound({"detail": "Événement non trouvé."})
 
         # Vérification des permissions de l'utilisateur pour supprimer l'événement
         self.check_object_permissions(request, event)
