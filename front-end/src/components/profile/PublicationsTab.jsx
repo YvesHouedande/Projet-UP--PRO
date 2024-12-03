@@ -16,7 +16,12 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    image: null
+  });
+
   const currentUser = getUser();
 
   useEffect(() => {
@@ -60,34 +65,64 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
 
   const handleSave = async () => {
     try {
-      let url;
-      switch (context) {
-        case 'service':
-          url = `/service/${serviceId}/general_post/${selectedPost.public_id}/`;
+      const data = new FormData();
+      
+      switch (selectedPost.content_type) {
+        case 'SIMPLE POST':
+          if (formData.content !== selectedPost.content) {
+            data.append('content', formData.content);
+          }
           break;
-        case 'peer':
-          url = `/peer/${peerId}/general_post/${selectedPost.public_id}/`;
+
+        case 'IMAGE POST':
+          if (formData.title !== selectedPost.title) {
+            data.append('title', formData.title);
+          }
+          if (formData.image instanceof File) {
+            data.append('image', formData.image);
+          }
           break;
-        default:
-          url = `/general_post/${selectedPost.public_id}/`;
+
+        case 'RICH POST':
+          if (formData.title !== selectedPost.title) {
+            data.append('title', formData.title);
+          }
+          if (formData.content !== selectedPost.content) {
+            data.append('content', formData.content);
+          }
+          if (formData.image instanceof File) {
+            data.append('image', formData.image);
+          }
+          break;
       }
 
-      const formData = new FormData();
-      if (selectedPost.title) formData.append('title', selectedPost.title);
-      if (selectedPost.content) formData.append('content', selectedPost.content);
-      if (selectedPost.imageFile) formData.append('image', selectedPost.imageFile);
+      if ([...data.entries()].length > 0) {
+        let url;
+        switch (context) {
+          case 'service':
+            url = `/service/${serviceId}/general_post/${selectedPost.public_id}/`;
+            break;
+          case 'peer':
+            url = `/peer/${peerId}/general_post/${selectedPost.public_id}/`;
+            break;
+          default:
+            url = `/general_post/${selectedPost.public_id}/`;
+        }
 
-      const response = await axiosService.patch(url, formData);
+        const response = await axiosService.patch(url, data);
+        
+        setPublications(publications.map(post => 
+          post.public_id === response.data.public_id ? response.data : post
+        ));
+        
+        setNotification({ type: 'success', message: 'Publication mise à jour avec succès' });
+      }
       
-      setPublications(publications.map(post => 
-        post.public_id === response.data.public_id ? response.data : post
-      ));
-
       setIsModalOpen(false);
       setSelectedPost(null);
-      setNotification({ type: 'success', message: 'Publication mise à jour avec succès' });
+      setFormData({ title: '', content: '', image: null });
     } catch (err) {
-      console.error("Erreur lors de la sauvegarde", err);
+      console.error("Erreur lors de la mise à jour", err);
       setNotification({ type: 'error', message: 'Erreur lors de la mise à jour' });
     }
   };
@@ -130,6 +165,91 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
   };
 
+  const Notification = ({ type, message, onClose }) => (
+    <div 
+      className={`fixed bottom-4 right-4 p-4 rounded-lg ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+      } text-white flex items-center gap-2`}
+    >
+      {message}
+      <button onClick={onClose} className="text-white hover:text-gray-200">×</button>
+    </div>
+  );
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const handleEdit = (post) => {
+    setSelectedPost(post);
+    setFormData({
+      title: post.title || '',
+      content: post.content || '',
+      image: null
+    });
+    setIsModalOpen(true);
+  };
+
+  const renderEditForm = () => {
+    if (!selectedPost) return null;
+
+    return (
+      <Modal.Body>
+        {(selectedPost.content_type === 'IMAGE POST' || selectedPost.content_type === 'RICH POST') && (
+          <div className="mb-4">
+            <Label htmlFor="title">Titre</Label>
+            <TextInput
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
+            />
+          </div>
+        )}
+
+        {(selectedPost.content_type === 'RICH POST' || selectedPost.content_type === 'SIMPLE POST') && (
+          <div className="mb-4">
+            <Label htmlFor="content">Contenu</Label>
+            <Textarea
+              id="content"
+              value={formData.content}
+              onChange={(e) => setFormData(prev => ({...prev, content: e.target.value}))}
+              rows={4}
+            />
+          </div>
+        )}
+
+        {(selectedPost.content_type === 'IMAGE POST' || selectedPost.content_type === 'RICH POST') && (
+          <div className="mb-4">
+            <Label htmlFor="image">Image</Label>
+            <input
+              type="file"
+              id="image"
+              accept="image/*"
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                image: e.target.files[0] || null
+              }))}
+              className="block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-green-50 file:text-green-700
+                      hover:file:bg-green-100"
+            />
+            {selectedPost.image && (
+              <p className="mt-2 text-sm text-gray-500">
+                Image actuelle : {selectedPost.image}
+              </p>
+            )}
+          </div>
+        )}
+      </Modal.Body>
+    );
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-green-700 mb-6">Mes Publications</h2>
@@ -166,7 +286,7 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       color="info"
-                      onClick={() => { setSelectedPost(post); setIsModalOpen(true); }}
+                      onClick={() => handleEdit(post)}
                     >
                       Modifier
                     </Button>
@@ -187,24 +307,7 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <Modal.Header>Modifier la publication</Modal.Header>
         <Modal.Body>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Titre</Label>
-              <TextInput
-                id="title"
-                value={selectedPost?.title || ''}
-                onChange={(e) => setSelectedPost({...selectedPost, title: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label htmlFor="content">Contenu</Label>
-              <Textarea
-                id="content"
-                value={selectedPost?.content || ''}
-                onChange={(e) => setSelectedPost({...selectedPost, content: e.target.value})}
-              />
-            </div>
-          </div>
+          {renderEditForm()}
         </Modal.Body>
         <Modal.Footer>
           <Button color="success" onClick={handleSave}>Enregistrer</Button>
@@ -234,11 +337,11 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
       </Modal>
 
       {notification && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-lg ${
-          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } text-white`}>
-          {notification.message}
-        </div>
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
       )}
     </div>
   );
