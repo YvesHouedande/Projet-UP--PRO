@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import NavBox from '../components/assets/NavBox';
 import UserBox from '../components/assets/UserBox';
 import Feed from '../components/assets/Feed';
@@ -12,10 +12,12 @@ import Layout from './Layout';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { HiMenuAlt2 } from 'react-icons/hi';
 import { usePosts } from '../hooks/posts.actions';
+import { IoRefresh } from "react-icons/io5";
 
 export default function Home() {
   const user = getUser();
   const [showLeftSidebar, setShowLeftSidebar] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const getSourceFromStatus = () => {
     return user.status_choice || 'etudiant';
@@ -45,11 +47,40 @@ export default function Home() {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await mutate();
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isRefreshing) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [isRefreshing]);
+
   if (isLoading) return <Loading />;
   if (error) return <MessageModal message={"Erreur de chargement"} />;
 
   return (
     <Layout>
+      <div className="fixed bottom-20 right-4 z-50 flex gap-2">
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className={`bg-green-500 text-white p-3 rounded-full shadow-lg 
+                     hover:bg-green-600 transition-all duration-300
+                     ${isRefreshing ? 'animate-spin' : ''}`}
+        >
+          <IoRefresh className="w-6 h-6" />
+        </button>
+      </div>
+
       <div className="lg:hidden fixed bottom-4 right-4 z-50 flex gap-2">
         <button
           onClick={() => setShowLeftSidebar(!showLeftSidebar)}
