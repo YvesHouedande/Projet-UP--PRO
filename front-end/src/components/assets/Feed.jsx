@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FaImage } from 'react-icons/fa';
 import { TfiWrite } from 'react-icons/tfi';
 import { FaCalendarAlt } from 'react-icons/fa';
-import CreateEvent from '../events/CreateEvent';
 import RichPost from '../posts/CreateRichPost';
 import { CiText } from "react-icons/ci";
 import CreateImagePost from '../posts/CreateImagePost';
@@ -10,7 +9,6 @@ import CreateSimplePost from '../posts/CreateSimplePost';
 
 
 export default function Feed({ onPostCreated, peerId, serviceId, source }) {
-  const [IsEventOpen, setIsEventOpen] = useState(false);
   const [IsCreateSimplePostOpen, setIsCreateSimplePostOpen] = useState(false);
   const [IsRichPostOpen, setIsRichPostOpen] = useState(false);
   const [IsCreateImagePostOpen, setIsCreateImagePostOpen] = useState(false);
@@ -27,8 +25,6 @@ export default function Feed({ onPostCreated, peerId, serviceId, source }) {
     }
   };
 
-  // Déterminer si on doit afficher le bouton événement
-  const showEventButton = source === 'service';
 
   // Fonction de callback pour la création réussie
   const handlePostCreated = (newPost) => {
@@ -60,7 +56,7 @@ export default function Feed({ onPostCreated, peerId, serviceId, source }) {
 
         {/* Actions */}
         <div className="px-3 py-2">
-          <div className={`grid ${showEventButton ? 'grid-cols-4' : 'grid-cols-3'} gap-2`}>
+          <div className={`grid  grid-cols-3 gap-2`}>
             {/* Boutons existants avec props de contexte */}
             <button 
               onClick={() => setIsCreateSimplePostOpen(true)}
@@ -85,16 +81,6 @@ export default function Feed({ onPostCreated, peerId, serviceId, source }) {
               <TfiWrite className="w-6 h-6" />
               <span className="text-xs mt-1">Article</span>
             </button>
-
-            {showEventButton && (
-              <button 
-                onClick={() => setIsEventOpen(true)}
-                className="flex flex-col items-center p-2 rounded-xl hover:bg-gray-50"
-              >
-                <FaCalendarAlt className="w-6 h-6" />
-                <span className="text-xs mt-1">Événement</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -130,13 +116,7 @@ export default function Feed({ onPostCreated, peerId, serviceId, source }) {
           source={getPostSource()}
         />
       )}
-      {IsEventOpen && source === 'service' && (
-        <CreateEvent 
-          show={IsEventOpen} 
-          onClose={() => setIsEventOpen(false)}
-          serviceId={serviceId}
-        />
-      )}
+
     </div>
   );
 }
