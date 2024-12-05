@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import NavBox from '../components/assets/NavBox';
 import UserBox from '../components/assets/UserBox';
 import Feed from '../components/assets/Feed';
@@ -13,44 +13,64 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { HiMenuAlt2 } from 'react-icons/hi';
 import { usePosts } from '../hooks/posts.actions';
 import { IoRefresh } from "react-icons/io5";
+import axiosService from '../helpers/axios';
 
 export default function Home() {
   const user = getUser();
   const [showLeftSidebar, setShowLeftSidebar] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const observerTarget = useRef(null);
+  const [refreshComplete, setRefreshComplete] = useState(false);
 
   const getSourceFromStatus = () => {
     return user.status_choice || 'etudiant';
   };
 
   const source = getSourceFromStatus();
-  const { posts, error, isLoading, mutate, createPost } = usePosts(source);
+  const { posts: apiPosts, error, isLoading, mutate, createPost } = usePosts(source);
 
   const handleNewPost = useCallback(() => {
     mutate();
   }, [mutate]);
 
-  const nextUrl = posts?.next;
-
-  // Fonction pour charger plus de posts
-  const fetchMorePosts = async () => {
-    if (!nextUrl) return;
+  // Fonction pour charger les posts initiaux
+  const loadInitialPosts = async () => {
     try {
-      const newData = await fetcher(nextUrl);
-      mutate({
-        ...posts,
-        results: [...posts.results, ...newData.results],
-        next: newData.next
-      }, false);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des publications:', err);
+      const response = await axiosService.get('/general_post/');
+      setPosts(response.data.results);
+      setNextUrl(response.data.next);
+    } catch (error) {
+      console.error('Erreur lors du chargement des posts:', error);
     }
   };
 
+  // Fonction pour charger plus de posts
+  const loadMorePosts = async () => {
+    if (loading || !nextUrl) return;
+    
+    setLoading(true);
+    try {
+      const response = await axiosService.get(nextUrl);
+      setPosts(prev => [...prev, ...response.data.results]);
+      setNextUrl(response.data.next);
+    } catch (error) {
+      console.error('Erreur lors du chargement des posts supplémentaires:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Gestionnaire de rafraîchissement
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await mutate();
+      const response = await axiosService.get('/general_post/');
+      setPosts(response.data.results);
+      setNextUrl(response.data.next);
+      setRefreshComplete(true);
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
     } finally {
@@ -58,11 +78,39 @@ export default function Home() {
     }
   };
 
+  // Configuration de l'Intersection Observer
   useEffect(() => {
-    if (!isRefreshing) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && nextUrl) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
     }
-  }, [isRefreshing]);
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [nextUrl]);
+
+  // Chargement initial
+  useEffect(() => {
+    loadInitialPosts();
+  }, []);
+
+  useEffect(() => {
+    if (refreshComplete) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setRefreshComplete(false);
+    }
+  }, [refreshComplete]);
 
   if (isLoading) return <Loading />;
   if (error) return <MessageModal message={"Erreur de chargement"} />;
@@ -129,7 +177,7 @@ export default function Home() {
             />
             <InfiniteScroll
               dataLength={posts.length || 0}
-              next={fetchMorePosts}
+              next={loadMorePosts}
               hasMore={!!nextUrl}
               loader={<div className="text-center py-2">Chargement...</div>}
               endMessage={
