@@ -5,7 +5,6 @@ import Feed from '../components/assets/Feed';
 import MeetBox from '../components/assets/MeetBox';  
 import Post from '../components/posts/Post';
 import { getUser } from '../hooks/user.actions';
-import { fetcher } from '../helpers/axios';
 import Loading from '../components/assets/Loading';
 import MessageModal from '../components/assets/MessageModal';
 import Layout from './Layout';

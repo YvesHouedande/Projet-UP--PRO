@@ -17,15 +17,27 @@ export default function NavBox() {
             border-t border-gray-200 lg:border-t-0
             shadow-[0_-2px_10px_rgba(0,0,0,0.1)]
             z-50 lg:z-auto
+            w-full
         `}>
-            <div className='grid grid-cols-6 lg:flex lg:flex-col justify-around lg:justify-start lg:p-2 lg:space-y-2'>
+            <div className='
+                flex justify-between
+                p-1
+                
+                lg:flex lg:flex-col 
+                lg:gap-2 
+                lg:p-2
+            '>
                 {/* Accueil */}
                 <button
                     onClick={() => navigate('/home')}
                     className={`
-                        flex flex-col lg:flex-row items-center lg:items-center
-                        py-2 px-1 lg:p-3 lg:rounded-xl
+                        flex-1
+                        flex flex-col items-center justify-center
+                        mx-1
+                        py-1.5 
                         text-[10px] lg:text-sm font-medium
+                        lg:flex-row lg:justify-start
+                        lg:p-3 lg:rounded-xl lg:w-full
                         transition-colors duration-300
                         ${location.pathname === '/home'
                             ? 'text-green-600 lg:bg-green-100 lg:text-green-700 lg:border-2 lg:border-green-400'
@@ -33,7 +45,7 @@ export default function NavBox() {
                         }
                     `}
                 >
-                    <FaHome className="w-5 h-5 mb-1 lg:mb-0 lg:mr-2" />
+                    <FaHome className="w-5 h-5 mb-0.5 lg:mb-0 lg:mr-2" />
                     <span className="lg:flex-1">Accueil</span>
                 </button>
 
@@ -41,8 +53,9 @@ export default function NavBox() {
                 <button
                     onClick={() => navigate(`/profile/${user?.public_id}`)}
                     className={`
-                        flex flex-col lg:flex-row items-center lg:items-center
-                        py-2 px-1 lg:p-3 lg:rounded-xl
+                        flex-1
+                        flex flex-col lg:flex-row items-center justify-center lg:justify-start
+                        py-1.5 px-1 lg:p-3 lg:rounded-xl w-full
                         text-[10px] lg:text-sm font-medium
                         transition-colors duration-300
                         ${location.pathname.includes('/profile')
@@ -51,7 +64,7 @@ export default function NavBox() {
                         }
                     `}
                 >
-                    <FaUser className="w-5 h-5 mb-1 lg:mb-0 lg:mr-2" />
+                    <FaUser className="w-5 h-5 mb-0.5 lg:mb-0 lg:mr-2" />
                     <span className="lg:flex-1">Profil</span>
                 </button>
 
@@ -59,8 +72,9 @@ export default function NavBox() {
                 <button
                     onClick={() => navigate('/community')}
                     className={`
-                        flex flex-col lg:flex-row items-center lg:items-center
-                        py-2 px-1 lg:p-3 lg:rounded-xl
+                        flex-1
+                        flex flex-col lg:flex-row items-center justify-center lg:justify-start
+                        py-1.5 px-1 lg:p-3 lg:rounded-xl w-full
                         text-[10px] lg:text-sm font-medium
                         transition-colors duration-300
                         ${location.pathname === '/community'
@@ -69,26 +83,8 @@ export default function NavBox() {
                         }
                     `}
                 >
-                    <FaUsers className="w-5 h-5 mb-1 lg:mb-0 lg:mr-2" />
+                    <FaUsers className="w-5 h-5 mb-0.5 lg:mb-0 lg:mr-2" />
                     <span className="lg:flex-1">Communauté</span>
-                </button>
-
-                {/* Événements */}
-                <button
-                    onClick={() => navigate('/events')}
-                    className={`
-                        flex flex-col lg:flex-row items-center lg:items-center
-                        py-2 px-1 lg:p-3 lg:rounded-xl
-                        text-[10px] lg:text-sm font-medium
-                        transition-colors duration-300
-                        ${location.pathname === '/events'
-                            ? 'text-green-600 lg:bg-green-100 lg:text-green-700 lg:border-2 lg:border-green-400'
-                            : 'text-gray-600 hover:text-green-600 lg:bg-gray-100 lg:border-2 lg:border-gray-300 lg:hover:border-green-400'
-                        }
-                    `}
-                >
-                    <FaCalendarAlt className="w-5 h-5 mb-1 lg:mb-0 lg:mr-2" />
-                    <span className="lg:flex-1">Événements</span>
                 </button>
 
             </div>
