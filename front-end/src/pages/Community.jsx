@@ -488,7 +488,7 @@ export default function Community() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
         <div className="flex">
           {/* Navigation Desktop */}
           <div className="hidden lg:block w-64 min-h-screen sticky top-0 p-4">
@@ -496,13 +496,13 @@ export default function Community() {
           </div>
 
           {/* Contenu principal */}
-          <div className="flex-1 px-4 py-8">
+          <div className="flex-1 px-2 sm:px-4 py-4 sm:py-8">
             <div className="max-w-7xl mx-auto">
               {/* En-tête avec recherche */}
-              <div className="bg-white rounded-2xl border-2 border-gray-200 
-                            shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)] mb-6">
-                <div className="p-6">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-4">
+              <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 
+                            shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)] mb-4 sm:mb-6">
+                <div className="p-4 sm:p-6">
+                  <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-4">
                     Communauté INP-HB
                   </h1>
                   
@@ -513,23 +513,24 @@ export default function Community() {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder={getSearchPlaceholder(activeTab)}
-                      className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200
+                      className="w-full px-4 py-2 sm:py-3 pl-10 sm:pl-12 rounded-xl border-2 border-gray-200
                                focus:border-green-400 focus:ring-4 focus:ring-green-50
-                               transition-all duration-300"
+                               transition-all duration-300 text-sm sm:text-base"
                     />
-                    <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <FaSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   </div>
                 </div>
 
                 {/* Onglets */}
                 <div className="border-t-2 border-gray-200">
-                  <div className="flex">
+                  <div className="flex overflow-x-auto scrollbar-hide">
                     {tabs.map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => handleTabChange(tab.id)}
                         className={`
-                          flex items-center gap-2 px-6 py-4 font-medium text-sm
+                          flex items-center gap-2 px-3 sm:px-6 py-3 sm:py-4 
+                          font-medium text-sm whitespace-nowrap
                           transition-all duration-200
                           ${activeTab === tab.id 
                             ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
@@ -537,7 +538,7 @@ export default function Community() {
                           }
                         `}
                       >
-                        <tab.icon className="text-xl" />
+                        <tab.icon className="text-lg sm:text-xl" />
                         <span>{tab.label}</span>
                       </button>
                     ))}
@@ -545,8 +546,8 @@ export default function Community() {
                 </div>
               </div>
 
-              {/* Grille des promotions */}
-              <div className="max-w-7xl mx-auto px-4 py-8">
+              {/* Grille des items */}
+              <div className="px-2 sm:px-4">
                 <InfiniteScroll
                   dataLength={items.length}
                   next={() => fetchItems(false)}
@@ -558,15 +559,36 @@ export default function Community() {
                     </p>
                   }
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                     {items.map(item => {
-                      if (activeTab === 'promotions') return <PromoCard key={item.public_id} promo={item} />;
-                      if (activeTab === 'services') return <ServiceCard key={item.public_id} service={item} />;
-                      return <RequestCard 
-                        key={item.public_id} 
-                        request={item} 
-                        onViewDetails={(request) => setSelectedRequest(request)}
-                      />;
+                      if (activeTab === 'promotions') {
+                        return (
+                          <div key={item.public_id} className="bg-white rounded-xl border-2 border-gray-200 p-4 
+                                                           hover:border-green-200 transition-colors duration-200
+                                                           shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                            <PromoCard promo={item} />
+                          </div>
+                        );
+                      }
+                      if (activeTab === 'services') {
+                        return (
+                          <div key={item.public_id} className="bg-white rounded-xl border-2 border-gray-200 p-4
+                                                           hover:border-green-200 transition-colors duration-200
+                                                           shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                            <ServiceCard service={item} />
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={item.public_id} className="bg-white rounded-xl border-2 border-gray-200 p-4
+                                                         hover:border-green-200 transition-colors duration-200
+                                                         shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                          <RequestCard 
+                            request={item} 
+                            onViewDetails={(request) => setSelectedRequest(request)}
+                          />
+                        </div>
+                      );
                     })}
                   </div>
                 </InfiniteScroll>
@@ -575,33 +597,33 @@ export default function Community() {
                 {activeTab === 'requests' && (
                   <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="fixed bottom-20 right-6 w-14 h-14 bg-green-500 rounded-full 
-                             flex items-center justify-center text-white shadow-lg
-                             hover:bg-green-600 transition-colors duration-300"
+                    className="fixed bottom-24 right-4 sm:bottom-8 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 
+                             bg-green-500 rounded-full flex items-center justify-center text-white 
+                             shadow-lg hover:bg-green-600 transition-colors duration-300 z-40"
                   >
-                    <FaPlus className="text-xl" />
+                    <FaPlus className="text-lg sm:text-xl" />
                   </button>
                 )}
-
-                {/* Modal de création de demande */}
-                <CreateRequestModal
-                  isOpen={isCreateModalOpen}
-                  onClose={() => setIsCreateModalOpen(false)}
-                  onSubmit={handleCreateRequest}
-                />
-
-                <RequestDetailsModal
-                  isOpen={!!selectedRequest}
-                  request={selectedRequest}
-                  onClose={() => setSelectedRequest(null)}
-                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Mobile */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        {/* Modales */}
+        <CreateRequestModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateRequest}
+        />
+
+        <RequestDetailsModal
+          isOpen={!!selectedRequest}
+          request={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+        />
+
+        {/* NavBox Mobile */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50">
           <NavBox />
         </div>
       </div>
