@@ -40,13 +40,16 @@ export default function InfoINPTab({ user }) {
   const isNewProfile = !inpInfo;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-green-700">Informations INP</h2>
+    <div className="p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-green-700">
+          Informations INP
+        </h2>
         {canEdit && !isEditing && (
           <button 
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-600 
+            className="w-full sm:w-auto flex items-center justify-center gap-2 
+                     px-4 py-2 bg-orange-100 text-orange-600 
                      rounded-xl hover:bg-orange-200 transition-colors duration-200
                      border-2 border-orange-200 shadow-[3px_3px_0px_0px_rgba(251,146,60,0.3)]"
           >
@@ -65,14 +68,25 @@ export default function InfoINPTab({ user }) {
         />
       ) : (
         isNewProfile ? (
-          <div className="text-center p-8 bg-gray-50 rounded-xl border-2 border-gray-200">
-            <p className="text-gray-600">
+          <div className="text-center p-4 sm:p-8 bg-gray-50 rounded-xl border-2 border-gray-200">
+            <p className="text-sm sm:text-base text-gray-600">
               Aucun profil INP n'a été créé pour cet utilisateur.
             </p>
           </div>
         ) : (
-          <InfoInpDisplay user={user} inpInfo={inpInfo} />
+          <div className="space-y-3 sm:space-y-4">
+            <InfoInpDisplay user={user} inpInfo={inpInfo} />
+          </div>
         )
+      )}
+
+      {error && (
+        <div className="p-3 sm:p-4 mt-3 sm:mt-4 text-center">
+          <p className="text-sm sm:text-base text-red-500 bg-red-50 p-3 sm:p-4 
+                     rounded-xl border-2 border-red-200">
+            Erreur lors du chargement des informations INP
+          </p>
+        </div>
       )}
     </div>
   );
