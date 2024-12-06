@@ -15,7 +15,25 @@ import Feed from '../components/assets/Feed';
 import { Button, Modal, Label, TextInput, Textarea } from 'flowbite-react';
 import EmojiPicker from 'emoji-picker-react';
 import PublicationsTab from '../components/profile/PublicationsTab';
+import NavBox from '../components/assets/NavBox';
 
+
+const TabButton = ({ children, active, onClick, icon }) => (
+  <button
+    onClick={onClick}
+    className={`
+      flex items-center gap-2 px-3 sm:px-6 py-3 sm:py-4 font-medium text-sm
+      transition-all duration-200 whitespace-nowrap flex-1
+      ${active 
+        ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
+        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+      }
+    `}
+  >
+    {icon}
+    <span>{children}</span>
+  </button>
+);
 
 export default function PeerPage() {
   const { peerId } = useParams();
@@ -28,11 +46,11 @@ export default function PeerPage() {
   const [nextPostsUrl, setNextPostsUrl] = useState(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const currentUser = getUser();
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [notification, setNotification] = useState(null);
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  // const [selectedPost, setSelectedPost] = useState(null);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  // const [notification, setNotification] = useState(null);
+  // const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const { data: peerData, error: peerError, isLoading: peerLoading, mutate } = 
     useSWR(peerId ? `/peer/${peerId}/` : null, fetcher);
@@ -151,110 +169,152 @@ export default function PeerPage() {
     createPeerPost 
   } = usePeerPosts(peerId);
 
-  const handleNewPost = () => {
-    peerPostsMutate();
-  };
+  // const handleNewPost = () => {
+  //   peerPostsMutate();
+  // };
 
   // Fonction de mise à jour d'un post
-  const handleSave = async () => {
-    try {
-      let postToSave = {};
+  // const handleSave = async () => {
+  //   try {
+  //     let postToSave = {};
 
-      // N'inclure que les champs non nuls qui existaient déjà
-      if (selectedPost.title !== null) {
-        postToSave.title = selectedPost.title;
-      }
-      if (selectedPost.content !== null) {
-        postToSave.content = selectedPost.content;
-      }
-      if (selectedPost.imageFile) {
-        const formData = new FormData();
-        if (postToSave.title) formData.append('title', postToSave.title);
-        if (postToSave.content) formData.append('content', postToSave.content);
-        formData.append('image', selectedPost.imageFile);
-        postToSave = formData;
-      }
+  //     // N'inclure que les champs non nuls qui existaient déjà
+  //     if (selectedPost.title !== null) {
+  //       postToSave.title = selectedPost.title;
+  //     }
+  //     if (selectedPost.content !== null) {
+  //       postToSave.content = selectedPost.content;
+  //     }
+  //     if (selectedPost.imageFile) {
+  //       const formData = new FormData();
+  //       if (postToSave.title) formData.append('title', postToSave.title);
+  //       if (postToSave.content) formData.append('content', postToSave.content);
+  //       formData.append('image', selectedPost.imageFile);
+  //       postToSave = formData;
+  //     }
 
-      const response = await axiosService.patch(
-        `/general_post/${selectedPost.public_id}/`,
-        postToSave
-      );
+  //     const response = await axiosService.patch(
+  //       `/general_post/${selectedPost.public_id}/`,
+  //       postToSave
+  //     );
 
-      // Mettre à jour la liste des posts
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.public_id === response.data.public_id ? response.data : post
-        )
-      );
+  //     // Mettre à jour la liste des posts
+  //     setPosts(prevPosts => 
+  //       prevPosts.map(post => 
+  //         post.public_id === response.data.public_id ? response.data : post
+  //       )
+  //     );
 
-      setIsModalOpen(false);
-      setSelectedPost(null);
-      setNotification({ type: 'success', message: 'Publication mise à jour avec succès' });
-    } catch (err) {
-      console.error("Erreur lors de la sauvegarde", err);
-      setNotification({ type: 'error', message: 'Erreur lors de la mise à jour' });
-    }
-  };
+  //     setIsModalOpen(false);
+  //     setSelectedPost(null);
+  //     setNotification({ type: 'success', message: 'Publication mise à jour avec succès' });
+  //   } catch (err) {
+  //     console.error("Erreur lors de la sauvegarde", err);
+  //     setNotification({ type: 'error', message: 'Erreur lors de la mise à jour' });
+  //   }
+  // };
 
   // Fonction de suppression
-  const handleDelete = async (postId) => {
-    try {
-      await axiosService.delete(`/general_post/${postId}/`);
-      setPosts(posts.filter(post => post.public_id !== postId));
-      setNotification({ type: 'success', message: 'Publication supprimée avec succès' });
-    } catch (err) {
-      console.error("Erreur lors de la suppression", err);
-      setNotification({ type: 'error', message: 'Erreur lors de la suppression' });
-    }
-    setIsConfirmDeleteOpen(false);
-  };
+  // const handleDelete = async (postId) => {
+  //   try {
+  //     await axiosService.delete(`/general_post/${postId}/`);
+  //     setPosts(posts.filter(post => post.public_id !== postId));
+  //     setNotification({ type: 'success', message: 'Publication supprimée avec succès' });
+  //   } catch (err) {
+  //     console.error("Erreur lors de la suppression", err);
+  //     setNotification({ type: 'error', message: 'Erreur lors de la suppression' });
+  //   }
+  //   setIsConfirmDeleteOpen(false);
+  // };
 
-  // Gestion des emojis
-  const handleEmojiClick = (emoji) => {
-    setSelectedPost({ 
-      ...selectedPost, 
-      content: (selectedPost.content || '') + emoji.emoji 
-    });
-  };
+  // // Gestion des emojis
+  // const handleEmojiClick = (emoji) => {
+  //   setSelectedPost({ 
+  //     ...selectedPost, 
+  //     content: (selectedPost.content || '') + emoji.emoji 
+  //   });
+  // };
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'info':
-        return (
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <HiUserGroup className="text-green-500" />
-                  Informations
-                </h2>
-                <div className="space-y-3">
-                  <p className="text-gray-600">Filière: {peerData?.study_label}</p>
-                  <p className="text-gray-600">École: {peerData?.school_label}</p>
-                  <p className="text-gray-600">
-                    Année: {new Date(peerData?.year).getFullYear()}
-                  </p>
-                  <p className="text-gray-600">
-                    Effectif total: {peerData?.students_count} étudiants
-                  </p>
-                </div>
-              </div>
-              {peerData?.manager && (
-                <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">Délégué</h2>
-                  <StudentCard student={peerData.manager} />
-                </div>
-              )}
+  if (peerLoading) return <Loading />;
+  if (peerError) return <div>Erreur de chargement des données</div>;
+
+  return (
+    <Layout>
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-20 lg:pb-8">
+        {/* En-tête avec titre et tabs */}
+        <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 
+                     shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
+          <div className="p-3 sm:p-6">
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-2">
+              {peerData?.label}
+            </h1>
+          </div>
+          
+          <div className="border-t-2 border-gray-200">
+            <div className="flex overflow-x-auto scrollbar-hide">
+              <TabButton 
+                active={activeTab === 'info'}
+                onClick={() => setActiveTab('info')}
+                icon={<HiUserGroup className="w-5 h-5" />}
+              >
+                Info
+              </TabButton>
+              <TabButton 
+                active={activeTab === 'posts'}
+                onClick={() => setActiveTab('posts')}
+                icon={<HiNewspaper className="w-5 h-5" />}
+              >
+                Publications
+              </TabButton>
+              <TabButton 
+                active={activeTab === 'members'}
+                onClick={() => setActiveTab('members')}
+                icon={<HiUsers className="w-5 h-5" />}
+              >
+                Membres
+              </TabButton>
             </div>
           </div>
-        );
+        </div>
 
-      case 'posts':
-        return (
-          <div className="space-y-6">
-            {/* Feed pour le délégué uniquement */}
+        {/* Contenu des onglets */}
+        {activeTab === 'info' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Informations de la promotion */}
+            <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 p-4 sm:p-6 
+                         shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <HiUserGroup className="text-green-500" />
+                Informations
+              </h2>
+              <div className="space-y-3">
+                <p className="text-sm sm:text-base text-gray-600">Filière: {peerData?.study_label}</p>
+                <p className="text-sm sm:text-base text-gray-600">École: {peerData?.school_label}</p>
+                <p className="text-sm sm:text-base text-gray-600">
+                  Année: {new Date(peerData?.year).getFullYear()}
+                </p>
+                <p className="text-sm sm:text-base text-gray-600">
+                  Effectif total: {peerData?.students_count} étudiants
+                </p>
+              </div>
+            </div>
+
+            {/* Carte du délégué */}
+            {peerData?.manager && (
+              <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 p-4 sm:p-6 
+                           shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Délégué</h2>
+                <StudentCard student={peerData.manager} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'posts' && (
+          <div className="space-y-4 sm:space-y-6">
+            {/* Feed pour le délégué */}
             {isManager && (
-              <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 
+              <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 p-4 sm:p-6 
                            shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
                 <Feed
                   onPostCreated={() => mutate()}
@@ -264,19 +324,19 @@ export default function PeerPage() {
               </div>
             )}
 
-            {/* Liste des publications via PublicationsTab */}
+            {/* Liste des publications */}
             <PublicationsTab 
               user={peerData}
               context="peer"
               peerId={peerId}
             />
           </div>
-        );
+        )}
 
-      case 'members':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 
+        {activeTab === 'members' && (
+          <div className="space-y-4 sm:space-y-6">
+            {/* Barre de recherche */}
+            <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 p-3 sm:p-6 
                          shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
               <div className="relative">
                 <input
@@ -284,9 +344,10 @@ export default function PeerPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Rechercher un étudiant..."
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                  className="w-full px-4 py-2 sm:py-3 pl-10 rounded-xl border-2 border-gray-200 
                            focus:outline-none focus:border-green-400 
-                           shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]"
+                           shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]
+                           text-sm sm:text-base"
                 />
                 {loading && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -296,6 +357,7 @@ export default function PeerPage() {
               </div>
             </div>
 
+            {/* Liste des étudiants */}
             <InfiniteScroll
               dataLength={students.length}
               next={() => !searchTerm && fetchStudents()}
@@ -312,10 +374,10 @@ export default function PeerPage() {
                 </p>
               }
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {students.map((student) => (
                   <div key={student.public_id} 
-                       className="bg-white rounded-2xl border-2 border-gray-200 p-4 
+                       className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 p-3 sm:p-4 
                                 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]
                                 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]
                                 transition-all duration-200 relative group">
@@ -324,7 +386,7 @@ export default function PeerPage() {
                       <button
                         onClick={() => handleTransferRole(student.public_id)}
                         title="Transférer le rôle de délégué"
-                        className="absolute top-3 right-3 p-2 bg-white rounded-xl
+                        className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 bg-white rounded-xl
                                  border-2 border-gray-200 opacity-0 group-hover:opacity-100
                                  hover:border-green-400 hover:text-green-500
                                  transition-all duration-200
@@ -338,76 +400,16 @@ export default function PeerPage() {
               </div>
             </InfiniteScroll>
           </div>
-        );
-    }
-  };
+        )}
 
-  if (peerLoading) return <Loading />;
-  if (peerError) return <div>Erreur de chargement des données</div>;
-
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-8 space-y-6">
-        {/* En-tête avec titre et tabs */}
-        <div className="bg-white rounded-2xl border-2 border-gray-200 
-                     shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
-          <div className="p-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              {peerData?.label}
-            </h1>
-          </div>
-          
-          <div className="border-t-2 border-gray-200">
-            <div className="flex overflow-x-auto">
-              <TabButton 
-                active={activeTab === 'info'}
-                onClick={() => setActiveTab('info')}
-                icon={<HiUserGroup />}
-              >
-                Informations
-              </TabButton>
-              <TabButton 
-                active={activeTab === 'posts'}
-                onClick={() => setActiveTab('posts')}
-                icon={<HiNewspaper />}
-              >
-                Publications
-              </TabButton>
-              <TabButton 
-                active={activeTab === 'members'}
-                onClick={() => setActiveTab('members')}
-                icon={<HiUsers />}
-              >
-                Membres
-              </TabButton>
-            </div>
-          </div>
+        {/* NavBox mobile */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t lg:hidden z-50">
+          <NavBox />
         </div>
-
-        {/* Contenu de l'onglet actif */}
-        {renderTabContent()}
       </div>
     </Layout>
   );
 }
-
-// Composant TabButton avec style cartoon
-const TabButton = ({ children, active, onClick, icon }) => (
-  <button
-    onClick={onClick}
-    className={`
-      flex items-center gap-2 px-6 py-4 font-medium text-sm
-      transition-all duration-200
-      ${active 
-        ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
-        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-      }
-    `}
-  >
-    {icon}
-    {children}
-  </button>
-);
 
 // Fonction utilitaire pour tronquer le texte
 const truncateText = (text, maxLength) => {
