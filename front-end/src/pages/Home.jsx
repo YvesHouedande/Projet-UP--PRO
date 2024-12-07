@@ -128,7 +128,7 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="lg:hidden fixed bottom-4 right-4 z-50 flex gap-2">
+      <div className="lg:hidden fixed top1-10 right-4 z-50 flex gap-2">
         <button
           onClick={() => setShowLeftSidebar(!showLeftSidebar)}
           className="bg-green-500 text-white p-3 rounded-full shadow-lg hover:bg-green-600 transition-colors"

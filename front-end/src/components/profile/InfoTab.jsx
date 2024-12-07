@@ -56,13 +56,13 @@ export default function InfoTab({ user, mutate }) {
             value={user?.number ? `+225 ${user.number}` : null} 
           />
           <InfoItem 
-            label="Email INP" 
+            label="Mail INP" 
             value={user?.inp_mail} 
           />
-          <InfoItem 
+          {/* <InfoItem 
             label="De INP" 
             value={user?.from_inp ? "Oui" : "Non"} 
-          />
+          /> */}
           <InfoItem 
             label="Créé le" 
             value={user?.created ? new Date(user.created).toLocaleDateString('fr-FR', {

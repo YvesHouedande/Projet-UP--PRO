@@ -15,16 +15,16 @@ const CardWrapper = ({ children, onClick, className = "" }) => (
   </div>
 );
 
-const Button = ({ children, onClick, className = "" }) => (
-  <button 
-    onClick={onClick}
-    className={`mt-3 px-4 py-2 bg-green-500 text-white rounded-xl
-                hover:bg-green-600 transition-colors duration-200
-                font-medium ${className}`}
-  >
-    {children}
-  </button>
-);
+// const Button = ({ children, onClick, className = "" }) => (
+//   <button 
+//     onClick={onClick}
+//     className={`mt-3 px-4 py-2 bg-green-500 text-white rounded-xl
+//                 hover:bg-green-600 transition-colors duration-200
+//                 font-medium ${className}`}
+//   >
+//     {children}
+//   </button>
+// );
 
 const UserCard = ({ user }) => {
   const navigate = useNavigate();
@@ -50,34 +50,34 @@ const UserCard = ({ user }) => {
   );
 };
 
-const EventCard = ({ event }) => {
-  const { status, formattedDate } = getStateTime(event.moment);
-  const statusStyles = {
-    passé: "bg-red-100 text-red-600",
-    "en cours": "bg-orange-100 text-orange-600",
-    "à venir": "bg-green-100 text-green-600"
-  };
+// const EventCard = ({ event }) => {
+//   const { status, formattedDate } = getStateTime(event.moment);
+//   const statusStyles = {
+//     passé: "bg-red-100 text-red-600",
+//     "en cours": "bg-orange-100 text-orange-600",
+//     "à venir": "bg-green-100 text-green-600"
+//   };
 
-  return (
-    <CardWrapper>
-      <h3 className="font-bold text-lg text-green-700 mb-2">{event.label}</h3>
-      <div className="space-y-2">
-        <div className="flex items-center">
-          <span className={`px-3 py-1 rounded-full text-sm ${statusStyles[status]}`}>
-            {status}
-          </span>
-          <span className="ml-2 text-gray-600 text-sm">{formattedDate}</span>
-        </div>
-        <p className="text-gray-600">
-          <span className="font-medium">Service:</span> {event.service_label}
-        </p>
-        <p className="text-gray-600">
-          <span className="font-medium">Lieu:</span> {event.place}
-        </p>
-      </div>
-    </CardWrapper>
-  );
-};
+//   return (
+//     <CardWrapper>
+//       <h3 className="font-bold text-lg text-green-700 mb-2">{event.label}</h3>
+//       <div className="space-y-2">
+//         <div className="flex items-center">
+//           <span className={`px-3 py-1 rounded-full text-sm ${statusStyles[status]}`}>
+//             {status}
+//           </span>
+//           <span className="ml-2 text-gray-600 text-sm">{formattedDate}</span>
+//         </div>
+//         <p className="text-gray-600">
+//           <span className="font-medium">Service:</span> {event.service_label}
+//         </p>
+//         <p className="text-gray-600">
+//           <span className="font-medium">Lieu:</span> {event.place}
+//         </p>
+//       </div>
+//     </CardWrapper>
+//   );
+// };
 
 const PeerCard = ({ peer }) => {
   const navigate = useNavigate();
@@ -128,12 +128,12 @@ const SearchResults = ({ searchType, results }) => {
   switch (searchType) {
     case 'users':
       return results.map(user => <UserCard key={user.public_id} user={user} />);
-    case 'schools':
-      return results.map(school => <SchoolCard key={school.public_id} school={school} />);
-    case 'publications':
-      return results.map(publication => <PublicationCard key={publication.public_id} publication={publication} />);
-    case 'events':
-      return results.map(event => <EventCard key={event.public_id} event={event} />);
+    // case 'schools':
+    //   return results.map(school => <SchoolCard key={school.public_id} school={school} />);
+    // case 'publications':
+    //   return results.map(publication => <PublicationCard key={publication.public_id} publication={publication} />);
+    // case 'events':
+    //   return results.map(event => <EventCard key={event.public_id} event={event} />);
     case 'promotions':
       return results.map(peer => <PeerCard key={peer.public_id} peer={peer} />);
     default:

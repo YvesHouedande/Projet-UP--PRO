@@ -38,8 +38,8 @@ export default function SearchInput() {
           case 'publications':
             response = await axiosService.get(`/general_post/?search=${query}`);
             break;
-          case 'events':
-            response = await axiosService.get(`/event/?search=${query}`);
+          // case 'events':
+          //   response = await axiosService.get(`/event/?search=${query}`);
             break;
           case 'promotions':
             // Recherche directe par label
@@ -84,9 +84,9 @@ export default function SearchInput() {
   // Mapping des types de recherche en français
   const searchTypes = {
     'users': 'Utilisateurs',
-    'schools': 'Écoles',
-    'publications': 'Publications',
-    'events': 'Événements',
+    // 'schools': 'Écoles',
+    // 'publications': 'Publications',
+    // 'events': 'Événements',
     'promotions': 'Promotions'
   };
 

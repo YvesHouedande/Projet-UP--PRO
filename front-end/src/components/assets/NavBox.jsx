@@ -29,7 +29,7 @@ export default function NavBox() {
             '>
                 {/* Accueil */}
                 <button
-                    onClick={() => navigate('/home')}
+                    onClick={() => navigate('/')}
                     className={`
                         flex-1
                         flex flex-col items-center justify-center
@@ -39,7 +39,7 @@ export default function NavBox() {
                         lg:flex-row lg:justify-start
                         lg:p-3 lg:rounded-xl lg:w-full
                         transition-colors duration-300
-                        ${location.pathname === '/home'
+                        ${location.pathname === '/'
                             ? 'text-green-600 lg:bg-green-100 lg:text-green-700 lg:border-2 lg:border-green-400'
                             : 'text-gray-600 hover:text-green-600 lg:bg-gray-100 lg:border-2 lg:border-gray-300 lg:hover:border-green-400'
                         }

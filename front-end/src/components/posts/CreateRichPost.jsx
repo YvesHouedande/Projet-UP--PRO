@@ -83,28 +83,29 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
             show={show} 
             onClose={onClose}
             title="Créer un article"
+           className="max-h-[90vh] w-full max-w-lg"
         >
-            <CartoonModal.Body>
-                <div className="space-y-6">
+            <CartoonModal.Body className="!p-3 sm:!p-4">
+                <div className="space-y-3 sm:space-y-4">
                     {/* Titre */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                             Titre de l'article
                         </label>
                         <input
                             type="text"
                             value={form.title}
                             onChange={(e) => setForm({ ...form, title: e.target.value })}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl
                                      focus:ring-2 focus:ring-green-500 focus:border-transparent
-                                     bg-gray-50"
+                                     bg-gray-50 text-sm"
                             placeholder="Donnez un titre à votre article..."
                         />
                     </div>
 
                     {/* Image */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                             Image (optionnel)
                         </label>
                         <div className="relative">
@@ -117,7 +118,7 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
                             />
                             <label
                                 htmlFor="image-upload"
-                                className="flex flex-col items-center justify-center w-full h-32
+                                className="flex flex-col items-center justify-center w-full h-20 sm:h-24
                                          border-2 border-dashed border-gray-300 rounded-xl
                                          bg-gray-50 hover:bg-gray-100 cursor-pointer
                                          transition-colors duration-200"
@@ -130,7 +131,7 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
                                     />
                                 ) : (
                                     <div className="text-center">
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-xs sm:text-sm text-gray-600">
                                             Cliquez pour ajouter une image
                                         </p>
                                     </div>
@@ -141,24 +142,24 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
 
                     {/* Contenu */}
                     <div className="relative">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                             Contenu de l'article
                         </label>
                         <div className="relative">
                             <textarea
                                 value={form.content}
                                 onChange={(e) => setForm({ ...form, content: e.target.value })}
-                                rows={6}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+                                rows={4}
+                                className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl
                                          focus:ring-2 focus:ring-green-500 focus:border-transparent
-                                         bg-gray-50 resize-none"
+                                         bg-gray-50 resize-none text-sm"
                                 placeholder="Rédigez votre article..."
                             />
-                            <div className="absolute bottom-3 right-3">
+                            <div className="absolute bottom-2 right-2">
                                 <CartoonButton
                                     variant="secondary"
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                    className="!p-2"
+                                    className="!p-1.5 !text-sm"
                                 >
                                     😊
                                 </CartoonButton>
@@ -170,10 +171,10 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
                                         >
                                             <EmojiPicker 
                                                 onEmojiClick={handleEmojiClick}
-                                                width={300}
-                                                height={400}
-                                                lazyLoadEmojis={false}
-                                                searchDisabled={false}
+                                                width={250}
+                                                height={300}
+                                                lazyLoadEmojis={true}
+                                                searchDisabled={true}
                                                 skinTonesDisabled={true}
                                                 emojiStyle="native"
                                                 previewConfig={{
@@ -189,11 +190,12 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
                 </div>
             </CartoonModal.Body>
 
-            <CartoonModal.Footer>
+            <CartoonModal.Footer className="!p-3 sm:!p-4">
                 <CartoonButton 
                     variant="secondary" 
                     onClick={onClose}
                     disabled={isSubmitting}
+                    className="!text-sm !py-1.5"
                 >
                     Annuler
                 </CartoonButton>
@@ -201,14 +203,15 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
                     variant="primary"
                     onClick={handleSubmit}
                     disabled={isSubmitting || !form.title || !form.content}
+                    className="!text-sm !py-1.5"
                 >
                     {isSubmitting ? (
                         <div className="flex items-center gap-2">
-                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                             </svg>
-                            <span>Publication en cours...</span>
+                            <span>Publication...</span>
                         </div>
                     ) : (
                         'Publier'

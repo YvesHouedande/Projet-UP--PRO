@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FaImage } from 'react-icons/fa';
 import { TfiWrite } from 'react-icons/tfi';
-import { FaCalendarAlt } from 'react-icons/fa';
 import RichPost from '../posts/CreateRichPost';
 import { CiText } from "react-icons/ci";
 import CreateImagePost from '../posts/CreateImagePost';
