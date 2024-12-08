@@ -33,7 +33,7 @@ export default function Comment({ comment }) {
                     shadow-[5px_5px_0px_0px_rgba(34,197,94,0.2)] 
                     hover:shadow-[7px_7px_0px_0px_rgba(34,197,94,0.2)] 
                     transition-all duration-200 ease-in-out">
-        <Link to={`/profile/${author.id}`} className="relative">
+        <Link to={`/profile/${author.public_id}`} className="relative">
           <Avatar 
             img={author.avatar}
             alt={`Avatar de ${author.first_name} ${author.last_name}`}
@@ -47,7 +47,7 @@ export default function Comment({ comment }) {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <Link 
-              to={`/profile/${author.id}`}
+              to={`/profile/${author.public_id}`}
               className="font-bold text-green-600 hover:text-green-700 transition-colors"
             >
               {author.first_name} {author.last_name}
