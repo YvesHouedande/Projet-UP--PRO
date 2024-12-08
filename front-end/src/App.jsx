@@ -9,6 +9,7 @@ import TimeLinePage from './pages/TimeLinePage';
 import PeerPage from './pages/PeerPage';
 import Community from './pages/Community';
 import ServicePage from './pages/ServicePage';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() { 
   return (
