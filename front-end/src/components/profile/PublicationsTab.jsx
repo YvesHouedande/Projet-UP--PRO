@@ -257,50 +257,39 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
         hasMore={!!nextUrl}
         loader={<div className="text-center py-4">Chargement...</div>}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
           {publications.map(post => (
-            <div key={post.public_id} className="
-              bg-white rounded-lg shadow-sm overflow-hidden
-              border border-gray-200
-              transform transition-all duration-300 hover:shadow-md
-              flex flex-col
-            ">
+            <div key={post.public_id} className="bg-white rounded-lg shadow-sm overflow-hidden">
               {post.image && (
-                <div className="relative w-full pt-[60%]">
+                <div className="w-full h-48 overflow-hidden">
                   <img 
                     src={post.image} 
                     alt="Publication" 
-                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
 
-              <div className="p-4 flex-1 flex flex-col">
-                <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2 line-clamp-2">
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   {post.title || "Sans titre"}
                 </h3>
 
                 {post.content && (
-                  <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
-                    {post.content}
-                  </p>
+                  <p className="text-gray-600 mb-4">{post.content}</p>
                 )}
 
                 {canEditPost(post) && (
-                  <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
-                      size="sm"
                       color="info"
                       onClick={() => handleEdit(post)}
-                      className="text-sm"
                     >
                       Modifier
                     </Button>
                     <Button
-                      size="sm"
                       color="failure"
                       onClick={() => { setSelectedPost(post); setIsConfirmDeleteOpen(true); }}
-                      className="text-sm"
                     >
                       Supprimer
                     </Button>
@@ -312,80 +301,44 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
         </div>
       </InfiniteScroll>
 
-      <Modal 
-        show={isModalOpen} 
-        onClose={handleCloseModal}
-        className="sm:max-w-lg"
-        position="center"
-      >
-        <Modal.Header className="border-b border-gray-200">
-          <h3 className="text-xl font-semibold">Modifier la publication</h3>
-        </Modal.Header>
-        <Modal.Body className="p-4">
+      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <Modal.Header>Modifier la publication</Modal.Header>
+        <Modal.Body>
           {renderEditForm()}
         </Modal.Body>
-        <Modal.Footer className="border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
-            <Button 
-              color="success" 
-              onClick={handleSave}
-              className="w-full sm:w-auto"
-            >
-              Enregistrer
-            </Button>
-            <Button 
-              color="gray" 
-              onClick={handleCloseModal}
-              className="w-full sm:w-auto"
-            >
-              Annuler
-            </Button>
-          </div>
+        <Modal.Footer>
+          <Button color="success" onClick={handleSave}>Enregistrer</Button>
+          <Button color="gray" onClick={() => setIsModalOpen(false)}>Annuler</Button>
         </Modal.Footer>
       </Modal>
 
-      <Modal 
-        show={isConfirmDeleteOpen} 
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        size="sm"
-        position="center"
-      >
-        <Modal.Header className="border-b border-gray-200">
-          <h3 className="text-lg font-semibold">Confirmer la suppression</h3>
-        </Modal.Header>
-        <Modal.Body className="p-4">
-          <p className="text-gray-600">
-            Êtes-vous sûr de vouloir supprimer cette publication ?
-          </p>
+      <Modal show={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)}>
+        <Modal.Header>Confirmer la suppression</Modal.Header>
+        <Modal.Body>
+          Êtes-vous sûr de vouloir supprimer cette publication ?
         </Modal.Body>
-        <Modal.Footer className="border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
-            <Button 
-              color="failure" 
-              onClick={() => handleDelete(selectedPost?.public_id)}
-              className="w-full sm:w-auto"
-            >
-              Supprimer
-            </Button>
-            <Button 
-              color="gray" 
-              onClick={() => setIsConfirmDeleteOpen(false)}
-              className="w-full sm:w-auto"
-            >
-              Annuler
-            </Button>
-          </div>
+        <Modal.Footer>
+          <Button 
+            color="failure" 
+            onClick={() => handleDelete(selectedPost?.public_id)}
+          >
+            Supprimer
+          </Button>
+          <Button 
+            color="gray" 
+            onClick={() => setIsConfirmDeleteOpen(false)}
+          >
+            Annuler
+          </Button>
         </Modal.Footer>
       </Modal>
 
       {notification && (
-        <div className="fixed bottom-16 inset-x-4 sm:bottom-4 sm:right-4 sm:left-auto z-50">
-          <Notification
-            type={notification.type}
-            message={notification.message}
-            onClose={() => setNotification(null)}
-          />
-        </div>
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
       )}
     </div>
   );
