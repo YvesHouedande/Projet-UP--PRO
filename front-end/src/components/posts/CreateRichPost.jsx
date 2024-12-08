@@ -4,6 +4,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { getUser } from '../../hooks/user.actions';
 import { Context } from '../../pages/Layout';
 import { usePosts } from '../../hooks/posts.actions';
+import { compressImage, isImageFile, needsCompression } from '../../utils/imageCompression';
 
 export default function RichPost({ show, onClose, onPostCreated, peerId, serviceId, source = 'etudiant' }) {
     const { showInfo, setShowInfo } = useContext(Context);
@@ -12,6 +13,7 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState('');
     const [form, setForm] = useState({
         title: "",
         content_type: "RICH POST",
@@ -20,13 +22,39 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
         imagePreview: null
     });
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setForm({
-                ...form,
-                image: file,
-                imagePreview: URL.createObjectURL(file)
+        if (!file) return;
+
+        try {
+            if (isImageFile(file)) {
+                let imageToUpload = file;
+                
+                // Compresser si nécessaire
+                if (needsCompression(file)) {
+                    setUploadStatus('Compression de l\'image...');
+                    imageToUpload = await compressImage(file);
+                    setUploadStatus('');
+                }
+
+                setForm({
+                    ...form,
+                    image: imageToUpload,
+                    imagePreview: URL.createObjectURL(imageToUpload)
+                });
+            } else {
+                setShowInfo({
+                    showMessage: true,
+                    message: "Veuillez sélectionner une image valide",
+                    type: 'error'
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors du traitement de l\'image:', error);
+            setShowInfo({
+                showMessage: true,
+                message: "Erreur lors du traitement de l'image",
+                type: 'error'
             });
         }
     };
@@ -55,9 +83,9 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
         }
 
         try {
-            await createPost(formData);
+            const response = await createPost(formData);
             if (onPostCreated) {
-                onPostCreated(newPost);
+                onPostCreated(response);
             }
             setForm({
                 title: "",
@@ -68,6 +96,7 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
             });
             onClose();
         } catch (error) {
+            console.log(error);
             setShowInfo({
                 showMessage: true,
                 message: error.response?.data?.error || "Une erreur est survenue",
