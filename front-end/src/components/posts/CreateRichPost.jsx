@@ -71,6 +71,26 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
         event.preventDefault();
         if (!form.title || !form.content) return;
 
+        // Créer une version optimiste du post
+        const optimisticPost = {
+            public_id: Date.now().toString(), // ID temporaire
+            title: form.title,
+            content: form.content,
+            content_type: form.content_type,
+            author: user,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            likes_count: 0,
+            comments_count: 0,
+            source: source,
+            imagePreview: form.imagePreview
+        };
+
+        // Appeler onPostCreated avec le post optimiste
+        if (onPostCreated) {
+            onPostCreated(optimisticPost);
+        }
+
         setIsSubmitting(true);
         const formData = new FormData();
         formData.append('author', user.public_id);
@@ -84,6 +104,7 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
 
         try {
             const response = await createPost(formData);
+            // Mettre à jour le post optimiste avec les vraies données
             if (onPostCreated) {
                 onPostCreated(response);
             }
@@ -96,6 +117,10 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
             });
             onClose();
         } catch (error) {
+            // En cas d'erreur, on peut retirer le post optimiste
+            if (onPostCreated) {
+                onPostCreated(null); // Signal pour retirer le post optimiste
+            }
             console.log(error);
             setShowInfo({
                 showMessage: true,

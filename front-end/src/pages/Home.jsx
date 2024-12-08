@@ -23,6 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const observerTarget = useRef(null);
   const [refreshComplete, setRefreshComplete] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const getSourceFromStatus = () => {
     return user.status_choice || 'etudiant';
@@ -32,8 +33,8 @@ export default function Home() {
   const { posts: apiPosts, error, isLoading, mutate, createPost } = usePosts(source);
 
   const handleNewPost = useCallback(() => {
-    mutate();
-  }, [mutate]);
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
 
   // Fonction pour charger les posts initiaux
   const loadInitialPosts = async () => {
@@ -111,6 +112,20 @@ export default function Home() {
     }
   }, [refreshComplete]);
 
+  useEffect(() => {
+    const refreshPosts = async () => {
+      try {
+        const response = await axiosService.get('/general_post/');
+        setPosts(response.data.results);
+        setNextUrl(response.data.next);
+      } catch (error) {
+        console.error('Erreur lors du rafraîchissement:', error);
+      }
+    };
+
+    refreshPosts();
+  }, [refreshTrigger]);
+
   if (isLoading) return <Loading />;
   if (error) return <MessageModal message={"Erreur de chargement"} />;
 
@@ -175,7 +190,7 @@ export default function Home() {
               createPost={createPost}
             />
             <InfiniteScroll
-              dataLength={posts.length || 0}
+              dataLength={posts?.length || 0}
               next={loadMorePosts}
               hasMore={!!nextUrl}
               loader={<div className="text-center py-2">Chargement...</div>}
@@ -186,11 +201,11 @@ export default function Home() {
               }
             >
               <div className="space-y-2">
-                {posts.map((post) => (
+                {posts && posts.filter(post => post?.public_id).map((post) => (
                   <Post 
                     key={post.public_id} 
                     post={post}
-                    onPostUpdated={() => mutate()}
+                    onPostUpdated={() => setRefreshTrigger(prev => prev + 1)}
                   />
                 ))}
               </div>

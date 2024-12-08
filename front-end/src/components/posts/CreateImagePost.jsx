@@ -69,26 +69,25 @@ export default function CreateImagePost({ show, onClose, onPostCreated, peerId, 
     formData.append('source', source);
 
     try {
-        const response = await createPost(formData);
-        if (onPostCreated) {
-            onPostCreated(response);
-        }
-        setForm({
-            title: "",
-            content_type: "IMAGE POST",
-            image: null,
-            imagePreview: null
-        });
-        onClose();
+      await createPost(formData);
+      if (onPostCreated) {
+        onPostCreated();
+      }
+      setForm({
+        title: "",
+        content_type: "IMAGE POST",
+        image: null,
+        imagePreview: null
+      });
+      onClose();
     } catch (error) {
-        console.log(error);
-        setShowInfo({
-            showMessage: true,
-            message: error.response?.data?.error || "Une erreur est survenue",
-            type: 'error'
-        });
+      setShowInfo({
+        showMessage: true,
+        message: error.response?.data?.error || "Une erreur est survenue",
+        type: 'error'
+      });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
