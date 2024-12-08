@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import Logo from "../assets/logo.png";
 import SearchInput from "./assets/SearchInput";
 import { useUserActions } from '../hooks/user.actions';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const userActions = useUserActions();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -16,13 +18,17 @@ export default function Navbar() {
     }
   };
 
+  const handleNavigateHome = () => {
+    navigate('/');
+  };
+
   return (
     <div className="sticky top-0 z-50 bg-white border-b-2 border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between p-3">
           {/* Logo et recherche */}
           <div className="flex items-center space-x-4 flex-1 max-w-xl">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
               <img 
                 className="h-10 w-10 object-contain transform hover:rotate-6 transition-transform duration-300" 
                 src={Logo} 

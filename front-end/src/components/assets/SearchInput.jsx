@@ -35,15 +35,11 @@ export default function SearchInput() {
           case 'users':
             response = await axiosService.get(`/user/?search=${query}`);
             break;
-          case 'publications':
-            response = await axiosService.get(`/general_post/?search=${query}`);
-            break;
-          // case 'events':
-          //   response = await axiosService.get(`/event/?search=${query}`);
-            break;
           case 'promotions':
-            // Recherche directe par label
             response = await axiosService.get(`/peer/?search=${query}`);
+            break;
+          case 'services':
+            response = await axiosService.get(`/service/?search=${query}`);
             break;
           default:
             break;
@@ -84,10 +80,8 @@ export default function SearchInput() {
   // Mapping des types de recherche en français
   const searchTypes = {
     'users': 'Utilisateurs',
-    // 'schools': 'Écoles',
-    // 'publications': 'Publications',
-    // 'events': 'Événements',
-    'promotions': 'Promotions'
+    'promotions': 'Promotions',
+    'services': 'Services'
   };
 
   return (

@@ -109,6 +109,35 @@ const PeerCard = ({ peer }) => {
   );
 };
 
+const ServiceCard = ({ service }) => {
+  const navigate = useNavigate();
+
+  return (
+    <CardWrapper onClick={() => navigate(`/service/${service.public_id}`)}>
+      <div className="flex items-center">
+        {service.cover && (
+          <img 
+            src={service.cover} 
+            alt={service.label}
+            className="w-20 h-20 object-cover rounded-xl border-2 border-green-200" 
+          />
+        )}
+        <div className="ml-4 flex-1">
+          <h3 className="font-bold text-lg text-green-700 mb-1">{service.label}</h3>
+          <div className="space-y-1">
+            <span className="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm mr-2">
+              {service.event_count} événement(s)
+            </span>
+          </div>
+          {service.description && (
+            <p className="text-gray-600 mt-1 text-sm line-clamp-2">{service.description}</p>
+          )}
+        </div>
+      </div>
+    </CardWrapper>
+  );
+};
+
 const SearchResults = ({ searchType, results }) => {
   if (!results.length) {
     return (
@@ -120,6 +149,11 @@ const SearchResults = ({ searchType, results }) => {
               Conseil: Recherchez par le nom de la promotion (ex: STIC22)
             </span>
           )}
+          {searchType === 'services' && (
+            <span className="block text-sm mt-2 text-orange-600">
+              Conseil: Recherchez par le nom du service
+            </span>
+          )}
         </p>
       </div>
     );
@@ -128,14 +162,10 @@ const SearchResults = ({ searchType, results }) => {
   switch (searchType) {
     case 'users':
       return results.map(user => <UserCard key={user.public_id} user={user} />);
-    // case 'schools':
-    //   return results.map(school => <SchoolCard key={school.public_id} school={school} />);
-    // case 'publications':
-    //   return results.map(publication => <PublicationCard key={publication.public_id} publication={publication} />);
-    // case 'events':
-    //   return results.map(event => <EventCard key={event.public_id} event={event} />);
     case 'promotions':
       return results.map(peer => <PeerCard key={peer.public_id} peer={peer} />);
+    case 'services':
+      return results.map(service => <ServiceCard key={service.public_id} service={service} />);
     default:
       return null;
   }
