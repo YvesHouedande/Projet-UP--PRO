@@ -1,3 +1,7 @@
 #Pouvoir cliquer la photo de profilde l'auteur d'une publication pour voir le profil
 #Gerer le problème du clique sur la la photo de profil d'un auteur de commentaire
 #Gerer le souci de la taille de la photo de profil, publication
+#gerer la creation des publications avec l'effet optimiste
+#gerer la creation des commentaires avec l'effet optimiste
+#gerer la creation des évènements avec l'effet optimiste
+#gerer la creation des services avec l'effet optimiste

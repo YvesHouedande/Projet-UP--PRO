@@ -106,6 +106,10 @@ export default function Post({ post, isOptimistic = false, user }) {
     }
   };
 
+  const handleProfileClick = () => {
+    navigate(`/profile/${post.author?.public_id}`);
+  };
+
   return (
     <div className={`
       relative bg-white rounded-2xl border-2 border-gray-200 p-6 
@@ -115,20 +119,22 @@ export default function Post({ post, isOptimistic = false, user }) {
       {/* En-tête du post */}
       <div className="flex items-center justify-between mb-4">
         {/* Partie gauche : Avatar et infos utilisateur */}
-        <div className="flex items-center space-x-3">
+        <div 
+          className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handleProfileClick}
+        >
           <img
             src={post.author?.avatar || '/default-avatar.png'}
             alt={`${post.author?.first_name} ${post.author?.last_name}`}
             className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
           />
           <div className="flex flex-col">
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-gray-900 hover:underline">
               {post.author?.last_name}
             </h3>
             <h4 className="text-sm text-gray-700">
               {post.author?.first_name}
             </h4>
- 
           </div>
         </div>
 
