@@ -194,7 +194,15 @@ export default function ServicePage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-20 lg:pb-8">
+      <div className="lg:fixed lg:left-0 lg:top-0 lg:h-full lg:w-[280px] lg:border-r lg:bg-white
+                    fixed bottom-0 left-0 right-0 bg-white border-t z-50 lg:z-40">
+        <div className="lg:pt-20">
+          <NavBox />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-20 lg:pb-8
+                    lg:ml-[280px] lg:max-w-[calc(100%-280px)]">
         {/* En-tête avec titre et tabs */}
         <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 
                      shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]">
@@ -226,11 +234,6 @@ export default function ServicePage() {
 
         {/* Contenu des onglets */}
         {renderTabContent()}
-
-        {/* NavBox mobile */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t lg:hidden z-50">
-          <NavBox />
-        </div>
       </div>
     </Layout>
   );
