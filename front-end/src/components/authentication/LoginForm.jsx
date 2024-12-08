@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useUserActions } from '../../hooks/user.actions';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { Link } from 'react-router-dom';
 
 export default function LoginForm() {
   const [form, setForm] = useState({
@@ -79,15 +80,35 @@ export default function LoginForm() {
             </button>
           </form>
 
+          <div className="mt-4 text-center">
+            <p className="text-gray-600">
+              Pas encore de compte ?{' '}
+              <Link to="/register" className="text-blue-500 hover:text-blue-600 font-medium">
+                Créer un compte
+              </Link>
+            </p>
+          </div>
+
           <div className="mt-6 text-center">
-            <GoogleLogin
-              clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
-              buttonText="Se connecter avec Google"
-              onSuccess={handleGoogleLoginSuccess}
-              onFailure={handleGoogleLoginFailure}
-              cookiePolicy={'single_host_origin'}
-              className="w-full"
-            />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Ou</span>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <GoogleLogin
+                clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+                buttonText="Se connecter avec Google"
+                onSuccess={handleGoogleLoginSuccess}
+                onFailure={handleGoogleLoginFailure}
+                cookiePolicy={'single_host_origin'}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
       </div>

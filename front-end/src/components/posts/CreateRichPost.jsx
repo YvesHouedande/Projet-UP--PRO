@@ -57,7 +57,7 @@ export default function RichPost({ show, onClose, onPostCreated, peerId, service
         try {
             await createPost(formData);
             if (onPostCreated) {
-                onPostCreated();
+                onPostCreated(newPost);
             }
             setForm({
                 title: "",

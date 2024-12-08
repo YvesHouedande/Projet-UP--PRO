@@ -26,9 +26,9 @@ export default function Feed({ onPostCreated, peerId, serviceId, source }) {
 
 
   // Fonction de callback pour la création réussie
-  const handlePostCreated = (newPost) => {
+  const handlePostCreated = () => {
     if (onPostCreated) {
-      onPostCreated(newPost);
+      onPostCreated();
     }
   };
 

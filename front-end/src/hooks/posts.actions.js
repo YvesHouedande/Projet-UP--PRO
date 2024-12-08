@@ -1,4 +1,4 @@
-import useSWR from 'swr';
+import useSWR, { mutate as globalMutate } from 'swr';
 import { fetcher } from '../helpers/axios';
 import axiosService from '../helpers/axios';
 
@@ -26,14 +26,29 @@ export function usePosts(source, peerId = null, serviceId = null) {
       formData.append('source', postSource);
       
       const response = await axiosService.post(url, formData);
+      const newPost = response.data;
+
+      // Mise à jour du cache avec le nouveau post
+      const updateCache = (oldData) => ({
+        ...oldData,
+        results: [newPost, ...(oldData?.results || [])]
+      });
       
-      const updatedData = {
-        ...data,
-        results: [response.data, ...(data?.results || [])]
-      };
+      // Mise à jour du cache local
+      await mutate(updateCache, false);
       
-      await mutate(updatedData, false);
-      return response.data;
+      // Mise à jour du cache global
+      await globalMutate('/general_post/', updateCache, false);
+
+      // Mise à jour des autres caches si nécessaire
+      if (serviceId) {
+        await globalMutate(key => key.startsWith('/service/'), undefined, { revalidate: true });
+      }
+      if (peerId) {
+        await globalMutate(key => key.startsWith('/peer/'), undefined, { revalidate: true });
+      }
+
+      return newPost;
     } catch (error) {
       throw error;
     }

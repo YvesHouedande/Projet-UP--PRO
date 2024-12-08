@@ -1,5 +1,6 @@
 import './App.css';
 import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from './components/routing/ProtectedRoute';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import LoginForm from './components/authentication/LoginForm';
@@ -19,7 +20,11 @@ function App() {
 
       <Route
         path='/timeline'
-        element={<TimeLinePage/>}
+        element={
+          <ProtectedRoute>
+            <TimeLinePage/>
+          </ProtectedRoute>
+        }
       />
 
       <Route
@@ -29,22 +34,46 @@ function App() {
 
       <Route
         path='/'
-        element={<Home/>}
+        element={
+          <ProtectedRoute>
+            <Home/>
+          </ProtectedRoute>
+        }
       />
       
       <Route
         path="/profile/:profileId/"
-        element={<Profile/>}
+        element={
+          <ProtectedRoute>
+            <Profile/>
+          </ProtectedRoute>
+        }
       />
       
       <Route
         path="/peer/:peerId"
-        element={<PeerPage />}
+        element={
+          <ProtectedRoute>
+            <PeerPage />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/community"
-        element={<Community />} />
-      <Route path="/service/:serviceId" element={<ServicePage />} />
+        element={
+          <ProtectedRoute>
+            <Community />
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/service/:serviceId" 
+        element={
+          <ProtectedRoute>
+            <ServicePage />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
     // <Home></Home>
   );

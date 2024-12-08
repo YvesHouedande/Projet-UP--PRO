@@ -1,9 +1,20 @@
 import React, { useState } from "react";
 import Logo from "../assets/logo.png";
 import SearchInput from "./assets/SearchInput";
+import { useUserActions } from '../hooks/user.actions';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const userActions = useUserActions();
+
+  const handleLogout = async () => {
+    try {
+      await userActions.logout();
+      // La redirection est gérée dans la fonction logout
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+    }
+  };
 
   return (
     <div className="sticky top-0 z-50 bg-white border-b-2 border-gray-100 shadow-sm">
@@ -24,17 +35,14 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Boutons de connexion/déconnexion */}
+          {/* Bouton de déconnexion */}
           <div className="hidden md:flex items-center space-x-3">
-            <button className="px-4 py-2 text-sm font-medium text-green-600 bg-green-50 
-                             rounded-xl border-2 border-green-200 hover:border-green-400 
-                             transition-all duration-300 transform hover:scale-105">
-              Connexion
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-white 
-                             bg-gradient-to-r from-green-500 to-green-600
-                             rounded-xl hover:from-green-600 hover:to-green-700
-                             transition-all duration-300 transform hover:scale-105">
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-medium text-white 
+                       bg-gradient-to-r from-green-500 to-green-600
+                       rounded-xl hover:from-green-600 hover:to-green-700
+                       transition-all duration-300 transform hover:scale-105">
               Déconnexion
             </button>
           </div>
@@ -56,15 +64,12 @@ export default function Navbar() {
                         ${isOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'} 
                         overflow-hidden`}>
           <div className="p-3 space-y-2">
-            <button className="w-full p-2 text-sm font-medium text-green-600 
-                             bg-green-50 rounded-xl border-2 border-green-200 
-                             hover:border-green-400 transition-all duration-300">
-              Connexion
-            </button>
-            <button className="w-full p-2 text-sm font-medium text-white 
-                             bg-gradient-to-r from-green-500 to-green-600
-                             rounded-xl hover:from-green-600 hover:to-green-700 
-                             transition-all duration-300">
+            <button 
+              onClick={handleLogout}
+              className="w-full p-2 text-sm font-medium text-white 
+                       bg-gradient-to-r from-green-500 to-green-600
+                       rounded-xl hover:from-green-600 hover:to-green-700 
+                       transition-all duration-300">
               Déconnexion
             </button>
           </div>
