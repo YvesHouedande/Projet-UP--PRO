@@ -257,39 +257,46 @@ export default function PublicationsTab({ user, context = 'user', serviceId = nu
         hasMore={!!nextUrl}
         loader={<div className="text-center py-4">Chargement...</div>}
       >
-        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {publications.map(post => (
-            <div key={post.public_id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div key={post.public_id} 
+                 className="bg-white rounded-xl border-2 border-gray-200 
+                          shadow-[5px_5px_0px_0px_rgba(0,0,0,0.1)]
+                          transition-all duration-300 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
               {post.image && (
-                <div className="w-full h-48 overflow-hidden">
+                <div className="relative w-full pt-[56.25%] overflow-hidden rounded-t-xl">
                   <img 
                     src={post.image} 
                     alt="Publication" 
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
               )}
 
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              <div className="p-4 sm:p-5">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 line-clamp-2">
                   {post.title || "Sans titre"}
                 </h3>
 
                 {post.content && (
-                  <p className="text-gray-600 mb-4">{post.content}</p>
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm sm:text-base">
+                    {post.content}
+                  </p>
                 )}
 
                 {canEditPost(post) && (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-auto">
                     <Button
                       color="info"
                       onClick={() => handleEdit(post)}
+                      className="w-full sm:w-1/2 text-sm"
                     >
                       Modifier
                     </Button>
                     <Button
                       color="failure"
                       onClick={() => { setSelectedPost(post); setIsConfirmDeleteOpen(true); }}
+                      className="w-full sm:w-1/2 text-sm"
                     >
                       Supprimer
                     </Button>
