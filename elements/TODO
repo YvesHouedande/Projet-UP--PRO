@@ -1,7 +1,12 @@
+# ne pas mettre de maniere evident les boutons de suppression et modification des posts
+#Ajouter des categories pour pouvoir filtrer les posts(etude, projet, soutenance, interecole, etc)
+#Ajouter des tags pour pouvoir filtrer les posts 
+#Integrations des aluminis
+#gestion de l'affichage de ses donnees personnelles
+#cibler les categories d'utilsateurs pouvant voir mes posts
 
-#gerer la rinitialisation de l'etat de scroll
-#Gestion du modal de modification de publication qui s'affche tout à Gauche
-#Readction de TDR
+#############################A long terme #########################################################
+#Tableau de bord 
 
 
 

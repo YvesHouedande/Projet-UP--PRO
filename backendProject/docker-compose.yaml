@@ -32,7 +32,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: mydatabase
+      POSTGRES_DATABASE: mydatabase
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
 

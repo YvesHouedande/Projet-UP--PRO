@@ -1,0 +1,7 @@
+# Exclure les dépendances locales et les fichiers temporaires
+node_modules
+package-lock.json
+*.log
+.env
+.DS_Store
+env

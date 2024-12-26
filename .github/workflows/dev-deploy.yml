@@ -1,0 +1,52 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy-backend-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Deploy Backend to Dev
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/dev/backend
+            git pull origin develop
+            docker-compose -f docker-compose.dev.yml down
+            docker-compose -f docker-compose.dev.yml up -d --build
+
+  deploy-frontend-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+          
+      - name: Build Dev Frontend
+        run: |
+          cd front-end
+          npm install
+          npm run build
+        env:
+          VITE_REACT_APP_API_URL: ${{ secrets.DEV_API_URL }}
+          
+      - name: Deploy to Dev
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/dev/frontend
+            rm -rf dist/*
+            # Copier les nouveaux fichiers 
