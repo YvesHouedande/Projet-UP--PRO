@@ -3,18 +3,20 @@ version: '3.8'
 services:
   backend:
     build:
-      dockerfile: ${DOCKERFILE}
+      dockerfile: Dockerfile
       context: ./backendProject
-    environment:
-      - ENV=${ENV}
-      - DATABASE_HOST=db
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_NAME=${DATABASE_NAME}
+    # environment:
+    #   - ENV=${ENV}
+    #   - DATABASE_HOST=db
+    #   - DATABASE_USER=${DATABASE_USER}
+    #   - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+    #   - DATABASE_NAME=${DATABASE_NAME}
+    env_file:
+      - .env
     # volumes:
     #   - ./backendProject:/app
     ports:
-      - "8000:8000"
+      - "2001:80"
     depends_on:
       db:
         condition: service_healthy
@@ -24,15 +26,18 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: ${DOCKERFILE}
-    environment:
-      - ENV=${ENV}
-      - FRONTEND_PORT=${FRONTEND_PORT}
+      dockerfile: Dockerfile
+    # environment:
+    #   - ENV=${ENV}
+    #   - FRONTEND_PORT=${FRONTEND_PORT}
+    env_file:
+      - .env
     # volumes:
     #   - ./frontend:/app
     #   -  /app/node_modules
     ports:
-      - "5173:5173"
+      # - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "2000:80"
     networks:
       - app-network
 
