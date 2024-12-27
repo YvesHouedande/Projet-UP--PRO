@@ -3,20 +3,20 @@ version: '3.8'
 services:
   backend:
     build:
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       context: ./backendProject
-    environment:
-      - ENV=${ENV}
-      - DATABASE_HOST=db
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_NAME=${DATABASE_NAME}
+    # environment:
+    #   - ENV=${ENV}
+    #   - DATABASE_HOST=db
+    #   - DATABASE_USER=${DATABASE_USER}
+    #   - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+    #   - DATABASE_NAME=${DATABASE_NAME}
     env_file:
-      - .env
-    # volumes:
-    #   - ./backendProject:/app
+      - .env.dev
+    volumes:
+      - ./backendProject:/app
     ports:
-      - "2001:80"
+      - "8000:80"
     depends_on:
       db:
         condition: service_healthy
@@ -26,18 +26,20 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     # environment:
     #   - ENV=${ENV}
-    #   - FRONTEND_PORT=${FRONTEND_PORT}
+    #   - DATABASE_HOST=db
+    #   - DATABASE_USER=${DATABASE_USER}
+    #   - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+    #   - DATABASE_NAME=${DATABASE_NAME}
     env_file:
-      - .env
-    # volumes:
-    #   - ./frontend:/app
-    #   -  /app/node_modules
+      - .env.dev
+    volumes:
+      - ./frontend:/app
+      -  /app/node_modules
     ports:
-      # - "${FRONTEND_PORT}:${FRONTEND_PORT}"
-      - "2000:80"
+      - "5173:5173"
     networks:
       - app-network
 
