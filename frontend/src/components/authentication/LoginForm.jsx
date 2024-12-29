@@ -51,7 +51,7 @@ export default function LoginForm() {
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-700">Adresse email</label>
+              <label htmlFor="email" className="block text-gray-700">Adressesss email</label>
               <input
                 type="email"
                 id="email"

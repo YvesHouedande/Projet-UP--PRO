@@ -93,7 +93,7 @@ DATABASES = {
     }
 }
 
-# Cache (Redis)
+# Cache (Redis)   
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -136,12 +136,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = 'http://localhost:2001/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 
 # Media files
-MEDIA_URL = "/media/"
+# MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "uploads"
+
+MEDIA_URL = 'http://localhost:2001/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
