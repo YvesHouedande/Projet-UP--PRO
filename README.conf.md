@@ -43,6 +43,8 @@ DATABASE_HOST=db
 DATABASE_PORT=5432
 FRONTEND_PORT=80
 
+ENV_PATH= /opt/venv
+
 
 ## **Lancer les Services**
 1. Environnement de Développement
